@@ -42,6 +42,8 @@ int main() {
 
   char *defaultsstring, *tune;
   struct defaults defs;
+  
+  mysetup_serial_port();
 
   defaultsstring = malloc(strlen(song) + 1);  	// allocate memory for the defaults section of the string
   if (defaultsstring == NULL){error("Out of memory.");}
@@ -392,4 +394,32 @@ void transmit(char* c){
 		move(10,0);
 		printw("bytes sent:  %d",test);
 	}
+}
+
+void mysetup_serial_port(){	
+	PRINTDEBUG&&printf("about to open port...\n");
+	serialport = open("/dev/tty.usbmodemfd1211",O_NONBLOCK|O_RDWR|O_NOCTTY);
+	PRINTDEBUG&&printf("opened port, now check if null\n");
+	if (serialport  == -1){
+		printf("Error: Unable to open serial port.\n");	
+		exit(1);
+	}
+
+	PRINTDEBUG&&printf("opened port successfully...\n");
+	struct termios attribs;
+	tcgetattr(serialport,&attribs);
+
+	PRINTDEBUG&&printf("got attributes ok...\n");
+	attribs.c_cflag &= ~CSIZE;
+	attribs.c_cflag |= CS8;
+	attribs.c_cflag |= CLOCAL|CREAD;
+	attribs.c_iflag |= IGNPAR;
+	attribs.c_oflag |= 0;
+	attribs.c_lflag &= ~ICANON;
+	cfmakeraw(&attribs);
+	cfsetispeed(&attribs,BAUDRATE);
+	cfsetospeed(&attribs,BAUDRATE);
+
+	tcsetattr(serialport,TCSANOW,&attribs);
+	PRINTDEBUG&&printf("done with attributes...\n");
 }
