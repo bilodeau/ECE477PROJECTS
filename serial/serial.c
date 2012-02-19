@@ -31,22 +31,31 @@ void transmit(char byte){
 	UDR = byte;
 }
 
+char receive() {
+	while (!(UCSRA & (1<<RXC)));	// check for RXC flag to indicate data has been received
+	return UDR;
+}
+
 void setup_timer(){
 	TCCR1A = 0;
 	TCCR1B = 0x0b;
 	OCR1A = UPDATEPERIOD;
 	TIMSK = 16;
 }
+
 ISR(TIMER1_COMPA_vect){
 	transmit(i);
 	i++;
 	if(i > 127)
 		i = 0;
 }
+
 ISR(USART_TXC_vect){
 }
 
 ISR(USART_RXC_vect){
+	char temp = receive();
+	// do stuff with the received byte
 }
 
 ISR(USART_UDRE_vect){
