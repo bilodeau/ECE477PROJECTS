@@ -66,6 +66,7 @@ void configureUI(){
 	initscr();  // setup the curses screen
 	cbreak(); // get characters types immediately
 	noecho(); // don't print anything the user types
+	nodelay(stdscr,TRUE);
 	move(1,0);
 	printw("Type 'q' to quit");
 }
@@ -81,7 +82,7 @@ int quit(){
 }
 
 void process_input(){
-	char c = getch();
+	int c = getch();
 	if (c != ERR){
 		move(2,0);
 		printw("                                          ");
