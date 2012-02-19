@@ -14,6 +14,7 @@
 #define DOCTAVE 6
 #define DBPM 63
 #define SOUNDOFF 1
+#define PRINTDEBUG 1
 
 char* parse_note_string(char* ptr,struct defaults* defs, struct note* n);
 void parse_defaults(char* defaultsstring, struct defaults* defs);
