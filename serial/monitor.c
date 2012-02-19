@@ -25,7 +25,7 @@ int main(){
 		char byte;
 		if ((read(serialport,&byte,1) > 0)){
 			move(0,0);
-			printw("DATA: %c\n",byte);
+			printw("DATA: %d\n",byte);
 		}
 		run_in_loop();
 	}
@@ -93,5 +93,6 @@ void process_input(){
 				move(2,0);
 				printw("Command not recognized.");
 		}
-	}
+	}	
+	move(2,0);
 }
