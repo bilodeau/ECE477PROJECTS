@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <fcntl.h>
 #include <ncurses.h>
+#include <string.h>
 
 #define BAUDRATE B4800
 #define PRINTDEBUG 1
@@ -33,6 +34,8 @@ int main(){
 		}else{
 			buf[i] = '\0';
 		}
+		printw("                    ");
+		move(0,6);
 		printw("%s",buf);
 		run_in_loop();
 	}
@@ -45,8 +48,11 @@ void transmit(char* c){
 		printw("Command Too Long...");
 	}else{
 		int test = write(serialport,&c,strlen(c));
+		int endstring = write(serialport,"\0",1);
 		move(10,0);
-		printw("bytes sent:  %d",test);
+		printw("               ");
+		move(10,0);
+		printw("bytes sent:  %d",test+endstring);
 	}
 }
 
@@ -82,9 +88,9 @@ void mysetup_serial_port(){
 // data display
 void configureUI(){
 	initscr();  // setup the curses screen
-//	cbreak(); // get characters types immediately
-	noecho(); // don't print anything the user types
-	nodelay(stdscr,TRUE);
+	//cbreak(); // get characters types immediately
+	//noecho(); // don't print anything the user types
+	//nodelay(stdscr,TRUE);
 	move(1,0);
 	printw("Type 'q' to quit");
 }
@@ -93,6 +99,7 @@ void run_in_loop(){
 	process_input();
 	refresh(); // refreshes curses window
 }
+
 int quit(){
 	endwin(); // end curses window mode
 	close(serialport);
@@ -100,20 +107,25 @@ int quit(){
 }
 
 void process_input(){
-	
-	int c = getch();
+	move(2,0);
+	printw(": ");
+	char c = getch();
 	if (c != ERR){
+		char buf[21];
+		buf[20] = '\0';
+		char i = 0;
+		while((i < 20)&&(c != ERR)&&(c != '\n')&&(c != '\r')){
+			buf[i] = c;
+			c = getch();
+			i++;
+		}
+		buf[i] = '\0';
 		move(2,0);
 		printw("                                          ");
-		switch(c){
-			case 'q':
-				exit(quit());break;
-			default:
-			//	move(2,0);
-			//	printw("Command not recognized.");
-				transmit(c);
+		if ((!strcmp("q",buf))||(!strcmp("Q",buf))){
+			exit(quit());
+		}else{		
+			transmit(buf);
 		}	
-		move(2,0);
-		printw(": %c",c);
 	}
 }

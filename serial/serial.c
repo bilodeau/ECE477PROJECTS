@@ -27,7 +27,7 @@ int main(void) {
 	// echos recieved characters back, but with brackets
 		receive();
 		char temp[23];
-		sprintf(temp,"[%s]",receive_buffer);
+		sprintf(temp,"[HI]",receive_buffer);
 		transmit(temp);
 	}
 	return 0;
@@ -39,6 +39,8 @@ void transmit(char* str){
 		while( !(UCSRA & (1<<UDRE)));
 		UDR = str[x];
 	}
+	while( !(UCSRA & (1<<UDRE)));
+	UDR = '\0'; // send a terminating character
 }
 
 void receive(){
@@ -46,10 +48,8 @@ void receive(){
 	int x;
 	for(x=0;x<20;x++){
 		while (!(UCSRA & (1<<RXC)));
-		if((receive_buffer[x] = UDR) == '\0'){
-		error();
-		 break;
-		}
+		if((receive_buffer[x] = UDR) == '\0')
+			break;
 	}
 }
 
