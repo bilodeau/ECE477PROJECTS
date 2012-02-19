@@ -3,41 +3,49 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <fcntl.h>
+#include <ncurses.h>
 
-#define BAUDRATE B2400
+#define BAUDRATE B4800
+#define PRINTDEBUG 1
 
 int serialport;
 void mysetup_serial_port();
+void process_input();
+void configureUI();
+void run_in_loop();
 
-		char byte;
+struct termios originalsettings;
+
 int main(){
-	printf("main called..\n");
+	PRINTDEBUG&&printf("main called..\n");
 	mysetup_serial_port();
-	printf("done setup...\n");
+	PRINTDEBUG&&printf("done setup...\n");
+	configureUI();
 	while(1){
-//	printf("waiting for good byte..\n");
-		char temp = byte;
-		if ((read(serialport,&byte,1) > 0))//&&(byte != temp))
-			printf("DATA: %c\n",byte);
+		char byte;
+		if ((read(serialport,&byte,1) > 0)){
+			move(0,0);
+			printw("DATA: %c\n",byte);
+		}
+		run_in_loop();
 	}
-	close(serialport);
-	return 0;
+	return quit();
 }
 
 void mysetup_serial_port(){	
-	printf("about to open port...\n");
-	serialport = open("/dev/tty.usbmodemfd1211",O_NONBLOCK|O_RDONLY|O_NOCTTY);
-	printf("opened port, now check if null\n");
+	PRINTDEBUG&&printf("about to open port...\n");
+	serialport = open("/dev/tty.usbmodemfd1241",O_NONBLOCK|O_RDONLY|O_NOCTTY);
+	PRINTDEBUG&&printf("opened port, now check if null\n");
 	if (serialport  == -1){
 		printf("Error: Unable to open serial port.\n");	
 		exit(1);
 	}
 	
-	printf("opened port successfully...\n");
+	PRINTDEBUG&&printf("opened port successfully...\n");
 	struct termios attribs;
 	tcgetattr(serialport,&attribs);
 	
-	printf("got attributes ok...\n");
+	PRINTDEBUG&&printf("got attributes ok...\n");
 	attribs.c_cflag &= ~CSIZE;
 	attribs.c_cflag |= CS8;
 	attribs.c_cflag |= CLOCAL|CREAD;
@@ -49,5 +57,40 @@ void mysetup_serial_port(){
 	cfsetospeed(&attribs,BAUDRATE);
 	
 	tcsetattr(serialport,TCSANOW,&attribs);
-	printf("done with attributes...\n");
+	PRINTDEBUG&&printf("done with attributes...\n");
+}
+
+// sets up curses and a custom 'raw' mode for handling user input and
+// data display
+void configureUI(){
+	initscr();  // setup the curses screen
+	cbreak(); // get characters types immediately
+	noecho(); // don't print anything the user types
+	move(1,0);
+	printw("Type 'q' to quit");
+}
+
+void run_in_loop(){
+	process_input();
+	refresh(); // refreshes curses window
+}
+int quit(){
+	endwin(); // end curses window mode
+	close(serialport);
+	return 0;
+}
+
+void process_input(){
+	char c = getch();
+	if (c != ERR){
+		move(2,0);
+		printw("                                          ");
+		switch(c){
+			case 'q':
+				exit(quit());break;
+			default:
+				move(2,0);
+				printw("Command not recognized.");
+		}
+	}
 }
