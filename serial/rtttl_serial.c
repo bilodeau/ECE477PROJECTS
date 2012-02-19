@@ -1,11 +1,12 @@
 #include <stdio.h>
 #include <string.h>
-//#include <sys/io.h>
 #include <ctype.h>
 #include <math.h>
 #include <stdlib.h>
+#include <termios.h>
 #include <unistd.h>
 #include <ncurses.h>
+#include <fcntl.h>
 #include "rtttl.h"
 #include "partb.c"
 
@@ -15,6 +16,7 @@
 #define DBPM 63
 #define SOUNDOFF 1
 #define PRINTDEBUG 1
+#define BAUDRATE B4800
 
 char* parse_note_string(char* ptr,struct defaults* defs, struct note* n);
 void parse_defaults(char* defaultsstring, struct defaults* defs);
@@ -33,8 +35,7 @@ int count_notes(char song[], char c);
 char *clear_space(char *ptr);
 int isEmpty(char* ptr);
 int transmit_note(int divisor);
-void transmit(char* c);
-
+void mysetup_serial_port();
 
 int serialport;
 
@@ -164,8 +165,9 @@ void play_tune(struct note notes[], int tempo, int count){
     struct note n = notes[i];
     if(SOUNDOFF){
       printf("playing freq: %d\n", n.divisor);
-      printf("waiting for: %f\n",n.cycles/1000000.);
-      //usleep(n.cycles);
+      printf("waiting for: %f\n",n.cycles/1000000.);      
+	transmit_note(n.divisor);
+	usleep(n.cycles);
     } else {
       int temp = n.divisor;
       if (n.divisor != 0) {		// this note is not a rest
@@ -176,7 +178,7 @@ void play_tune(struct note notes[], int tempo, int count){
 	usleep(n.cycles); 		// sleep for microseconds
 	outb(inb(0x61)&~3,0x61);	// speaker off
       } else {
-	transmit(0);
+	transmit_note(0);
 	usleep(n.cycles); 		// sleep for microseconds
       }
     }
@@ -376,25 +378,20 @@ int calc_cycles(struct defaults *defs, char *len_string, char *dot){
 }
 
 int transmit_note(int divisor) {
-	char brightness = (int) ((log(1/divisor) + 9) * 34.6);// calc normalized brightness
+	char brightness = ((log(1./divisor) + 9) * 34.6);// calc normalized brightness
 	char string[4];
+	PRINTDEBUG&&printf("brightness is: %d\n",brightness);
 	string[0] = brightness; 
 	string[1] = '\r';
 	string[2] = '\n';
-	string[4] = '\0';
-	transmit(string);
-	return 0;
-}
-
-void transmit(char* c){
-	if (strlen(c) > 20){
-		move(6,0);
-		printw("Command Too Long...");
+	string[3] = '\0';
+	if (strlen(string) > 20){
+		PRINTDEBUG&&printf("Command Too Long...");
 	} else {
-		int test = write(serialport,&c,strlen(c));
-		move(10,0);
-		printw("bytes sent:  %d",test);
+		int test = write(serialport,string,strlen(string));
+		PRINTDEBUG&&printf("string sent: %s\nbytes sent:  %d\n",string,test);
 	}
+	return 0;
 }
 
 void mysetup_serial_port(){	

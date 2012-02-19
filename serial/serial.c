@@ -11,7 +11,7 @@
 #define UPDATEPERIOD  4000 // 40k is about 3 sec
 
 void setup_serial();
-void setup_timer();
+void setup_PWM();
 int error();
 void transmit(char* byte);
 void receive();
@@ -20,15 +20,14 @@ char receive_buffer[21];
 
 int main(void) {
 	setup_serial();
-//	setup_timer();
-	sei();// enable global interrupts
+	setup_PWM();
 
 	while(1){
-	// echos recieved characters back, but with brackets
+		receive_buffer[0] = 3;
 		receive();
-		char temp[23];
-		sprintf(temp,"[HI]",receive_buffer);
-		transmit(temp);
+		char c = receive_buffer[0];
+		led_on_i(c%20);
+		OCR1A = c*c;		
 	}
 	return 0;
 }
@@ -48,17 +47,20 @@ void receive(){
 	int x;
 	for(x=0;x<20;x++){
 		while (!(UCSRA & (1<<RXC)));
-		if((receive_buffer[x] = UDR) == '\0')
+		receive_buffer[x] = UDR;
+		if(receive_buffer[x] == '\n')
 			break;
 	}
 }
 
 
-void setup_timer(){
-	TCCR1A = 0;
-	TCCR1B = 0x0b;
-	OCR1A = UPDATEPERIOD;
-	TIMSK = 16;
+void setup_PWM(){
+	DDRB = 2;
+	OCR1A = 0;
+	TCCR1A = 0xc0;
+	TCCR1B = 0x11;
+	ICR1 = 10000;
+	sei();
 }
 
 ISR(TIMER1_COMPA_vect){
