@@ -13,6 +13,7 @@ void mysetup_serial_port();
 void process_input();
 void configureUI();
 void run_in_loop();
+void transmit(char* c);
 
 struct termios originalsettings;
 
@@ -21,20 +22,37 @@ int main(){
 	mysetup_serial_port();
 	PRINTDEBUG&&printf("done setup...\n");
 	configureUI();
+	char buf[21];
+	buf[20] = '\0';
 	while(1){
-		char byte;
-		if ((read(serialport,&byte,1) > 0)){
-			move(0,0);
-			printw("DATA: %d\n",byte);
+		move(0,0);
+		printw("DATA: ");
+		char i = read(serialport,buf,20);	
+		if (i == -1){
+			// No data read.
+		}else{
+			buf[i] = '\0';
 		}
+		printw("%s",buf);
 		run_in_loop();
 	}
 	return quit();
 }
 
+void transmit(char* c){
+	if (strlen(c)>20){
+		move(6,0);
+		printw("Command Too Long...");
+	}else{
+		int test = write(serialport,&c,strlen(c));
+		move(10,0);
+		printw("bytes sent:  %d",test);
+	}
+}
+
 void mysetup_serial_port(){	
 	PRINTDEBUG&&printf("about to open port...\n");
-	serialport = open("/dev/tty.usbmodemfd1241",O_NONBLOCK|O_RDONLY|O_NOCTTY);
+	serialport = open("/dev/tty.usbmodemfd1211",O_NONBLOCK|O_RDWR|O_NOCTTY);
 	PRINTDEBUG&&printf("opened port, now check if null\n");
 	if (serialport  == -1){
 		printf("Error: Unable to open serial port.\n");	
@@ -64,7 +82,7 @@ void mysetup_serial_port(){
 // data display
 void configureUI(){
 	initscr();  // setup the curses screen
-	cbreak(); // get characters types immediately
+//	cbreak(); // get characters types immediately
 	noecho(); // don't print anything the user types
 	nodelay(stdscr,TRUE);
 	move(1,0);
@@ -82,6 +100,7 @@ int quit(){
 }
 
 void process_input(){
+	
 	int c = getch();
 	if (c != ERR){
 		move(2,0);
@@ -90,9 +109,11 @@ void process_input(){
 			case 'q':
 				exit(quit());break;
 			default:
-				move(2,0);
-				printw("Command not recognized.");
-		}
-	}	
-	move(2,0);
+			//	move(2,0);
+			//	printw("Command not recognized.");
+				transmit(c);
+		}	
+		move(2,0);
+		printw(": %c",c);
+	}
 }

@@ -2,6 +2,7 @@
 #include <avr/iom8.h>
 #include <avr/interrupt.h>
 #include <stdio.h>
+#include <string.h>
 #include "charlie.c"
 
 #define BAUDRATE 4800
@@ -12,23 +13,44 @@
 void setup_serial();
 void setup_timer();
 int error();
-void transmit(char byte);
+void transmit(char* byte);
+void receive();
 
-unsigned char i = 0;
+char receive_buffer[21];
 
 int main(void) {
 	setup_serial();
-	setup_timer();
+//	setup_timer();
 	sei();// enable global interrupts
 
 	while(1){
+	// echos recieved characters back, but with brackets
+		receive();
+		char temp[23];
+		sprintf(temp,"[%s]",receive_buffer);
+		transmit(temp);
 	}
 	return 0;
 }
 
-void transmit(char byte){
-	while( !(UCSRA & (1<<UDRE)));
-	UDR = byte;
+void transmit(char* str){
+	char x;
+	for(x=0; x <strlen(str);x++){
+		while( !(UCSRA & (1<<UDRE)));
+		UDR = str[x];
+	}
+}
+
+void receive(){
+	receive_buffer[20] = '\0';
+	int x;
+	for(x=0;x<20;x++){
+		while (!(UCSRA & (1<<RXC)));
+		if((receive_buffer[x] = UDR) == '\0'){
+		error();
+		 break;
+		}
+	}
 }
 
 void setup_timer(){
@@ -38,10 +60,6 @@ void setup_timer(){
 	TIMSK = 16;
 }
 ISR(TIMER1_COMPA_vect){
-	transmit(i);
-	i++;
-	if(i > 127)
-		i = 0;
 }
 ISR(USART_TXC_vect){
 }
