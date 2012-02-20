@@ -93,7 +93,7 @@ int query_note(int serialport) {
 
 void mysetup_serial_port(int *serialport) {	
 	PRINTDEBUG&&printf("about to open port...\n");
-	*serialport = open("/dev/tty.usbmodemfd1211",O_NONBLOCK|O_RDWR|O_NOCTTY);
+	*serialport = open("/dev/tty.usbmodemfd1221",O_NONBLOCK|O_RDWR|O_NOCTTY);
 	PRINTDEBUG&&printf("opened port, now check if null\n");
 	if (*serialport  == -1){
 		printf("Error: Unable to open serial port.\n");	
