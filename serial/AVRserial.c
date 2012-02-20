@@ -3,8 +3,9 @@
 #include <avr/interrupt.h>
 #include <stdio.h>
 #include <string.h>
+#include"../charlie/charlie.h"
 
-#define BAUDRATE 4800
+#define BAUDRATE 9600
 #define FOSC 1843200
 #define MYUBRR FOSC/16/BAUDRATE-1
 
@@ -36,13 +37,11 @@ void process_command(){
 			char echo[20];
 			sprintf(echo,"B1 %d\r\n",brightness);
 			transmit(echo);
-		}else{
-			transmit("UNIMPLEMENTED\r\n");
 		}
 	}else if(!strncmp(receive_buffer,"SET",3)){
 		if (!strncmp(receive_buffer+3," B1 ",4)){
 			char temp;
-			if ((sscanf(receive_buffer+7,"%d",temp)==1)&&((temp>=0)&&(temp<=100))){
+			if ((sscanf(receive_buffer+7,"%d",&temp)==1)&&((temp>=0)&&(temp<=100))){
 				brightness = temp;
 				char echo[20];
 				sprintf(echo,"B1 %d\r\n",brightness);
@@ -50,10 +49,10 @@ void process_command(){
 			}else{
 				transmit("ILLEGAL VALUE\r\n");
 			}
-		}else{
-			transmit("UNIMPLEMENTED\r\n");
 		}
-	}		
+	}else{		
+		transmit("UNIMPLEMENTED\r\n");
+	}
 }
 
 // the PC will be expecting "\r\n" as the last two bytes of this command

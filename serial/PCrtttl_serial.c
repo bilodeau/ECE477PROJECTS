@@ -21,23 +21,24 @@ int main() {
 	int bpm, num_notes;
 	int serialport;
 	struct note *notes;
-	mysetup_serial_port(&serialport);
-	get_note_array(notes, &bpm, &num_notes);
+	mysetup_serial_port(&serialport);	
+	notes = get_note_array(&bpm, &num_notes);
+	PRINTDEBUG&&printf("notes parsed OK\n");
 	play_tune(notes, bpm, num_notes, serialport);
 	free(notes);
 }
 
 void play_tune(struct note notes[], int tempo, int count, int serialport){
-  //outb(0xb6,0x43);	// config byte out
+(!SOUNDOFF)&&outb(0xb6,0x43);	// config byte out
   	int i = 0;
   	for(i = 0; i < count; i++) {
     		struct note n = notes[i];
-    		if(SOUNDOFF){
+		if(SOUNDOFF){
       			printf("playing freq: %d\n", n.divisor);
       			printf("waiting for: %f\n",n.cycles/1000000.);      
 			transmit_note(serialport, n.divisor);
-			query_note(serialport);
 			usleep(n.cycles);
+			query_note(serialport);
     		} else {
       			int temp = n.divisor;
       			if (n.divisor != 0) {		// this note is not a rest
@@ -57,10 +58,10 @@ void play_tune(struct note notes[], int tempo, int count, int serialport){
 }
 
 int transmit_note(int serialport, int divisor) {
-	int brightness = ((log(1./divisor) + 9) * 34.6);// calc normalized brightness
-	PRINTDEBUG&&printf("brightness is: %d\n",brightness);
+	char brightness = ((log(1./divisor) + 9) * 34.6);// calc normalized brightness
+	PRINTDEBUG&&printf("calculated brightness is: %d\n",brightness);
 	char *string = malloc(20*sizeof(char));
-	sprintf(string, "SET B1 %d\r\n", brightness);	
+	sprintf(string, "SET B1 %d\r\n", brightness+70);	
 	
 	// send brightness value to AVR
 	if (strlen(string) > 20){
@@ -69,34 +70,22 @@ int transmit_note(int serialport, int divisor) {
 		int test = write(serialport,string,strlen(string));
 		PRINTDEBUG&&printf("string sent: %s\nbytes sent:  %d\n",string,test);
 	}
-
-	// read AVR response and print data to stdout
-	char buffer[20];
-	int test = read(serialport, buffer, sizeof(buffer));
-	if (test = -1) {
-		printf("AVR did not a send response to the query.\n");
-	}
-	else {
-		buffer[test] = '\0';
-		PRINTDEBUG&&printf("string received: %s\nbytes sent:  %d\n",buffer,test);	
-	}
 	return 0;
 }
 
 int query_note(int serialport) {
-
+/*
 	// send brightness query
 	char string[] = "GET B1\r\n";
 	int test = write(serialport,string,strlen(string));
 	PRINTDEBUG&&printf("string sent: %s\nbytes sent:  %d\n",string,test);
-
+*/
 	// read AVR response and print data to stdout
-	char buffer[20];
-	test = read(serialport, buffer, 20);
-	if (test = -1) {
+	char buffer[21];
+	int test = read(serialport, buffer, 20);
+	if (test == -1) {
 		printf("AVR did not send response to query.\n");
-	}
-	else {
+	}else {
 		buffer[test] = '\0';
 		PRINTDEBUG&&printf("string received: %s\nbytes sent:  %d\n",buffer,test);	
 	}		 

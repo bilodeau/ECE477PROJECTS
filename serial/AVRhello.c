@@ -5,7 +5,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
-#include "charlie.c"
+#include "../charlie/charlie.h"
 
 void init_serial(void);
 void my_send_string (char * buf);

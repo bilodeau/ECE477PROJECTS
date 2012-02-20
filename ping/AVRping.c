@@ -2,7 +2,7 @@
 #include <avr/iom8.h>
 #include <avr/interrupt.h>
 #include <stdio.h>
-#include "charlie.c"
+#include "../charlie/charlie.h"
 
 // define pin modes
 #define PINGING 0

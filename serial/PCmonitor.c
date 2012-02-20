@@ -97,7 +97,7 @@ void configureUI(){
 
 void run_in_loop(){
 	refresh();
-	process_input();
+//	process_input();
 	refresh(); // refreshes curses window
 }
 

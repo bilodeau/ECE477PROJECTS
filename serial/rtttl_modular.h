@@ -13,7 +13,7 @@
 #define DOCTAVE 6
 #define DBPM 63
 
-int get_note_array(struct note *notes, int *bpm, int *num_notes);
+struct note* get_note_array(int *bpm, int *num_notes);
 char* parse_note_string(char* ptr,struct defaults* defs, struct note* n);
 void parse_defaults(char* defaultsstring, struct defaults* defs);
 void parse_s_def(char *ptr, struct defaults *def);
@@ -30,7 +30,7 @@ int count_notes(char song[], char c);
 char *clear_space(char *ptr);
 int isEmpty(char* ptr);
 
-int get_note_array(struct note notes[], int *bpm, int *num_notes) {
+struct note* get_note_array(int *bpm, int *num_notes) {
   char song[] = "HauntedHouse: d=4,o=5,b=120: 2a4, 2e, 2d#, 2b4, 2a4, 2c, 2d, 2a#4, 2e., e, 1f4, 1a4, 1d#, 2e., d, 2c., b4, 1a4, 1p, 2a4, 2e, 2d#, 2b4, 2a4, 2c, 2d, 2a#4, 2e., e, 1f4, 1a4, 1d#, 2e., d, 2c., b4, 1a4";
 
   char *defaultsstring, *tune;
@@ -44,7 +44,7 @@ int get_note_array(struct note notes[], int *bpm, int *num_notes) {
   parse_defaults(defaultsstring,&defs);			// parse default string into default struct
 
   int count = count_notes(tune, ',');
-  notes = malloc(sizeof(struct note)*count);
+  struct note* notes = malloc(sizeof(struct note)*count);
 
   int i = 0;
   char *currentNote = tune;				// while there are notes in the note section, parse them into the array
@@ -58,7 +58,7 @@ int get_note_array(struct note notes[], int *bpm, int *num_notes) {
   *num_notes = i;
 
   free(defaultsstring);					// free memory
-  return 0;
+  return notes;
 }
 
 // counts the number of commas in the song section and returns the count + 1
