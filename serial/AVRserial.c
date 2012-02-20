@@ -3,44 +3,66 @@
 #include <avr/interrupt.h>
 #include <stdio.h>
 #include <string.h>
-#include "charlie.c"
-
 
 #define BAUDRATE 4800
 #define FOSC 1843200
 #define MYUBRR FOSC/16/BAUDRATE-1
-#define UPDATEPERIOD  4000 // 40k is about 3 sec
 
 void setup_serial();
 void setup_PWM();
 int error();
 void transmit(char* byte);
 void receive();
+void process_command();
 
 char receive_buffer[21];
+char brightness = 0;
 
 int main(void) {
 	setup_serial();
 	setup_PWM();
 
 	while(1){
-		receive_buffer[0] = 3;
 		receive();
-		char c = receive_buffer[0];
-		led_on_i(c%20);
-		OCR1A = c*c;		
+		process_command();
+		OCR1A = brightness*brightness;
 	}
 	return 0;
 }
 
+void process_command(){
+	if (!strncmp(receive_buffer,"GET",3)){
+		if ((!strncmp(receive_buffer+3," B1",3))&&(receive_buffer[6] == '\0')){
+			char echo[20];
+			sprintf(echo,"B1 %d\r\n",brightness);
+			transmit(echo);
+		}else{
+			transmit("UNIMPLEMENTED\r\n");
+		}
+	}else if(!strncmp(receive_buffer,"SET",3)){
+		if (!strncmp(receive_buffer+3," B1 ",4)){
+			char temp;
+			if ((sscanf(receive_buffer+7,"%d",temp)==1)&&((temp>=0)&&(temp<=100))){
+				brightness = temp;
+				char echo[20];
+				sprintf(echo,"B1 %d\r\n",brightness);
+				transmit(echo);
+			}else{
+				transmit("ILLEGAL VALUE\r\n");
+			}
+		}else{
+			transmit("UNIMPLEMENTED\r\n");
+		}
+	}		
+}
+
+// the PC will be expecting "\r\n" as the last two bytes of this command
 void transmit(char* str){
 	char x;
 	for(x=0; x <strlen(str);x++){
 		while( !(UCSRA & (1<<UDRE)));
 		UDR = str[x];
 	}
-	while( !(UCSRA & (1<<UDRE)));
-	UDR = '\0'; // send a terminating character
 }
 
 void receive(){
@@ -49,11 +71,12 @@ void receive(){
 	for(x=0;x<20;x++){
 		while (!(UCSRA & (1<<RXC)));
 		receive_buffer[x] = UDR;
-		if(receive_buffer[x] == '\n')
+		if((receive_buffer[x] == '\n')&&(receive_buffer[x-1] == '\r')){
+			receive_buffer[x+1] = '\0';
 			break;
+		}
 	}
 }
-
 
 void setup_PWM(){
 	DDRB = 2;
@@ -62,18 +85,6 @@ void setup_PWM(){
 	TCCR1B = 0x11;
 	ICR1 = 10000;
 	sei();
-}
-
-ISR(TIMER1_COMPA_vect){
-}
-
-ISR(USART_TXC_vect){
-}
-
-ISR(USART_RXC_vect){
-}
-
-ISR(USART_UDRE_vect){
 }
 
 void setup_serial(){
@@ -89,11 +100,4 @@ void setup_serial(){
 	
 	// configure interrupts
 	UCSRB |= (0<<RXCIE)|(0<<TXCIE)|(0<<UDRIE);	
-}
-
-// turns on the white LED for an error code
-int error(){
-	DDRB |= 2;
-	PORTB &= ~2;
-	return 0;
 }
