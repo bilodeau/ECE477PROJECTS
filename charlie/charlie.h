@@ -30,52 +30,6 @@ void byindex(int index);
 void lightled(char index){
 	flags[index/4] |= 1<<(index%4);
 }
-/*
-int main(void) {
-	TCCR1A = 0;
-	TCCR1B = 0x1b;
-	ICR1 = 40000;
-	OCR1A = 1500; 
-	OCR1B = 40000;
-	TIMSK = 24;
-	sei();
-	clear();
-	while(1){
-		flash_leds();
-	}
-	return 0;
-}
-
-ISR(TIMER1_COMPB_vect){
-	mode++;	
-	int_counter = 0;
-}
-
-ISR(TIMER1_COMPA_vect){
-	OCR1A += 1500;
-	if (OCR1A > 40000)
-		OCR1A = 1500;
-	int_counter++;
-	clear();
-	mode = mode % 4;
-	if (mode == 0){
-		if (int_counter > 4)
-			int_counter = 0;
-		lightcolumn(int_counter);
-	}else if (mode == 1){
-		 if (int_counter > 5)
-			int_counter = 0;
-		lightrow(int_counter);
-	}else if (mode == 2){
-		if (int_counter >4)
-			int_counter = 0;
-		rowcolpattern(int_counter);
-	}else if (mode ==3){
-		if (int_counter > 19)
-			int_counter = 0;
-		byindex(int_counter);
-	}
-}*/
 	
 void rowcolpattern(int counter){
 	lightrow(counter);
