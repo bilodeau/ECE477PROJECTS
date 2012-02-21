@@ -6,7 +6,7 @@
 #include <ncurses.h>
 #include <string.h>
 
-#define BAUDRATE B4800
+#define BAUDRATE B9600
 #define PRINTDEBUG 1
 
 int serialport;
@@ -46,19 +46,24 @@ void transmit(char* c){
 	if (strlen(c)>20){
 		move(6,0);
 		printw("Command Too Long...");
+		move(10,0);
+		printw("                                ");
 	}else{
+		move(6,0);
+		printw("                   ");
 		int test = write(serialport,&c,strlen(c));
-		int endstring = write(serialport,"\0",1);
 		move(10,0);
 		printw("               ");
 		move(10,0);
-		printw("bytes sent:  %d",test+endstring);
+		printw("bytes sent:  %d",test);
+		move(12,0);
+		printw("last string sENT NOT DONE");
 	}
 }
 
 void mysetup_serial_port(){	
 	PRINTDEBUG&&printf("about to open port...\n");
-	serialport = open("/dev/tty.usbmodemfa1321",O_NONBLOCK|O_RDWR|O_NOCTTY);
+	serialport = open("/dev/tty.usbmodemfd1211",O_NONBLOCK|O_RDWR|O_NOCTTY);
 	PRINTDEBUG&&printf("opened port, now check if null\n");
 	if (serialport  == -1){
 		printf("Error: Unable to open serial port.\n");	
@@ -97,7 +102,7 @@ void configureUI(){
 
 void run_in_loop(){
 	refresh();
-//	process_input();
+	process_input();
 	refresh(); // refreshes curses window
 }
 
@@ -125,8 +130,12 @@ void process_input(){
 		printw("                                          ");
 		if ((!strcmp("q",buf))||(!strcmp("Q",buf))){
 			exit(quit());
-		}else{		
-			transmit(buf);
+		}else{
+			char temp[23];
+			temp[0] = '\0';
+			strcat(temp,buf);
+			strcat(temp,"\r\n");	
+			transmit(temp);
 		}	
 	}
 }

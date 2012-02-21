@@ -61,14 +61,14 @@ int transmit_note(int serialport, int divisor) {
 	char brightness = ((log(1./divisor) + 9) * 34.6);// calc normalized brightness
 	PRINTDEBUG&&printf("calculated brightness is: %d\n",brightness);
 	char *string = malloc(20*sizeof(char));
-	sprintf(string, "SET B1 %d\r\n", brightness+70);	
+	sprintf(string, "SET B1 %d\r\n", brightness);	
 	
 	// send brightness value to AVR
 	if (strlen(string) > 20){
 		PRINTDEBUG&&printf("Command Too Long...");
 	} else {
 		int test = write(serialport,string,strlen(string));
-		PRINTDEBUG&&printf("string sent: %s\nbytes sent:  %d\n",string,test);
+		PRINTDEBUG&&printf("string sent to AVR: %s\nbytes sent to AVR:  %d\n",string,test);
 	}
 	return 0;
 }
@@ -87,13 +87,13 @@ int query_note(int serialport) {
 		printf("AVR did not send response to query.\n");
 	}else {
 		buffer[test] = '\0';
-		PRINTDEBUG&&printf("string received: %s\nbytes sent:  %d\n",buffer,test);	
+		PRINTDEBUG&&printf("string received from AVR: %s\nbytes received from AVR:  %d\n",buffer,test);	
 	}		 
 }
 
 void mysetup_serial_port(int *serialport) {	
 	PRINTDEBUG&&printf("about to open port...\n");
-	*serialport = open("/dev/tty.usbmodemfd1221",O_NONBLOCK|O_RDWR|O_NOCTTY);
+	*serialport = open("/dev/tty.usbmodemfa1321",O_NONBLOCK|O_RDWR|O_NOCTTY);
 	PRINTDEBUG&&printf("opened port, now check if null\n");
 	if (*serialport  == -1){
 		printf("Error: Unable to open serial port.\n");	

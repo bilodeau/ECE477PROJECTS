@@ -3,9 +3,6 @@
 #include <avr/interrupt.h>
 #include <stdio.h>
 
-int loop_counter = 0;
-int int_counter = 0;
-int mode = 0;
 	// store 'on' flags in the low four bits of each char
 	// each char represents a single row starting at the bottom
 	// for example: displaying an 'X' 
@@ -50,16 +47,27 @@ void clear(){
 	for(i=0; i<5;i++)
 		flags[i] = 0;
 }
+
+// requires as a parameter a pointer to an 20-byte long array
+// each byte should be either 0 or 1, representing either an off or on state
+void flash_leds_from_array(char* array){
+	char i;
+	for(i=0; i < 20; i++){
+	//	led_off();
+		if (array[i])
+			led_on_i(i);
+
+	}
+}
+
 void flash_leds(){
 		char i;
 		char j;
 		for(i=0;i<5;i++){//row
 			for(j=0;j<4;j++){// column
-				if(((flags[i]>>j)&1) == 1){
+			//	led_off();
+				if(((flags[i]>>j)&1) == 1)
 					led_on(i,j);
-				}else{
-	//				led_off();
-				}
 			}
 		}
 }
