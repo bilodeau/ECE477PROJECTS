@@ -192,7 +192,7 @@ int game_status(char *shots_hit) {
 // Process request from PC. Returns shot pos if command is FIRE and pos is valid.
 // Returns -1 is command is RESET and -2 if command is wrong or pos is out of range
 int process_request(){
-    int shot;
+	int temp;
 	if (!strncmp(receive_buffer,"RESET",5)){    // if RESET, then return -1
 		return -1;
 	}else if(!strncmp(receive_buffer,"FIRE",4)){    // if FIRE, then get position
