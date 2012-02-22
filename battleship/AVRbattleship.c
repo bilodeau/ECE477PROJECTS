@@ -227,13 +227,13 @@ void get_request() {
 // Process request from PC. Returns shot pos if command is FIRE and pos is valid.
 // Returns -1 is command is RESET and -2 if command is wrong or pos is out of range
 int process_request(){
-    int shot;
+	int temp;
 	if (!strncmp(receive_buffer,"RESET",5)){    // if RESET, then return -1
 		return -1;
 	}else if(!strncmp(receive_buffer,"FIRE",4)){    // if FIRE, then get position
-        if ((sscanf(receive_buffer+4,"%d",shot)==1)&&((shot>=0)&&(shot<=19))){  // check for a good value
+        if ((sscanf(receive_buffer+4,"%d",&temp)==1)&&((temp>=0)&&(temp<=19))){  // check for a good value
             char echo[20];
-            sprintf(echo,"Position = %d\r\n",shot);
+            sprintf(echo,"Position = %d\r\n",temp);
             transmit(echo);                     // echo good value
             return temp;                        // return good value
         }else{
