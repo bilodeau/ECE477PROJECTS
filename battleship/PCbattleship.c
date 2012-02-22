@@ -9,6 +9,7 @@
 
 #define PRINTDEBUG 1
 #define USERCOMMANDBUFFERSIZE 23
+#define SERIALPORT "/dev/tty.usbmodemfd1231"
 
 void clear_user_command_buffer();
 void mysetup_serial_port();
@@ -82,7 +83,7 @@ void transmit(char* c){
 
 void mysetup_serial_port(){	
 	PRINTDEBUG&&printf("about to open port...\n");
-	serialport = open("/dev/tty.usbmodemfd1221",O_NONBLOCK|O_RDWR|O_NOCTTY);
+	serialport = open(SERIALPORT,O_NONBLOCK|O_RDWR|O_NOCTTY);
 	PRINTDEBUG&&printf("opened port, now check if null\n");
 	if (serialport  == -1){
 		printf("Error: Unable to open serial port.\n");	

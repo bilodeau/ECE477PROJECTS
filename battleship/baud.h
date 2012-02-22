@@ -1,6 +1,6 @@
 #define MYUBRR FOSC/16/BAUDRATE-1
-#define MYUBRRH ((MYUBRR)>>8)
-#define MYUBRRL MYUBRR
+#define MYUBRRH 0//((MYUBRR)>>8)
+#define MYUBRRL 12//MYUBRR
 #define MYUCSRA (1<<UDRE)|(1<<U2X)
 #define MYUCSRC (1<<URSEL)|(1<<USBS)|(3<<UCSZ0)
 #define FOSC 1000000

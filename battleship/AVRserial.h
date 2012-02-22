@@ -13,8 +13,6 @@ void receive();
 char receive_buffer[21];
 
 int test_echo(void) {
-	setup_serial();
-	
 	while(1){
 		receive();
 		transmit(receive_buffer);
@@ -52,8 +50,8 @@ void receive(){
 }
 void setup_serial(){
 	// setup baud rate and frame based on defines in baud.h
-	UBRRH = MYUBBRH;
-	UBRRL = MYUBBRL;
+	UBRRH = MYUBRRH;
+	UBRRL = MYUBRRL;
 	UCSRA = MYUCSRA;
 	UCSRC = MYUCSRC;
 	

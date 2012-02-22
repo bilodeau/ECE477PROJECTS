@@ -1,31 +1,26 @@
-#include <avr/io.h>
-#include <avr/iom8.h>
-#include <avr/interrupt.h>
-#include <stdio.h>
 #include <string.h>
-#include "charlie.h"
+#include <stdlib.h>
+#include "../charlie/charlie.h"
+#include "AVRserial.h"
+
 // Most of the above section is probably best placed into an AVR header
-
-
-char receive_buffer[21];        // buffer to hold transmit data from PC
 int init_game(char *ship_pos, char *shots_fired, char *shots_hit);
 void add_three_ship(char *ship_pos);
 void add_two_ship(char *ship_pos);
 int game_status(char *shots_hit);
-void setup_serial();
-void get_request();
 int process_request();
 void check_hits(char *ship_pos, char *shots_hit, int request);
 
 
 int main() {
     setup_serial();                                 // initialize serial port
-    char ship_pos[20], shots_fired[20], shots_hit[20];  // create arrays for game
-    init_game(ship_pos, shots_fired, shots_hit);        // zero out arrays and add ships to game
 
-    char gameover = 0;
+	char ship_pos[20], shots_fired[20], shots_hit[20];  // create arrays for game
+    	init_game(ship_pos, shots_fired, shots_hit);        // zero out arrays and add ships to game
+
+    	char gameover = 0;
     while (!gameover) {         // until game is over
-        get_request();          // get request from PC
+        receive();          // get request from PC
         int request = process_request();    // process request
         if (request > -1) {                 // if request >= 0, then it is a shot
             shots_fired[request] = 1;       // update shots fired array
@@ -44,7 +39,7 @@ int main() {
         }
     }
     play_success();         // display Winning animation.  NEEDS TO BE WRITTEN
-    return 0;
+	return 0;
 }
 
 // Takes the three game arrays and zeroes them out.
@@ -154,7 +149,7 @@ void add_two_ship(char *ship_pos) {
                     break;
                 } else {        // roll another orientation
                     int choices[3] = {0,2,3};
-                    orientation = choices[rand() % 3)];
+                    orientation = choices[rand() % 3];
                     break;
                 }
             case 2:             // north orientatino
@@ -164,7 +159,7 @@ void add_two_ship(char *ship_pos) {
                     break;
                 } else {        // roll another orientation
                     int choices[3] = {0,1,3};
-                    orientation = choices[rand() % 3)];
+                    orientation = choices[rand() % 3];
                     break;
                 }
             case 3:             // south orientation
@@ -174,7 +169,7 @@ void add_two_ship(char *ship_pos) {
                     break;
                 } else {        // roll another orientation
                     int choices[3] = {0,1,2};
-                    orientation = choices[rand() % 3)];
+                    orientation = choices[rand() % 3];
                     break;
                 }
         }
@@ -194,36 +189,6 @@ int game_status(char *shots_hit) {
     else return 0;
 }
 
-// sets up serial communication between AVR and PC
-void setup_serial() {
-	// setup baud rate
-	UBRRH = 0;//(unsigned char) ((MYUBRR)>>8);
-	UBRRL = 12;//(unsigned char) MYUBRR;
-
-	UCSRA |= (1<<UDRE)|(1<<U2X); // turn off double speed mode!!
-	// enable receiver and transmitter
-	UCSRB = (1<<RXEN)|(1<<TXEN);
-	// set frame format: 8 data, 2 stop bit
-	UCSRC = (1<<URSEL)|(1<<USBS)|(3<<UCSZ0);
-
-	// configure interrupts
-	UCSRB |= (0<<RXCIE)|(0<<TXCIE)|(0<<UDRIE);
-}
-
-// the receive function. Peter said he is changing this a little.
-void get_request() {
-	receive_buffer[20] = '\0';
-	int x;
-	for(x=0;x<20;x++){
-		while (!(UCSRA & (1<<RXC)));
-		receive_buffer[x] = UDR;
-		if((receive_buffer[x] == '\n')&&(receive_buffer[x-1] == '\r')){
-			receive_buffer[x+1] = '\0';
-			break;
-		}
-	}
-}
-
 // Process request from PC. Returns shot pos if command is FIRE and pos is valid.
 // Returns -1 is command is RESET and -2 if command is wrong or pos is out of range
 int process_request(){
@@ -231,17 +196,17 @@ int process_request(){
 	if (!strncmp(receive_buffer,"RESET",5)){    // if RESET, then return -1
 		return -1;
 	}else if(!strncmp(receive_buffer,"FIRE",4)){    // if FIRE, then get position
-        if ((sscanf(receive_buffer+4,"%d",shot)==1)&&((shot>=0)&&(shot<=19))){  // check for a good value
+        if ((sscanf(receive_buffer+4,"%d",&shot)==1)&&((shot>=0)&&(shot<=19))){  // check for a good value
             char echo[20];
-            sprintf(echo,"Position = %d\r\n",shot);
+            sprintf(echo,"Position = %d",shot);
             transmit(echo);                     // echo good value
-            return temp;                        // return good value
+            return shot;                        // return good value
         }else{
-            transmit("ILLEGAL VALUE\r\n");      // if bad value, tell PC and return -2
+            transmit("ILLEGAL VALUE");      // if bad value, tell PC and return -2
             return -2;
         }
 	}else{
-		transmit("UNIMPLEMENTED\r\n");          // if bad command, tell PC and return -2
+		transmit("UNIMPLEMENTED");          // if bad command, tell PC and return -2
 		return -2;
 	}
 }
@@ -251,8 +216,8 @@ int process_request(){
 void check_hits(char *ship_pos, char *shots_hit, int request) {
     if (ship_pos[request]) {    // check if request is a hit
         shots_hit[request] = 1; // update shots_hit array
-        transmit("HIT\r\n");   // tell PC about success
+        transmit("HIT");   // tell PC about success
     } else {
-        transmit("MISS\r\n");// else tell PC about failure
+        transmit("MISS");// else tell PC about failure
     }
 }
