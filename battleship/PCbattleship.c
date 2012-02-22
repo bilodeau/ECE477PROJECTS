@@ -5,65 +5,84 @@
 #include <fcntl.h>
 #include <ncurses.h>
 #include <string.h>
+#include "baud.h"
 
-#define BAUDRATE B9600
 #define PRINTDEBUG 1
+#define USERCOMMANDBUFFERSIZE 23
 
-int serialport;
+void clear_user_command_buffer();
 void mysetup_serial_port();
+void buffer_input();
 void process_input();
 void configureUI();
 void run_in_loop();
 void transmit(char* c);
 
 struct termios originalsettings;
+int serialport;
+char user_command_buffer[USERCOMMANDBUFFERSIZE];
 
 int main(){
 	PRINTDEBUG&&printf("main called..\n");
 	mysetup_serial_port();
 	PRINTDEBUG&&printf("done setup...\n");
 	configureUI();
+
+	//blank out the input buffer
+	char i;
+	for(i=0; i<43; i++)
+		user_command_buffer[i] = '\0';
 	char buf[21];
-	buf[20] = '\0';
+	buf[0] = '\0';
 	while(1){
-		move(0,0);
-		printw("DATA: ");
-		char i = read(serialport,buf,20);	
-		if (i == -1){
-			// No data read.
+		char i = read(serialport,buf,USERCOMMANDBUFFERSIZE-1);	
+		if (i < 3){
+			// No data read, or we only got "\r\n".
 		}else{
-			buf[i] = '\0';
+			buf[i-2] = '\0';
+			move(0,6);
+			printw("                    ");
+			move(0,6);
+			printw("%s",buf);
+			move(1,6);
+			printw("                    ");
+			move(1,6);
+			printw("%x",buf);
 		}
-		printw("                    ");
-		move(0,6);
-		printw("%s",buf);
 		run_in_loop();
 	}
 	return quit();
 }
+void clear_user_command_buffer(){
+	//blank out the input buffer
+	char i;
+	for(i=0; i<USERCOMMANDBUFFERSIZE; i++)
+		user_command_buffer[i] = '\0';
+	move(5,0);
+	printw("                              ");
+}
 
 void transmit(char* c){
-	if (strlen(c)>20){
-		move(6,0);
-		printw("Command Too Long...");
-		move(10,0);
-		printw("                                ");
-	}else{
-		move(6,0);
-		printw("                   ");
-		int test = write(serialport,&c,strlen(c));
-		move(10,0);
-		printw("               ");
-		move(10,0);
-		printw("bytes sent:  %d",test);
-		move(12,0);
-		printw("last string sENT NOT DONE");
-	}
+	move(6,0);
+	printw("                   ");
+	int test = write(serialport,c,strlen(c));
+	move(10,0);
+	printw("               ");
+	move(10,0);
+	printw("bytes sent:  %d",test);
+	move(12,0);
+	printw("last string sent:");
+	move(13,0);
+	printw("                        ");
+	move(13,0);
+	char temp[strlen(c)-1];
+	snprintf(temp,strlen(c)-2,"%s",c);
+	printw(c);
 }
 
 void mysetup_serial_port(){	
 	PRINTDEBUG&&printf("about to open port...\n");
-	serialport = open("/dev/tty.usbmodemfd1211",O_NONBLOCK|O_RDWR|O_NOCTTY);
+	serialport = open("/dev/tty.usbmodemfd1221",O_NONBLOCK|O_RDWR|O_NOCTTY);
 	PRINTDEBUG&&printf("opened port, now check if null\n");
 	if (serialport  == -1){
 		printf("Error: Unable to open serial port.\n");	
@@ -93,16 +112,17 @@ void mysetup_serial_port(){
 // data display
 void configureUI(){
 	initscr();  // setup the curses screen
-	//cbreak(); // get characters types immediately
-	//noecho(); // don't print anything the user types
-	//nodelay(stdscr,TRUE);
-	move(1,0);
+	cbreak(); // get characters types immediately
+	noecho(); // don't print anything the user types
+	nodelay(stdscr,TRUE);
+	move(0,0);
+	printw("AVR : ");
+	move(4,0);
 	printw("Type 'q' to quit");
 }
 
 void run_in_loop(){
-	refresh();
-	process_input();
+	buffer_input();
 	refresh(); // refreshes curses window
 }
 
@@ -112,30 +132,37 @@ int quit(){
 	return 0;
 }
 
-void process_input(){
-	move(2,0);
-	printw(": ");
-	char c = getch();
-	if (c != ERR){
-		char buf[21];
-		buf[20] = '\0';
-		char i = 0;
-		while((i < 20)&&(c != ERR)&&(c != '\n')&&(c != '\r')){
-			buf[i] = c;
-			c = getch();
-			i++;
+void buffer_input(){
+	char c[2];
+	int character = getch();
+	c[1] = '\0';
+	if (character != ERR){
+		move(15,0);	
+		printw("character pressed:  %x",character);
+		if ((character == '\r')||(character == '\n')){
+			process_input();
+			clear_user_command_buffer();
+		}else if (character == 0x7f){ // handle backspace
+			char bufferlength = strlen(user_command_buffer);
+			if (bufferlength > 0){
+				user_command_buffer[bufferlength-1] = '\0';
+			}
+		}else if(strlen(user_command_buffer)< USERCOMMANDBUFFERSIZE-3){
+			c[0] = character;
+			strcat(user_command_buffer,c);
 		}
-		buf[i] = '\0';
-		move(2,0);
-		printw("                                          ");
-		if ((!strcmp("q",buf))||(!strcmp("Q",buf))){
-			exit(quit());
-		}else{
-			char temp[23];
-			temp[0] = '\0';
-			strcat(temp,buf);
-			strcat(temp,"\r\n");	
-			transmit(temp);
-		}	
+	move(5,0);
+	printw(":                                  ");
+	move(5,0);
+	printw(": %s",user_command_buffer);
+	}
+}
+
+void process_input(){
+	if ((!strcmp("q",user_command_buffer))||(!strcmp("Q",user_command_buffer))){
+		exit(quit());
+	}else{
+		strcat(user_command_buffer,"\r\n");	
+		transmit(user_command_buffer);
 	}
 }
