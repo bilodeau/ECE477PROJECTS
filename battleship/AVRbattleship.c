@@ -61,19 +61,19 @@ void add_three_ship(char *ship_pos) {
     int pos = 1;
     int i, j;
     while (pos) {           // while the current position is full
-        i = (rand() % 5);      // get a random i index
-        j = (rand() % 4);      // get a random j index
-        pos = ship_pos[i*4 + j];    // check if the random i,j position is empty
+        i = (rand() % 4);      // get a random i index
+        j = (rand() % 5);      // get a random j index
+        pos = ship_pos[i + j*4];    // check if the random i,j position is empty
     }
-    ship_pos[i*4 + j] = 1;      // an empty spot is found, so fill in the grid spot
+    ship_pos[i + j*4] = 1;      // an empty spot is found, so fill in the grid spot
 
     char orientation = (rand() % 4);    // get a random orientatin (0,1,2,3 = W,E,N,S, respectively)
     while (orientation != 5) {
         switch (orientation) {
             case 0:             // west orientation
                 if (j > 1) {    // check if too close to wall to draw rest of ship
-                    ship_pos[i*4 + j - 1] = 1;
-                    ship_pos[i*4 + j - 2] = 1;
+                    ship_pos[i + (j - 1)*4] = 1;
+                    ship_pos[i + (j - 2)*4] = 1;
                     orientation = 5;
                     break;
                 } else {
@@ -83,8 +83,8 @@ void add_three_ship(char *ship_pos) {
 
             case 1:             // east orientation
                 if (j < 2) {    // check if too close to wall to draw rest of ship
-                    ship_pos[i*4 + j + 1] = 1;
-                    ship_pos[i*4 + j + 2] = 1;
+                    ship_pos[i + (j + 1)*4] = 1;
+                    ship_pos[i + (j + 2)*4] = 1;
                     orientation = 5;
                     break;
                 } else {
@@ -94,8 +94,8 @@ void add_three_ship(char *ship_pos) {
                 }
             case 2:             // north orientatino
                 if (i > 1) {    // check if too close to wall to draw rest of ship
-                    ship_pos[(i - 1)*4 + j] = 1;
-                    ship_pos[(i - 2)*4 + j] = 1;
+                    ship_pos[(i - 1) + j*4] = 1;
+                    ship_pos[(i - 2) + j*4] = 1;
                     orientation = 5;
                     break;
                 } else {
@@ -105,8 +105,8 @@ void add_three_ship(char *ship_pos) {
                 }
             case 3:             // south orientation
                 if (i < 3) {    // check if too close to wall to draw rest of ship
-                    ship_pos[(i + 1)*4 + j] = 1;
-                    ship_pos[(i + 2)*4 + j] = 1;
+                    ship_pos[(i + 1) + j*4] = 1;
+                    ship_pos[(i + 2) + j*4] = 1;
                     orientation = 5;
                     break;
                 } else {
@@ -123,18 +123,18 @@ void add_two_ship(char *ship_pos) {
     int pos = 1;
     int i, j;
     while (pos) {           // find open spot on grid
-        i = (rand() % 5);      // random 0-4
-        j = (rand() % 4);      // random 0-3
-        pos = ship_pos[i*4 + j];
+        i = (rand() % 4);      // random 0-4
+        j = (rand() % 5);      // random 0-3
+        pos = ship_pos[i + j*4];
     }
-    ship_pos[i*4 + j] = 1;      // fill in grid spot
+    ship_pos[i + j*4] = 1;      // fill in grid spot
 
     char orientation = (rand() % 4);   // get random orientation 0-3
     while (orientation != 5) {
         switch (orientation) {
             case 0:             // west orientation
-                if ((j > 0) && !ship_pos[i*4 + j - 1]) {// check if other ship is there or too close to wall
-                    ship_pos[i*4 + j - 1] = 1;
+                if ((j > 0) && !ship_pos[i + (j - 1)*4]) {// check if other ship is there or too close to wall
+                    ship_pos[i + (j - 1)*4] = 1;
                     orientation = 5;
                     break;
                 } else {        // roll another orientation
@@ -143,8 +143,8 @@ void add_two_ship(char *ship_pos) {
                 }
 
             case 1:             // east orientation
-                if ((j < 3) && !ship_pos[i*4 + j + 1]) {// check if other ship is there or too close to wall
-                    ship_pos[i*4 + j + 1] = 1;
+                if ((j < 3) && !ship_pos[i + (j + 1)*4]) {// check if other ship is there or too close to wall
+                    ship_pos[i + (j + 1)*4] = 1;
                     orientation = 5;
                     break;
                 } else {        // roll another orientation
@@ -153,8 +153,8 @@ void add_two_ship(char *ship_pos) {
                     break;
                 }
             case 2:             // north orientatino
-                if ((i > 0) && !ship_pos[(i - 1)*4 + j]) {// check if other ship is there or too close to wall
-                    ship_pos[(i - 1)*4 + j] = 1;
+                if ((i > 0) && !ship_pos[(i - 1) + j*4]) {// check if other ship is there or too close to wall
+                    ship_pos[(i - 1) + j*4] = 1;
                     orientation = 5;
                     break;
                 } else {        // roll another orientation
@@ -163,8 +163,8 @@ void add_two_ship(char *ship_pos) {
                     break;
                 }
             case 3:             // south orientation
-                if ((i < 4) && !ship_pos[(i + 1)*4 + j]) {// check if other ship is there or too close to wall
-                    ship_pos[(i + 1)*4 + j] = 1;
+                if ((i < 4) && !ship_pos[(i + 1) + j*4]) {// check if other ship is there or too close to wall
+                    ship_pos[(i + 1) + j*4] = 1;
                     orientation = 5;
                     break;
                 } else {        // roll another orientation
