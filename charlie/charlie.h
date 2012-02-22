@@ -52,8 +52,8 @@ void clear(){
 // each byte should be either 0 or 1, representing either an off or on state
 void flash_leds_from_array(char* array){
 	char i;
-	for(i=0; i < 20; i++){
-	//	led_off();
+	for(i=19; i >-1; i--){
+		led_off();
 		if (array[i])
 			led_on_i(i);
 

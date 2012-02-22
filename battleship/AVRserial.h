@@ -11,11 +11,14 @@ void transmit_byte(char byte);
 void receive();
 
 char receive_buffer[21];
+volatile char serial_command_ready = 0;
 
 int test_echo(void) {
 	while(1){
-		receive();
-		transmit(receive_buffer);
+		if (serial_command_ready){
+			serial_command_ready = 0;
+			transmit(receive_buffer);
+		}
 	}
 	return 0;
 }
@@ -35,8 +38,8 @@ void transmit_byte(char byte){
 
 }
 
-void receive(){
-	receive_buffer[20] = '\0';
+ISR(USART_RXC_vect){
+	serial_command_ready = 1;
 	int x;
 	for(x=0;x<20;x++){
 		while (!(UCSRA & (1<<RXC)));
@@ -48,6 +51,13 @@ void receive(){
 		}
 	}
 }
+
+void clear_receive_buffer(){
+	char x;
+	for(x=0;x<21;x++)
+		receive_buffer[x] = '\0';
+}
+
 void setup_serial(){
 	// setup baud rate and frame based on defines in baud.h
 	UBRRH = MYUBRRH;
@@ -57,7 +67,8 @@ void setup_serial(){
 	
 	// enable receiver and transmitter
 	UCSRB = (1<<RXEN)|(1<<TXEN);
-	
-	// configure interrupts
-	UCSRB |= (0<<RXCIE)|(0<<TXCIE)|(0<<UDRIE);	
+
+	// enable receive complete interrupt
+	UCSRB |= (1<<RXCIE);
+	sei();	
 }

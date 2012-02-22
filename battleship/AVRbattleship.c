@@ -4,60 +4,84 @@
 #include "AVRserial.h"
 
 // Most of the above section is probably best placed into an AVR header
-int init_game(char *ship_pos, char *shots_fired, char *shots_hit);
-void add_three_ship(char *ship_pos);
-void add_two_ship(char *ship_pos);
-int game_status(char *shots_hit);
+int init_game();
+void add_three_ship();
+void add_two_ship();
+int game_status();
 int process_request();
-void check_hits(char *ship_pos, char *shots_hit, int request);
+void check_hits(int request);
 
+unsigned int mode = 0;
+char ship_pos[20], shots_fired[20], shots_hit[20];  // create arrays for game
 
 int main() {
     setup_serial();                                 // initialize serial port
+	TCCR1A = 0;
+	TCCR1B = 0x0b;
+	OCR1A = 20000;
+	TIMSK = 16;
+	sei(); // enable interrupts globally
 
-	char ship_pos[20], shots_fired[20], shots_hit[20];  // create arrays for game
-    	init_game(ship_pos, shots_fired, shots_hit);        // zero out arrays and add ships to game
-
-    	char gameover = 0;
-    while (!gameover) {         // until game is over
-        receive();          // get request from PC
-        int request = process_request();    // process request
+	while(!serial_command_ready){
+		rand();
+	}
+	init_game();        // zero out arrays and add ships to game
+    while (1) {         // until game is over
+        
+	if (serial_command_ready){
+	serial_command_ready = 0;
+	int request = process_request();    // process request
         if (request > -1) {                 // if request >= 0, then it is a shot
             shots_fired[request] = 1;       // update shots fired array
-            check_hits(ship_pos, shots_fired, shots_hit, request);  // check if shot is successful
-
-            update_display();               // update LED display. NEEDS TO BE WRITTEN
-
-            gameover = game_status(shots_hit);       // check if game is over
-        } else if (request == -1) {         // if request == -1, then RESET the game
-
-            show_ships();                   // show ship positions.  NEEDS TO BE WRITTEN
-
-            init_game(ship_pos, shots_fired, shots_hit);    // reinitialize arrays of game
-
-            update_display();               // update LED display.  NEEDS TO BE WRITTEN
+            check_hits(request);  // check if shot is successful
+            if (game_status()){       // check if game is over
+        	// animate yay!
+		mode = 2;
+		}
+	} else if (request == -1) {         // if request == -1, then RESET the game
+            //show ships
+		mode = 2;
         }
+	}
+	if(mode == 0){
+		flash_leds_from_array(shots_fired);
+	}else if(mode == 1){
+		flash_leds_from_array(shots_hit);
+	}else{
+		flash_leds_from_array(ship_pos);
+    	}
     }
-    play_success();         // display Winning animation.  NEEDS TO BE WRITTEN
 	return 0;
+}
+
+ISR(TIMER1_COMPA_vect){	
+	if (mode < 2){
+		mode ^= 1; // toggle between all shots mode to flashing hits mode
+	}else{
+		mode++;
+	}
+	if (mode > 100){
+		mode = 0;
+		init_game();
+	}
 }
 
 // Takes the three game arrays and zeroes them out.
 // Then adds a 3-ship and a 2-ship to the ship_pos array
-int init_game(char *ship_pos, char *shots_fired, char *shots_hit) {
+int init_game() {
     int i;
     for (i = 0; i < 20; i++) {  // zero out char arrays
         shots_fired[i] = 0;
         shots_hit[i] = 0;
         ship_pos[i] = 0;
     }
-    add_three_ship(ship_pos);       // add three_ship
-    add_two_ship(ship_pos);         // add two ship
+    add_three_ship();       // add three_ship
+    add_two_ship();         // add two ship
     return 0;                // return game
 }
 
 // Adds a ship of length three to the ship_pos array
-void add_three_ship(char *ship_pos) {
+void add_three_ship() {
     int pos = 1;
     int i, j;
     while (pos) {           // while the current position is full
@@ -119,7 +143,7 @@ void add_three_ship(char *ship_pos) {
 }
 
 // Adds a ship of length two to the ship_pos array.
-void add_two_ship(char *ship_pos) {
+void add_two_ship() {
     int pos = 1;
     int i, j;
     while (pos) {           // find open spot on grid
@@ -177,7 +201,7 @@ void add_two_ship(char *ship_pos) {
 }
 
 // Queries game status. Returns 1 if game is won, 0 otherwise.
-int game_status(char *shots_hit) {
+int game_status() {
     int count = 0;              // count variable
     int i;
     for (i = 0; i< 20; i++) {   // count up number of hits
@@ -192,7 +216,7 @@ int game_status(char *shots_hit) {
 // Process request from PC. Returns shot pos if command is FIRE and pos is valid.
 // Returns -1 is command is RESET and -2 if command is wrong or pos is out of range
 int process_request(){
-	int temp;
+	int shot;
 	if (!strncmp(receive_buffer,"RESET",5)){    // if RESET, then return -1
 		return -1;
 	}else if(!strncmp(receive_buffer,"FIRE",4)){    // if FIRE, then get position
@@ -213,7 +237,7 @@ int process_request(){
 
 // Checks if a shot is a HIT and updates the shots_hit array accordingly
 //  If it is a hit, transmits "HIT!\r\n" to PC, "MISS :(\r\n" otherwise.
-void check_hits(char *ship_pos, char *shots_hit, int request) {
+void check_hits(int request) {
     if (ship_pos[request]) {    // check if request is a hit
         shots_hit[request] = 1; // update shots_hit array
         transmit("HIT");   // tell PC about success

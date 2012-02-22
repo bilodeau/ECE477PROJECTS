@@ -24,8 +24,8 @@ prog : $(TARGET).hex $(TARGET).eeprom
 erase :
 	 avrdude $(ADFLAGS) -E noreset -e
 clean :
-	rm -f *.hex *.obj *.o
+	rm -f *.hex *.obj *.o *.eeprom
 
 fuses:
-	avrdude $(ADFLAGS) -U lfuse:w:0xE1:m #http://www.engbedded.com/cgi-bin/fc.cgi 
+	avrdude $(ADFLAGS) -U lfuse:w:0xE4:m #http://www.engbedded.com/cgi-bin/fc.cgi 
 	avrdude $(ADFLAGS) -U hfuse:w:0xd9:m
