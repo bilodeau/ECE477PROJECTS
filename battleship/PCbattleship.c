@@ -9,10 +9,10 @@
 
 #define PRINTDEBUG 1
 #define USERCOMMANDBUFFERSIZE 23
-#define SERIALPORT "/dev/tty.usbmodemfd1231"
+#define SERIALPORTDEFAULT "/dev/tty.usbmodemfd1221"
 
 void clear_user_command_buffer();
-void mysetup_serial_port();
+void mysetup_serial_port(char* serial_port_name);
 void buffer_input();
 void process_input();
 void configureUI();
@@ -23,9 +23,17 @@ struct termios originalsettings;
 int serialport;
 char user_command_buffer[USERCOMMANDBUFFERSIZE];
 
-int main(){
+int main(int argc, char *argv[]){
+	char* serial_port_name;
+	if (argc ==1){
+		serial_port_name = SERIALPORTDEFAULT;
+	}else if (argc == 2){ // if a command line argument was supplied
+		serial_port_name = argv[1];
+	}else if(argc > 2){
+		printf("Usage is: monitor [serial port name]\n");
+	}
 	PRINTDEBUG&&printf("main called..\n");
-	mysetup_serial_port();
+	mysetup_serial_port(serial_port_name);
 	PRINTDEBUG&&printf("done setup...\n");
 	configureUI();
 
@@ -81,12 +89,12 @@ void transmit(char* c){
 	printw(c);
 }
 
-void mysetup_serial_port(){	
+void mysetup_serial_port(char* serial_port_name){	
 	PRINTDEBUG&&printf("about to open port...\n");
-	serialport = open(SERIALPORT,O_NONBLOCK|O_RDWR|O_NOCTTY);
+	serialport = open(serial_port_name,O_NONBLOCK|O_RDWR|O_NOCTTY);
 	PRINTDEBUG&&printf("opened port, now check if null\n");
 	if (serialport  == -1){
-		printf("Error: Unable to open serial port.\n");	
+		printf("Error: Unable to open serial port: %s\n",serial_port_name);	
 		exit(1);
 	}
 	

@@ -3,7 +3,6 @@
 #include "../charlie/charlie.h"
 #include "AVRserial.h"
 
-// Most of the above section is probably best placed into an AVR header
 int init_game();
 void add_three_ship();
 void add_two_ship();
@@ -13,19 +12,17 @@ void check_hits(int request);
 void setup_interrupt();
 
 unsigned int mode = 0;
+char init_game_flag = 1;
 char ship_pos[20], shots_fired[20], shots_hit[20];  // create arrays for game
 
 int main() {
 	setup_serial();                    	// initialize serial port
 	setup_interrupt();			// setup interrupt
 	sei(); // enable interrupts globally
-
-	while(!serial_command_ready) {	// discard pseudorandom nums until first fire command
-		rand();
-	}
-	
-	init_game();        // zero out arrays and add ships to game
-    	while (1) {         // until game is over
+	while (1) {         // until game is over
+		if (init_game_flag)
+			init_game();        // zero out arrays and add ships to game
+		
 		if (serial_command_ready){
 			serial_command_ready = 0;
 			int request = process_request();    // process request
@@ -34,7 +31,7 @@ int main() {
             			check_hits(request);  // check if shot is successful
             			if (game_status()){       // check if game is over
         				// animate yay!
-					mode = 2;
+					mode = 100;
 				}
 			} else if (request == -1) {         // if request == -1, then RESET the game
             			//show ships
@@ -42,32 +39,45 @@ int main() {
         		}
 		}
 		if(mode == 0){
-			flash_leds_from_array(shots_fired);
+			flash_leds_from_array_AND_NOT(shots_fired,shots_hit);
 		} else if (mode == 1) {
-			flash_leds_from_array(shots_hit);
-		} else {
+			flash_leds_from_array(shots_fired);
+		} else if(mode < 60){
 			flash_leds_from_array(ship_pos);
-    		}
+    		} else {
+			flash_leds_from_array(animation_flags);
+		}	
     	}
     	return 0;
 }
 
 ISR(TIMER1_COMPA_vect){	
-	if (mode < 2){
+	if (mode ==  60){ // timed out, restart the game		
+		init_game_flag = 1;
+	}else if(mode == 101){
+		radar_animation_loop(); // radar animation mode is ended by user input
+	}else if (mode > 60){ // explosion mode counts down from 100 to 60 
+		explosion_animation_loop();
+		mode--;
+	}else if (mode < 2){
 		mode ^= 1; // toggle between all shots mode to flashing hits mode
-	}else{
-		mode++;
-	}
-	if (mode > 100){
-		mode = 0;
-		init_game();
+	}else { // mode is 3-59 and we're showing ships
+		mode++; // show ships mode counts up from 2 to 60
 	}
 }
 
 // Takes the three game arrays and zeroes them out.
 // Then adds a 3-ship and a 2-ship to the ship_pos array
 int init_game() {
-    int i;
+	init_game_flag = 0;
+	setup_animation();
+	mode = 101;
+	while(!serial_command_ready){
+		rand(); // discard pseudo random numbers
+		flash_leds_from_array(animation_flags);
+	}
+	mode = 0;
+	int i;
     for (i = 0; i < 20; i++) {  // zero out char arrays
         shots_fired[i] = 0;
         shots_hit[i] = 0;
@@ -248,6 +258,6 @@ void check_hits(int request) {
 void setup_interrupt() {
 	TCCR1A = 0;
 	TCCR1B = 0x0b;
-	OCR1A = 20000;
+	OCR1A = 8000;
 	TIMSK = 16;
 }

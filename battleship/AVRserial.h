@@ -39,6 +39,8 @@ void transmit_byte(char byte){
 }
 
 ISR(USART_RXC_vect){
+	DDRB = 2;
+	PORTB = 0;
 	serial_command_ready = 1;
 	int x;
 	for(x=0;x<20;x++){
@@ -50,6 +52,7 @@ ISR(USART_RXC_vect){
 			break;
 		}
 	}
+	PORTB = 2;
 }
 
 void clear_receive_buffer(){

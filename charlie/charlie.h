@@ -12,10 +12,9 @@
 	//	XXXX 1001  //flags[1]
 	//	XXXX 1001  //flags[0]
 char flags[5];
-
+char animation_flags[20];
+char animation_counter = 0;
 void led_on_i(int index);
-void led_on(char x, char y);
-void led_off();
 void flash_leds();
 void clear();
 void lightrow(char row);
@@ -24,6 +23,171 @@ void lightled(char index);
 void rowcolpattern(int counter);
 void byindex(int index);
 
+
+void setup_animation(){
+	char i;
+	for(i=0;i<20;i++)
+		animation_flags[i] = 0;
+}
+void explosion_animation_loop(){
+	animation_counter++;
+	animation_counter %= 4;
+	setup_animation(); // clears the board
+	switch(animation_counter){
+		case 0:	
+			animation_flags[9] = 1;		
+			animation_flags[10] = 1;
+			break;
+		case 1:	
+			animation_flags[9] = 1;		
+			animation_flags[10] = 1;
+			animation_flags[5] = 1;
+			animation_flags[6] = 1;
+			animation_flags[14] = 1;
+			animation_flags[13] = 1;
+			break;
+		case 2:	
+			animation_flags[0] = 1;
+			animation_flags[1] = 1;
+			animation_flags[2] = 1;
+			animation_flags[3] = 1;
+			animation_flags[4] = 1;
+			animation_flags[7] = 1;
+			animation_flags[8] = 1;
+			animation_flags[11] = 1;
+			animation_flags[12] = 1;
+			animation_flags[15] = 1;
+			animation_flags[16] = 1;
+			animation_flags[19] = 1;
+			animation_flags[17] = 1;
+			animation_flags[18] = 1;
+			break;
+		case 3:	
+			break; // blank frame
+	}
+}
+void radar_animation_loop(){
+	animation_counter++;
+	animation_counter %= 14;
+
+	switch(animation_counter){
+		case 0:
+			// turn off previous flags
+			animation_flags[5] = 0;
+			animation_flags[1] = 0;
+			// turn on next flags
+			animation_flags[5] = 1;
+			animation_flags[0] = 1;
+			break;
+		case 1:
+			// turn off previous flags
+			animation_flags[5] = 0;
+			animation_flags[0] = 0;
+			// turn on next flags
+			animation_flags[5] = 1;
+			animation_flags[4] = 1;
+			break;
+		case 2:
+			// turn off previous flags
+			animation_flags[5] = 0;
+			animation_flags[4] = 0;
+			// turn on next flags
+			animation_flags[9] = 1;
+			animation_flags[8] = 1;
+			break;
+		case 3:
+			// turn off previous flags
+			animation_flags[9] = 0;
+			animation_flags[8] = 0;
+			// turn on next flags
+			animation_flags[13] = 1;
+			animation_flags[12] = 1;
+			break;
+		case 4:
+			// turn off previous flags
+			animation_flags[13] = 0;
+			animation_flags[12] = 0;
+			// turn on next flags
+			animation_flags[13] = 1;
+			animation_flags[16] = 1;
+			break;
+		case 5:
+			// turn off previous flags
+			animation_flags[13] = 0;
+			animation_flags[16] = 0;
+			// turn on next flags
+			animation_flags[13] = 1;
+			animation_flags[17] = 1;
+			break;
+		case 6:
+			// turn off previous flags
+			animation_flags[13] = 0;
+			animation_flags[17] = 0;
+			// turn on next flags
+			animation_flags[14] = 1;
+			animation_flags[18] = 1;
+			break;
+		case 7:
+			// turn off previous flags
+			animation_flags[14] = 0;
+			animation_flags[18] = 0;
+			// turn on next flags
+			animation_flags[14] = 1;
+			animation_flags[19] = 1;
+			break;
+		case 8:
+			// turn off previous flags
+			animation_flags[14] = 0;
+			animation_flags[19] = 0;
+			// turn on next flags
+			animation_flags[14] = 1;
+			animation_flags[15] = 1;
+			break;
+		case 9:
+			// turn off previous flags
+			animation_flags[14] = 0;
+			animation_flags[15] = 0;
+			// turn on next flags
+			animation_flags[10] = 1;
+			animation_flags[11] = 1;
+			break;
+		case 10:
+			// turn off previous flags
+			animation_flags[10] = 0;
+			animation_flags[11] = 0;
+			// turn on next flags
+			animation_flags[6] = 1;
+			animation_flags[7] = 1;
+			break;
+		case 11:
+			// turn off previous flags
+			animation_flags[6] = 0;
+			animation_flags[7] = 0;
+			// turn on next flags
+			animation_flags[6] = 1;
+			animation_flags[3] = 1;
+			break;
+		case 12:
+			// turn off previous flags
+			animation_flags[6] = 0;
+			animation_flags[3] = 0;
+			// turn on next flags
+			animation_flags[6] = 1;
+			animation_flags[2] = 1;
+			break;
+		case 13:
+			// turn off previous flags
+			animation_flags[6] = 0;
+			animation_flags[2] = 0;
+			// turn on next flags
+			animation_flags[5] = 1;
+			animation_flags[1] = 1;
+			break;
+		}
+	// these two leds will be 'constant on'
+	animation_flags[9] = 1;
+	animation_flags[10] = 1;
+}
 void lightled(char index){
 	flags[index/4] |= 1<<(index%4);
 }
@@ -52,14 +216,29 @@ void clear(){
 // each byte should be either 0 or 1, representing either an off or on state
 void flash_leds_from_array(char* array){
 	char i;
-	for(i=19; i >-1; i--){
-		led_off();
-		if (array[i])
+	for(i=0; i <20; i++){
+		if (array[i]){
 			led_on_i(i);
-
+			volatile char j;
+			for(j=0;j<100;j++);
+			led_off();
+		}
 	}
 }
 
+// requires as a parameter a pointer to an 20-byte long array
+// each byte should be either 0 or 1, representing either an off or on state
+void flash_leds_from_array_AND_NOT(char* array1, char* array2){
+	char i;
+	for(i=0; i <20; i++){
+		if (array1[i] && (!array2[i])){
+			led_on_i(i);
+			volatile char j;
+			for(j=0;j<100;j++);
+			led_off();
+		}
+	}
+}
 void flash_leds(){
 		char i;
 		char j;
@@ -92,8 +271,8 @@ void led_off(){
 // this is specific to our exact wiring and may not match the circuit
 // shown in the schematic
 void led_on_i(int index){
-	int highpin;
-	int lowpin;
+	int highpin = 0;
+	int lowpin = 0;
 	switch(index){
 		case 0:
 			highpin = 4;
