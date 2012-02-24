@@ -10,48 +10,46 @@ void add_two_ship();
 int game_status();
 int process_request();
 void check_hits(int request);
+void setup_interrupt();
 
 unsigned int mode = 0;
 char ship_pos[20], shots_fired[20], shots_hit[20];  // create arrays for game
 
 int main() {
-    setup_serial();                                 // initialize serial port
-	TCCR1A = 0;
-	TCCR1B = 0x0b;
-	OCR1A = 20000;
-	TIMSK = 16;
+	setup_serial();                    	// initialize serial port
+	setup_interrupt();			// setup interrupt
 	sei(); // enable interrupts globally
 
-	while(!serial_command_ready){
+	while(!serial_command_ready) {	// discard pseudorandom nums until first fire command
 		rand();
 	}
+	
 	init_game();        // zero out arrays and add ships to game
-    while (1) {         // until game is over
-        
-	if (serial_command_ready){
-	serial_command_ready = 0;
-	int request = process_request();    // process request
-        if (request > -1) {                 // if request >= 0, then it is a shot
-            shots_fired[request] = 1;       // update shots fired array
-            check_hits(request);  // check if shot is successful
-            if (game_status()){       // check if game is over
-        	// animate yay!
-		mode = 2;
+    	while (1) {         // until game is over
+		if (serial_command_ready){
+			serial_command_ready = 0;
+			int request = process_request();    // process request
+        		if (request > -1) {                 // if request >= 0, then it is a shot
+            			shots_fired[request] = 1;       // update shots fired array
+            			check_hits(request);  // check if shot is successful
+            			if (game_status()){       // check if game is over
+        				// animate yay!
+					mode = 2;
+				}
+			} else if (request == -1) {         // if request == -1, then RESET the game
+            			//show ships
+				mode = 2;
+        		}
 		}
-	} else if (request == -1) {         // if request == -1, then RESET the game
-            //show ships
-		mode = 2;
-        }
-	}
-	if(mode == 0){
-		flash_leds_from_array(shots_fired);
-	}else if(mode == 1){
-		flash_leds_from_array(shots_hit);
-	}else{
-		flash_leds_from_array(ship_pos);
+		if(mode == 0){
+			flash_leds_from_array(shots_fired);
+		} else if (mode == 1) {
+			flash_leds_from_array(shots_hit);
+		} else {
+			flash_leds_from_array(ship_pos);
+    		}
     	}
-    }
-	return 0;
+    	return 0;
 }
 
 ISR(TIMER1_COMPA_vect){	
@@ -244,4 +242,12 @@ void check_hits(int request) {
     } else {
         transmit("MISS");// else tell PC about failure
     }
+}
+
+// Setup interrupt
+void setup_interrupt() {
+	TCCR1A = 0;
+	TCCR1B = 0x0b;
+	OCR1A = 20000;
+	TIMSK = 16;
 }
