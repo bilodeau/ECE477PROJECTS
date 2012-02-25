@@ -3,21 +3,23 @@
 #include <stdio.h>
 #include "charlie.h"
 
-#define FRAMEPERIOD 1500
-#define MODEPERIOD 40000
+#define FRAMEPERIOD 750
+#define MODEPERIOD 20000
 
 int int_counter = 0; // counter to track 'frame' updates
 int mode = 0; // counter to track the current display mode
 
 int main(void) {
+DDRB = 3;
+PORTB = 2;
 	TCCR1A = 0;  // setup Timer1 control registers
 		     // we don't need any output pins
 		     // use WGM mode 4
 		     // and clock prescalar 1/256
-	TCCR1B = 0x0c;
+	TCCR1B = 0x0d;
 	OCR1A = MODEPERIOD;  // this is the TOP value for the timer
 	OCR1B = FRAMEPERIOD; 	// this is the shorter interrupt period
-	TIMSK1 = 24;	// enable compare match interrupts
+	TIMSK1 = 6;	// enable compare match interrupts
 			// on OCR1A and OCR1B
 	sei();		// enable interrupts globally
 	clear();	// clear all the LED bit flags
@@ -29,6 +31,7 @@ int main(void) {
 
 // This interrupt routine is called when the timer matches OCR1A
 ISR(TIMER1_COMPA_vect){
+	PORTB ^= 2;
 	mode++;	// increment the mode counter
 	int_counter = 0; // reset the step counter to start at frame 0
 }

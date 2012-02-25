@@ -1,6 +1,7 @@
 #include <avr/io.h>
-#include <avr/interrupt.h>
-#include <stdio.h>
+
+#define PORT PORTC
+#define DDR DDRC
 
 	// store 'on' flags in the low four bits of each char
 	// each char represents a single row starting at the bottom
@@ -262,8 +263,8 @@ void led_on(char row,char col){
 
 //called when we're not illuminating any LED and we want to shut everything off
 void led_off(){
-	DDRC = 0; // set all pins to input mode
-	PORTC = 0;  //turn off all pullup resistors
+	DDR = 0; // set all pins to input mode
+	PORT = 0;  //turn off all pullup resistors
 }
 
 // picks the right pins to use for charlieplexing
@@ -354,8 +355,8 @@ void led_on_i(int index){
 			lowpin = 4;
 			break;
 	}
-	DDRC = 0;
-	PORTC = 0;
-	DDRC = (1<<highpin)|(1<<lowpin);
-	PORTC = (1<<highpin);
+	DDR = 0;
+	PORT = 0;
+	DDR = (1<<highpin)|(1<<lowpin);
+	PORT = (1<<highpin);
 }
