@@ -2,10 +2,10 @@ CC=avr-gcc
 CFLAGS=-g -Os -Wall -mcall-prologues -mmcu=atmega328p
 OBJ2HEX=avr-objcopy
 #UISP=/usr/local/bin/uisp
-TARGET=demo
+TARGET=AVRbattleship
 ADFLAGS=-p atmega328p -c avrispmkII -P usb
 
-.PHONY: fuses prog erase monitor
+.PHONY: fuses prog erase demo monitor
 
 
 prog : $(TARGET).hex $(TARGET).eeprom
@@ -31,5 +31,8 @@ fuses:
 	avrdude $(ADFLAGS) -U hfuse:w:0xd9:m
 	avrdude $(ADFLAGS) -U efuse:w:0xff:m
 
+demo:
+	avrdude $(ADFLAGS) -V -U flash:w:$(TARGET).hex:i
+
 monitor:
-	gcc PCbattleship.c -o monitor -lncurses
+	gcc PCmonitor.c -o monitor -lncurses

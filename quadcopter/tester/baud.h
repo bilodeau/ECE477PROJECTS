@@ -1,5 +1,0 @@
-#define MYUBRRH 0
-#define MYUBRRL 103
-#define MYUCSRA (1<<UDRE0)|(1<<U2X0)
-#define MYUCSRC (0<<UMSEL01)|(0<<UMSEL00)|(1<<USBS0)|(3<<UCSZ00)
-#define PCBAUDRATE B9600

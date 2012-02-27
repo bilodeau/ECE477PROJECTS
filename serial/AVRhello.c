@@ -37,7 +37,7 @@ void init_serial(void)
 {
    UBRRH=0;
    UBRRL=12; // 4800 BAUD FOR 1MHZ SYSTEM CLOCK
-   UCSRA |= 2; // turn off double speed mode!!!
+  UCSRA |= 2; // turn off double speed mode!!!
 	UCSRC= (1<<URSEL)|(1<<USBS)|(3<<UCSZ0) ;  // 8 BIT NO PARITY 2 STOP
    UCSRB=(1<<RXEN)|(1<<TXEN)  ; //ENABLE TX AND RX ALSO 8 BIT
 }   

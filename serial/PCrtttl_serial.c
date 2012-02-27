@@ -8,10 +8,10 @@
 #include <fcntl.h>
 #include "rtttl.h"
 #include "rtttl_modular.h"
+#include "baud.h"
 
 #define SOUNDOFF 1
 #define PRINTDEBUG 1
-#define BAUDRATE 9600
 
 void play_tune(struct note notes[], int tempo, int count, int serialport);
 void mysetup_serial_port(int *serialport);
@@ -68,7 +68,7 @@ int transmit_note(int serialport, int divisor) {
 		PRINTDEBUG&&printf("Command Too Long...");
 	} else {
 		int test = write(serialport,string,strlen(string));
-		PRINTDEBUG&&printf("string sent to AVR: %s\nbytes sent to AVR:  %d\n",string,test);
+		PRINTDEBUG&&printf("string sent to AVR: %sbytes sent to AVR:  %d\n",string,test);
 	}
 	return 0;
 }
@@ -84,10 +84,10 @@ int query_note(int serialport) {
 	char buffer[21];
 	int test = read(serialport, buffer, 20);
 	if (test == -1) {
-		printf("AVR did not send response to query.\n");
+		printf("AVR did not send response to query.\n\n");
 	}else {
 		buffer[test] = '\0';
-		PRINTDEBUG&&printf("string received from AVR: %s\nbytes received from AVR:  %d\n",buffer,test);	
+		PRINTDEBUG&&printf("string received from AVR: %sbytes received from AVR:  %d\n\n",buffer,test);
 	}		 
 }
 
@@ -112,8 +112,8 @@ void mysetup_serial_port(int *serialport) {
 	attribs.c_oflag |= 0;
 	attribs.c_lflag &= ~ICANON;
 	cfmakeraw(&attribs);
-	cfsetispeed(&attribs,BAUDRATE);
-	cfsetospeed(&attribs,BAUDRATE);
+	cfsetispeed(&attribs,PCBAUDRATE);
+	cfsetospeed(&attribs,PCBAUDRATE);
 
 	tcsetattr(*serialport,TCSANOW,&attribs);
 	PRINTDEBUG&&printf("done with attributes...\n");

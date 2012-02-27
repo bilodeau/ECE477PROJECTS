@@ -37,7 +37,7 @@ int main() {
 				}
 			} else if (request == -1) {         // if request == -1, then RESET the game
             			//show ships
-				mode = 2;
+				mode = 40;// number must be between 2 and 60, lower number means longer wait 
         		}
 		}
 		if(mode == 0){
@@ -260,6 +260,6 @@ void check_hits(int request) {
 void setup_interrupt() {
 	TCCR1A = 0;
 	TCCR1B = 0x0b;
-	OCR1A = 1000;
-	TIMSK1 = 16;
+	OCR1A = 8000;
+	TIMSK1 = (1<<OCIE1A);
 }

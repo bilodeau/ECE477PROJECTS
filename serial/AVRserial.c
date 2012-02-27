@@ -3,11 +3,8 @@
 #include <avr/interrupt.h>
 #include <stdio.h>
 #include <string.h>
-#include"../charlie/charlie.h"
-
-#define BAUDRATE 9600
-#define FOSC 1843200
-#define MYUBRR FOSC/16/BAUDRATE-1
+#include "../charlie/charlie.h"
+#include "baud.h"
 
 void setup_serial();
 void setup_PWM();
@@ -88,14 +85,14 @@ void setup_PWM(){
 
 void setup_serial(){
 	// setup baud rate
-	UBRRH = 0;//(unsigned char) ((MYUBRR)>>8);
-	UBRRL = 12;//(unsigned char) MYUBRR;
+	UBRRH = MYUBRRH;// 0;//(unsigned char) ((MYUBRR)>>8);
+	UBRRL = MYUBRRL;//12;//(unsigned char) MYUBRR;
 	
-	UCSRA |= (1<<UDRE)|(1<<U2X); // turn off double speed mode!!
+	UCSRA |= MYUCSRA;//(1<<UDRE)|(1<<U2X); // turn on double speed mode!!
 	// enable receiver and transmitter
 	UCSRB = (1<<RXEN)|(1<<TXEN);
 	// set frame format: 8 data, 2 stop bit
-	UCSRC = (1<<URSEL)|(1<<USBS)|(3<<UCSZ0);
+	UCSRC = MYUCSRC;//(1<<URSEL)|(1<<USBS)|(3<<UCSZ0);
 	
 	// configure interrupts
 	UCSRB |= (0<<RXCIE)|(0<<TXCIE)|(0<<UDRIE);	
