@@ -1,10 +1,12 @@
+// THIS VERSION OF CODE IS FOR ATMEGA328P
 #include <avr/io.h>
 #include <avr/interrupt.h>
 #include <stdio.h>
 #include <string.h>
 #include "baud.h"
 
-// THIS VERSION OF CODE IS FOR ATMEGA328P
+
+#define FLASHONSERIAL 0 // flashes the led on PB1 every time serial communication happens
 
 void setup_serial();
 void transmit(char* str);
@@ -25,15 +27,14 @@ int test_echo(void) {
 }
 
 void transmit(char* str){
-	DDRB = 2;
-	PORTB = 0;
+	FLASHONSERIAL&&(DDRB = 2,PORTB = 0);
 	char x;
 	for(x=0; x <strlen(str);x++){
 		transmit_byte(str[x]);
 	}
 	transmit_byte('\r');
 	transmit_byte('\n');
-	PORTB = 2;
+	FLASHONSERIAL&&(PORTB = 2);
 }
 
 void transmit_byte(char byte){
@@ -43,8 +44,7 @@ void transmit_byte(char byte){
 }
 
 ISR(USART_RX_vect){
-	DDRB = 2;
-	PORTB = 0;
+	FLASHONSERIAL&&(DDRB = 2,PORTB = 0);
 	serial_command_ready = 1;
 	int x;
 	for(x=0;x<20;x++){
@@ -56,7 +56,7 @@ ISR(USART_RX_vect){
 			break;
 		}
 	}
-	PORTB = 2;
+	FLASHONSERIAL&&(PORTB = 2);
 }
 
 void clear_receive_buffer(){
