@@ -9,7 +9,7 @@
 
 #define LOG 1// saves all commands into a log file
 #define PRINTDEBUG 1
-#define COMMANDBUFFERSIZE 21
+#define COMMANDBUFFERSIZE 41
 #define SERIALPORTDEFAULT "/dev/tty.usbmodemfd1221"
 
 void clear_serial_command_buffer();
@@ -18,7 +18,6 @@ void mysetup_serial_port(char* serial_port_name);
 void buffer_input();
 void process_input();
 void configureUI();
-void run_in_loop();
 void transmit(char* c);
 void read_from_serial_port();
 void post_serial_command();
@@ -82,6 +81,7 @@ void read_from_serial_port(){
 			clear_serial_command_buffer();
 		}else if (serial_command_index > COMMANDBUFFERSIZE-1){
 			sprintf(serial_command_buffer,"Command Too Long.");
+			post_serial_command();
 			clear_serial_command_buffer();
 		}
 	}
@@ -89,11 +89,11 @@ void read_from_serial_port(){
 
 void post_serial_command(){
 	move(0,6);
-	printw("                    ");
+	printw("                                        ");
 	move(0,6);
 	printw("%s",serial_command_buffer);
 	move(1,6);
-	printw("                                        ");
+	printw("                                                            ");
 	move(1,6);
 	char i;
 	for (i=0; i<serial_command_index-1;i++)
@@ -112,7 +112,7 @@ void clear_user_command_buffer(){
 	for(i=0; i<COMMANDBUFFERSIZE; i++)
 		user_command_buffer[i] = '\0';
 	move(5,0);
-	printw(":                               ");
+	printw(":                                                   ");
 }
 
 void transmit(char* c){
@@ -196,7 +196,7 @@ void buffer_input(){
 		if ((character == '\r')||(character == '\n')){
 			process_input();
 			clear_user_command_buffer();
-		}else if (character == 0x7f){ // handle backspace
+		}else if (character == 0x7f){ // handle delete
 			char bufferlength = strlen(user_command_buffer);
 			if (bufferlength > 0){
 				user_command_buffer[bufferlength-1] = '\0';
