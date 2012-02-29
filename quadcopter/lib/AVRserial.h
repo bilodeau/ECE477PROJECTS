@@ -5,7 +5,7 @@
 #include "baud.h"
 
 
-#define FLASHONSERIAL 1 // flashes the led on PB1 every time serial communication happens
+#define FLASHONSERIAL 0 // flashes the led on PB1 every time serial communication happens
 #define RECEIVEBUFFERSIZE 20
 
 void setup_serial();

@@ -7,10 +7,11 @@
 
 void setup_delay(){
 	TCCR0A = 0;
-	TCCR0B = 2; // use prescalar 8 so the clock counts in milliseconds
+	TCCR0B = 5; // use prescalar 1024 so the clock counts in units of 128 microseconds
 }
 
 void delay(unsigned char millis){
+	// delay for 8*millis as each tick is 128 us
 	TCNT0 = 0;
-	while(TCNT0 <= millis);
+	while(TCNT0 <= 8*millis);
 }

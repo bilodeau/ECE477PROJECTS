@@ -22,7 +22,8 @@ void process_i2c_bus_write(char write_address, char* data, char numbytes);
 void send_stop_condition();
 void get_status_register();
 
-short ac1, ac2, ac3, ac4, ac5, ac6, b1, b2, mb, mc, md; // the 11 calibration values
+short ac1, ac2, ac3, b1, b2, mb, mc, md; // the 11 calibration values
+unsigned short ac4,ac5,ac6;
 short temperature, pressure;     // the temp and pressure vars from the device
 
 int main(){
@@ -76,7 +77,7 @@ void get_status_register(){
     char temp[75];
     sprintf(temp, "ac1 = %d, ac2= %d, ac3= %d", ac1, ac2, ac3);
     transmit(temp);
-    sprintf(temp, "ac4= %d, ac5= %d, ac6= %d", ac4, ac5, ac6);
+    sprintf(temp, "ac4= %u, ac5= %u, ac6= %u", ac4, ac5, ac6);
     transmit(temp);
     sprintf(temp, "b1= %d, b2= %d", b1, b2);
     transmit(temp);
@@ -87,6 +88,8 @@ void get_status_register(){
 // gets the temperature and pressure data
 void query_barometer(){
 	char buffer[2];
+	char count;
+	for (count=0;count<2;count++){
 	buffer[0] = 0xFA;   // address of the control register. must be set to either temp or pressure mode
 	buffer[1] = 0x2E;   // control byte specifying temperature mode
 
@@ -95,7 +98,7 @@ void query_barometer(){
 	send_stop_condition();
 
 	// need to wait 4.5 ms here
-	delay(10);
+	delay(15);
 
 	buffer[0] = 0xF6;       // the data register
 	buffer[1] = '\0';       // clear second byte just in case
@@ -106,10 +109,11 @@ void query_barometer(){
 	FLASHONI2C&&(PORTB = 2);
 	send_stop_condition();
 	temperature = (buffer[0]<<8)|buffer[1];   // reassemble the 16-bit value
-
+	} // READS TWICE
 	// ** This only reads the temperature data once.  The spec sheet mentioned doing it twice.
 
 
+	for (count=0;count<2;count++){
     buffer[0] = 0xFA;   // address of the control register. must be set to either temp or pressure mode
 	buffer[1] = 0x34;   // control byte specifying pressure mode
 
@@ -117,7 +121,7 @@ void query_barometer(){
 	send_stop_condition();
 
 	// need to wait 4.5 ms here
-	delay(10);
+	delay(15);
 
 	buffer[0] = 0xF6;       // the data register
 	buffer[1] = '\0';       // clear second byte just in case
@@ -128,7 +132,7 @@ void query_barometer(){
 	FLASHONI2C&&(PORTB = 2);
 	send_stop_condition();
 	pressure = (buffer[0]<<8)|buffer[1];   // reassemble the 16-bit value
-
+}// READS TWICE
 	// ** This only reads the pressure data once.  The spec sheet mentioned doing it twice.
 
 
