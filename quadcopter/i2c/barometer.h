@@ -7,6 +7,7 @@
 #define DEBUG 1
 void query_barometer();
 void get_barometer_calibration();
+void query_barometer_true();
 
 short ac1, ac2, ac3, b1, b2, mb, mc, md; // the 11 calibration values
 unsigned short ac4,ac5,ac6;
@@ -107,7 +108,7 @@ void query_barometer(){
 	transmit(temp);
 }
 
-void query_true_values() {
+void query_barometer_true() {
 	long ut;
 	long up;
 	long x1, x2, b5, b6, x3, b3, p;
