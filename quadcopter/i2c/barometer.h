@@ -106,3 +106,39 @@ void query_barometer(){
 	sprintf(temp,"p: %d, t: %d",pressure,temperature);
 	transmit(temp);
 }
+
+void query_true_values() {
+	long ut;
+	long up;
+	long x1, x2, b5, b6, x3, b3, p;
+	unsigned long b4, b7;
+	
+	ut = temperature;
+	up = pressure;
+	
+	x1 = ((long)ut - ac6) * ac5 >> 15;
+	x2 = ((long) mc << 11) / (x1 + md);
+	b5 = x1 + x2;
+	temperature = (b5 + 8) >> 4;
+	
+	b6 = b5 - 4000;
+	x1 = (b2 * (b6 * b6 >> 12)) >> 11;
+	x2 = ac2 * b6 >> 11;
+	x3 = x1 + x2;
+	b3 = (((long) ac1 * 4 + x3) + 2)/4;
+	x1 = ac3 * b6 >> 13;
+	x2 = (b1 * (b6 * b6 >> 12)) >> 16;
+	x3 = ((x1 + x2) + 2) >> 2;
+	b4 = (ac4 * (unsigned long) (x3 + 32768)) >> 15;
+	b7 = ((unsigned long) up - b3) * (50000 >> OSS);
+	p = b7 < 0x80000000 ? (b7 * 2) / b4 : (b7 / b4) * 2;
+	x1 = (p >> 8) * (p >> 8);
+	x1 = (x1 * 3038) >> 16;
+	x2 = (-7357 * p) >> 16;
+	pressure = p + ((x1 + x2 + 3791) >> 4);
+	
+	char temp[75];      // this should be a big enough buffer
+	sprintf(temp,"true_p: %d, true_t: %d",pressure,temperature);
+	transmit(temp);
+	
+}
