@@ -2,7 +2,7 @@ CC=avr-gcc
 CFLAGS=-g -Os -Wall -mcall-prologues -mmcu=atmega328p
 OBJ2HEX=avr-objcopy
 #UISP=/usr/local/bin/uisp
-TARGET=control
+TARGET=test
 ADFLAGS=-p atmega328p -c avrispmkII -P usb
 
 .PHONY: fuses prog erase monitor
@@ -22,7 +22,7 @@ prog : $(TARGET).hex $(TARGET).eeprom
 	$(OBJ2HEX) -j .eeprop -O ihex $< $@
 
 erase :
-	 avrdude $(ADFLAGS) -e
+	avrdude $(ADFLAGS) -E noreset -e
 clean :
 	rm -f *.hex *.obj *.o *.eeprom
 
@@ -32,4 +32,4 @@ fuses:
 	avrdude $(ADFLAGS) -U efuse:w:0xff:m
 
 monitor:
-	gcc ../PCmonitor.c -o monitor -lncurses
+	gcc PCmonitor.c -o monitor -lncurses

@@ -2,7 +2,7 @@ CC=avr-gcc
 CFLAGS=-g -Os -Wall -mcall-prologues -mmcu=atmega328p
 OBJ2HEX=avr-objcopy
 #UISP=/usr/local/bin/uisp
-TARGET=control
+TARGET=i2c
 ADFLAGS=-p atmega328p -c avrispmkII -P usb
 
 .PHONY: fuses prog erase monitor

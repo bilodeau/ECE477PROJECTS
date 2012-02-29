@@ -79,7 +79,7 @@ void read_from_serial_port(){
 			serial_command_buffer[serial_command_index-2] = '\0'; // strip of CR NL
 			post_serial_command();
 			clear_serial_command_buffer();
-		}else if (serial_command_index > COMMANDBUFFERSIZE-1){
+		}else if (serial_command_index >= COMMANDBUFFERSIZE-1){
 			sprintf(serial_command_buffer,"Command Too Long.");
 			post_serial_command();
 			clear_serial_command_buffer();
@@ -215,6 +215,8 @@ void buffer_input(){
 void process_input(){
 	if ((!strcmp("q",user_command_buffer))||(!strcmp("Q",user_command_buffer))){
 		quit();
+	}else if(!strcmp("r",user_command_buffer)){
+		transmit("RESET\r\n");
 	}else{
 		strcat(user_command_buffer,"\r\n");	
 		transmit(user_command_buffer);

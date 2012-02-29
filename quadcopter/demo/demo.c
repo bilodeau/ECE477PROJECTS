@@ -1,7 +1,7 @@
 #include <avr/io.h>
 #include <avr/interrupt.h>
 #include <stdio.h>
-#include "charlie.h"
+#include "../charlie.h"
 
 #define FRAMEPERIOD 750
 #define MODEPERIOD 20000

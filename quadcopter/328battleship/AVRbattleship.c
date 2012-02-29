@@ -1,6 +1,7 @@
 #include <avr/io.h>
 #include <avr/interrupt.h>
 #include <string.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include "charlie.h"
 #include "AVRserial.h"
@@ -116,7 +117,7 @@ void add_three_ship() {
                 }
 
             case 1:             // east orientation
-                if (j < 2) {    // check if too close to wall to draw rest of ship
+                if (j < 3) {    // check if too close to wall to draw rest of ship
                     ship_pos[i + (j + 1)*4] = 1;
                     ship_pos[i + (j + 2)*4] = 1;
                     orientation = 5;
@@ -138,7 +139,7 @@ void add_three_ship() {
                     break;
                 }
             case 3:             // south orientation
-                if (i < 3) {    // check if too close to wall to draw rest of ship
+                if (i < 2) {    // check if too close to wall to draw rest of ship
                     ship_pos[(i + 1) + j*4] = 1;
                     ship_pos[(i + 2) + j*4] = 1;
                     orientation = 5;
@@ -177,7 +178,7 @@ void add_two_ship() {
                 }
 
             case 1:             // east orientation
-                if ((j < 3) && !ship_pos[i + (j + 1)*4]) {// check if other ship is there or too close to wall
+                if ((j < 4) && !ship_pos[i + (j + 1)*4]) {// check if other ship is there or too close to wall
                     ship_pos[i + (j + 1)*4] = 1;
                     orientation = 5;
                     break;
@@ -197,7 +198,7 @@ void add_two_ship() {
                     break;
                 }
             case 3:             // south orientation
-                if ((i < 4) && !ship_pos[(i + 1) + j*4]) {// check if other ship is there or too close to wall
+                if ((i < 3) && !ship_pos[(i + 1) + j*4]) {// check if other ship is there or too close to wall
                     ship_pos[(i + 1) + j*4] = 1;
                     orientation = 5;
                     break;
