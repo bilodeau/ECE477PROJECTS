@@ -11,14 +11,6 @@ void setup_delay(){
 }
 
 void delay(unsigned char millis){
-	DDRB = 2;
-	PORTB = 0;
-	setup_delay();
 	TCNT0 = 0;
-	while(TCNT0 <= millis){
-		char str[20];
-		sprintf(str,"TCNT0 = %d",TCNT0);
-		transmit(str);
-	}
-	PORTB = 2;
+	while(TCNT0 <= millis);
 }

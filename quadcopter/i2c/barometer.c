@@ -5,7 +5,7 @@
 #include "../lib/delay.h"
 #include <stdio.h>
 
-#define FLASHONI2C 1
+#define FLASHONI2C 0
 #define START 0x08
 #define MT_SLA_ACK 0x18
 #define MT_DATA_ACK 0x28
@@ -26,6 +26,7 @@ short ac1, ac2, ac3, ac4, ac5, ac6, b1, b2, mb, mc, md; // the 11 calibration va
 short temperature, pressure;     // the temp and pressure vars from the device
 
 int main(){
+	setup_delay();
 	setup_serial();
 	setup_i2c();
 	serial_command_ready = 0;
@@ -94,7 +95,7 @@ void query_barometer(){
 	send_stop_condition();
 
 	// need to wait 4.5 ms here
-	delay(5);
+	delay(10);
 
 	buffer[0] = 0xF6;       // the data register
 	buffer[1] = '\0';       // clear second byte just in case
@@ -116,7 +117,7 @@ void query_barometer(){
 	send_stop_condition();
 
 	// need to wait 4.5 ms here
-	delay(5);
+	delay(10);
 
 	buffer[0] = 0xF6;       // the data register
 	buffer[1] = '\0';       // clear second byte just in case
