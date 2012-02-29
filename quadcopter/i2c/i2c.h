@@ -1,6 +1,9 @@
+#ifndef I2C
+#define I2C 1
 #include <avr/io.h>
 #include <string.h>
 
+#define FLASHONI2C  0
 #define START 0x08
 #define MT_SLA_ACK 0x18
 #define MT_DATA_ACK 0x28
@@ -96,3 +99,4 @@ void process_i2c_bus_read(char read_address,char* buffer, char numbytes){
 	while(!(TWCR & (1<<TWINT)));
 	buffer[i] = TWDR;
 }
+#endif

@@ -7,11 +7,12 @@ DDRB=2;
 while(1){
 PORTB=0;
 int i;
-for(i=0;i<1000;i++)
-	delay(1);
+// should be on for a second and a half and likewise off for a second and a half
+for(i=0;i<100;i++)
+	delay(15);
 PORTB=2;
-for(i=0;i<1000;i++)
-	delay(1);
+for(i=0;i<100;i++)
+	delay(15);
 }
 return 0;
 }

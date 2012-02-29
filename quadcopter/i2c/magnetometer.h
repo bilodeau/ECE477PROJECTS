@@ -3,7 +3,7 @@
 #include <string.h>
 #include "i2c.h"
 
-void get_status_register(){
+void get_magnetometer_status(){
         char buffer = 0x09;
         DDRB=2,PORTB=0;
 	process_i2c_bus_write(0x3C,&buffer,1);

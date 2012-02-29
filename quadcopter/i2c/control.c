@@ -1,11 +1,13 @@
 #include <avr/io.h>
-#include "../AVRserial.h"
+#include "../lib/AVRserial.h"
 #include <string.h>
 #include "magnetometer.h"
+#include "barometer.h"
 
 void forward_command();
 
 int main(){
+	setup_delay();
 	setup_serial();
         setup_i2c();
         serial_command_ready = 0;
@@ -20,12 +22,16 @@ int main(){
 
 // issues the command in serial_command_buffer to the i2c bus
 void forward_command(){
-        if (!strcmp(receive_buffer,"M")){
+        if (!strcmp(receive_buffer,"MD")){
                 query_magnetometer();
-        }else if (!strcmp(receive_buffer,"P")){
+        }else if (!strcmp(receive_buffer,"MP")){
                power_on_magnetometer();
-        }else if(!strcmp(receive_buffer,"S")){
-                get_status_register();
-        }   
+        }else if(!strcmp(receive_buffer,"MS")){
+                get_magnetometer_status();
+        }else if(!strcmp(receive_buffer,"BC")){
+		get_barometer_calibration();
+	}else if(!strcmp(receive_buffer,"BD")){
+		query_barometer();
+	}
 }
 
