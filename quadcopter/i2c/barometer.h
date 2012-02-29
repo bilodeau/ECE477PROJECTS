@@ -51,7 +51,7 @@ void get_barometer_calibration(){
 void query_barometer(){
 	char buffer[2];
 	char count;
-	//for (count=0;count<2;count++){
+	for (count=0;count<2;count++){
 	buffer[0] = 0xF4;   // address of the control register. must be set to either temp or pressure mode
 	buffer[1] = 0x2E;   // control byte specifying temperature mode
 
@@ -73,11 +73,11 @@ void query_barometer(){
 	process_i2c_bus_read(0xEF,buffer,2);        // read in the 2 data bytes byte from the data register
 	send_stop_condition();
 	temperature = (buffer[0]<<8)|buffer[1];   // reassemble the 16-bit value
-//	} // READS TWICE
+	} // READS TWICE
 	// ** This only reads the temperature data once.  The spec sheet mentioned doing it twice.
 
 
-//	for (count=0;count<2;count++){
+	for (count=0;count<2;count++){
     buffer[0] = 0xF4;   // address of the control register. must be set to either temp or pressure mode
 	buffer[1] = 0x34;   // control byte specifying pressure mode
 
@@ -98,7 +98,7 @@ void query_barometer(){
 	DEBUG&&(PORTB = 2);
 	send_stop_condition();
 	pressure = (buffer[0]<<8)|buffer[1];   // reassemble the 16-bit value
-//}// READS TWICE
+}// READS TWICE
 	// ** This only reads the pressure data once.  The spec sheet mentioned doing it twice.
 
 
