@@ -32,6 +32,8 @@ void forward_command(){
 		get_barometer_calibration();
 	}else if(!strcmp(receive_buffer,"BD")){
 		query_barometer();
+	}else if(!strcmp(receive_buffer,"BT")){
+		query_barometer_true();
 	}
 }
 
