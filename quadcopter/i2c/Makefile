@@ -1,8 +1,8 @@
 CC=avr-gcc
-CFLAGS=-g -Os -Wall -mcall-prologues -mmcu=atmega328p
+CFLAGS=-g -Os -Wall -mcall-prologues -mmcu=atmega328p -Wno-char-subscripts
 OBJ2HEX=avr-objcopy
 #UISP=/usr/local/bin/uisp
-TARGET=control
+TARGET=barometer
 ADFLAGS=-p atmega328p -c avrispmkII -P usb
 
 .PHONY: fuses prog erase monitor
@@ -32,4 +32,4 @@ fuses:
 	avrdude $(ADFLAGS) -U efuse:w:0xff:m
 
 monitor:
-	gcc ../PCmonitor.c -o monitor -lncurses
+	gcc ../lib/PCmonitor.c -o monitor -lncurses
