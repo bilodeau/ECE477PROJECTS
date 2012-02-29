@@ -1,5 +1,5 @@
 CC=avr-gcc
-CFLAGS=-g -Os -Wall -mcall-prologues -mmcu=atmega328p
+CFLAGS=-g -Os -Wall -mcall-prologues -mmcu=atmega328p -Wno-char-subscripts
 OBJ2HEX=avr-objcopy
 #UISP=/usr/local/bin/uisp
 TARGET=AVRbattleship
