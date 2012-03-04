@@ -24,9 +24,8 @@ This is supposed to be the basis of our final lab report.  Ideally, each section
 I've listed part numbers (and sparkfun SKUs, they have spec sheets and examples) for each of the devices I have already (or if they are in the mail).  If something is obviously wrong, or there's a much better alternative out there let me know ASAP so I can get something on order.  I'm anticipating placing another parts order in the near future so please share any 'maybe' ideas also.  I definitely do not want to run into a time crunch with parts still in the mail.
 
 \section{Frame}
-motor mounts\\
-central joint\\
-central platform\\
+The quadcopter frame is constructed from 3/4" square aluminium tubing, in a 'X' with 55cm arms.  Motors are mounted 3cm from the end of each arm, using 5mm bolts, washers and locknuts.  The center of the frame has matching notches in each arm and plastic squares are bolted above and below to provide an electronics mounting platform.
+
 electronics mounting (sonar / sensors)\\
 electonics protection\\
 battery mount\\
@@ -50,9 +49,7 @@ battery storage (thing is dangerous man)\\
 PC to ATmega328 via serial\\
 wireless coms over ZigBee?\\
 
-fix serial input buffering on PC\\
-dump all transmissions to log files on PC\\
-detachable connector for the quadcopter end\\
+Serial communications are buffered on both the PC and AVR.  Communications sent and received by the PC are dumped into a log file for later reference.  (Logs should be timestamped...)
 
 Possible Commands to implement:\\
 
@@ -67,6 +64,8 @@ DISCO BALL MODE      // not sure... this one was Brady's idea.\\
 
 \section{Motor Control}
 I'm thinking we fly in '+' mode rather than 'X' mode.  We can label our motors as North, South, East, West, or maybe fore, aft, port, starboard?
+
+The motors selected have a maximum thrust of 900+g.  With 10x6 propellers, expected thrust is about 700g each.
 
 What are the thrust limits for these motors / props? Any vibration or balancing issues?\\
 What is the function mapping RPM to thrust?  How much thrust do we lose when flying at an angle?\\
