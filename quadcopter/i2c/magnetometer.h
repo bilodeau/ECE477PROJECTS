@@ -2,17 +2,16 @@
 #include <stdio.h>
 #include <string.h>
 #include "i2c.h"
+#include <math.h>
 
 void get_magnetometer_status(){
         char buffer = 0x09;
-        DDRB=2,PORTB=0;
 	process_i2c_bus_write(0x3C,&buffer,1);
         process_i2c_bus_read(0x3D,&buffer,1);
         send_stop_condition();
         char temp [41];
         sprintf(temp,"Status register is: %d",buffer);
         transmit(temp);
-	PORTB=2;
 }
 
 void power_on_magnetometer(){
@@ -25,6 +24,13 @@ void power_on_magnetometer(){
         init[1] = 0x00;
         process_i2c_bus_write(0x3C,init,2);
         send_stop_condition();
+}
+
+double convert_raw_heading_to_degrees(int x, int y, int z){
+	double heading = atan2(y,x); // calculate the heading for when the compass is level
+	if (heading < 0)
+		heading += 2*M_PI;
+	return heading*180/M_PI; // convert to degrees
 }
 
 void query_magnetometer(){
@@ -42,6 +48,11 @@ void query_magnetometer(){
         int y = (buffer[4]<<8)|buffer[5];
 
         char temp[41];
-        sprintf(temp,"Mag: %d %d %d",x,z,y);
+        sprintf(temp,"MagRaw: %d %d %d",x,z,y);
         transmit(temp);
+	double heading = convert_raw_heading_to_degrees(x,y,z);
+	int h = heading;
+	int h2 = 100*(heading-h);	
+	sprintf(temp,"Heading: %d.%d",h,h2);
+	transmit(temp);
 }

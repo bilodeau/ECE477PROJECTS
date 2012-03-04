@@ -4,14 +4,13 @@
 #include <stdio.h>
 #include "i2c.h"
 
-#define DEBUG 1
 void query_barometer();
 void get_barometer_calibration();
 void query_barometer_true();
 
 short ac1, ac2, ac3, b1, b2, mb, mc, md; // the 11 calibration values
 unsigned short ac4,ac5,ac6;
-short temperature, pressure;     // the temp and pressure vars from the device
+long temperature, pressure;     // the temp and pressure vars from the device
 
 void get_barometer_calibration(){
 	char starting_pos = 0xAA;       // 0xAA = start of calibration data
@@ -52,7 +51,7 @@ void get_barometer_calibration(){
 void query_barometer(){
 	char buffer[2];
 	char count;
-	for (count=0;count<2;count++){
+	for (count=0;count<1;count++){
 	buffer[0] = 0xF4;   // address of the control register. must be set to either temp or pressure mode
 	buffer[1] = 0x2E;   // control byte specifying temperature mode
 
@@ -60,13 +59,11 @@ void query_barometer(){
 	process_i2c_bus_write(0xEE,buffer,2);
 	send_stop_condition();
 
-	DEBUG&&(DDRB = 2,PORTB = 0);
 	// need to wait 4.5 ms here
 	//char time;
 	//for (time =0; time <10;time++)
 		delay(15);
 
-	DEBUG&&(PORTB = 2);
 	buffer[0] = 0xF6;       // the data register
 	buffer[1] = '\0';       // clear second byte just in case
 	process_i2c_bus_write(0xEE, buffer, 1);     // sets pointer to the data register now holding temperature data
@@ -78,7 +75,7 @@ void query_barometer(){
 	// ** This only reads the temperature data once.  The spec sheet mentioned doing it twice.
 
 
-	for (count=0;count<2;count++){
+	for (count=0;count<1;count++){
     buffer[0] = 0xF4;   // address of the control register. must be set to either temp or pressure mode
 	buffer[1] = 0x34;   // control byte specifying pressure mode
 
@@ -94,9 +91,7 @@ void query_barometer(){
 	buffer[1] = '\0';       // clear second byte just in case
 	process_i2c_bus_write(0xEE, buffer, 1);     // sets pointer to the data register now holding temperature data
 
-	DEBUG&&(DDRB = 2,PORTB = 0);
 	process_i2c_bus_read(0xEF,buffer,2);    // read in the 2 bytes from the data register in MSB, LSB order
-	DEBUG&&(PORTB = 2);
 	send_stop_condition();
 	pressure = (buffer[0]<<8)|buffer[1];   // reassemble the 16-bit value
 }// READS TWICE
@@ -104,7 +99,7 @@ void query_barometer(){
 
 
 	char temp[50];      // this should be a big enough buffer
-	sprintf(temp,"p: %d, t: %d",pressure,temperature);
+	sprintf(temp,"p: %ld, t: %ld",pressure,temperature);
 	transmit(temp);
 }
 
@@ -131,7 +126,7 @@ void query_barometer_true() {
 	x2 = (b1 * (b6 * b6 >> 12)) >> 16;
 	x3 = ((x1 + x2) + 2) >> 2;
 	b4 = (ac4 * (unsigned long) (x3 + 32768)) >> 15;
-	b7 = ((unsigned long) up - b3) * (50000 >> OSS);
+	b7 = ((unsigned long) up - b3) * (50000 >> 0);
 	p = b7 < 0x80000000 ? (b7 * 2) / b4 : (b7 / b4) * 2;
 	x1 = (p >> 8) * (p >> 8);
 	x1 = (x1 * 3038) >> 16;
@@ -139,7 +134,7 @@ void query_barometer_true() {
 	pressure = p + ((x1 + x2 + 3791) >> 4);
 	
 	char temp[75];      // this should be a big enough buffer
-	sprintf(temp,"true_p: %d, true_t: %d",pressure,temperature);
+	sprintf(temp,"true_p: %ld, true_t: %ld",pressure,temperature);
 	transmit(temp);
 	
 }

@@ -3,8 +3,8 @@
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include "charlie.h"
-#include "AVRserial.h"
+#include "../lib/charlie.h"
+#include "../lib/AVRserial.h"
 
 int init_game();
 void add_three_ship();

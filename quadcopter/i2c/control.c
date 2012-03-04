@@ -3,6 +3,7 @@
 #include <string.h>
 #include "magnetometer.h"
 #include "barometer.h"
+#include "../lib/sonar.h"
 
 void forward_command();
 
@@ -10,6 +11,7 @@ int main(){
 	setup_delay();
 	setup_serial();
         setup_i2c();
+	setup_sonar();
         serial_command_ready = 0;
         while(1){
 		if (serial_command_ready){
@@ -34,6 +36,8 @@ void forward_command(){
 		query_barometer();
 	}else if(!strcmp(receive_buffer,"BT")){
 		query_barometer_true();
+	}else if(!strcmp(receive_buffer,"SONAR")){
+		query_sonar();
 	}
 }
 
