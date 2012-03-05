@@ -7,21 +7,27 @@
 #include <string.h>
 #include "baud.h"
 
-#define PRINTDEBUG 1
-#define USERCOMMANDBUFFERSIZE 23
+#define LOG 1// saves all commands into a log file
+#define PRINTDEBUG 0
+#define COMMANDBUFFERSIZE 41
 #define SERIALPORTDEFAULT "/dev/tty.usbmodemfd1221"
 
+void clear_serial_command_buffer();
 void clear_user_command_buffer();
 void mysetup_serial_port(char* serial_port_name);
 void buffer_input();
 void process_input();
 void configureUI();
-void run_in_loop();
 void transmit(char* c);
+void read_from_serial_port();
+void post_serial_command();
 
 struct termios originalsettings;
-int serialport;
-char user_command_buffer[USERCOMMANDBUFFERSIZE];
+int serialport; // file handle for the serial port
+char user_command_buffer[COMMANDBUFFERSIZE]; // holds characters typed by the user
+char serial_command_buffer[COMMANDBUFFERSIZE]; // holds characters sent in from the serial port
+char serial_command_index; // points to the next empty position in the serial_command_buffer
+int logfile; // file handle for the log file
 
 int main(int argc, char *argv[]){
 	char* serial_port_name;
@@ -36,39 +42,76 @@ int main(int argc, char *argv[]){
 	mysetup_serial_port(serial_port_name);
 	PRINTDEBUG&&printf("done setup...\n");
 	configureUI();
+	
+	// setup the log file
+	if (LOG)
+		logfile = open("log",O_WRONLY|O_APPEND|O_CREAT,0666);// the 0666 is an octal number which sets up proper permissions so we can actually open the log file after
 
-	//blank out the input buffer
-	char i;
-	for(i=0; i<43; i++)
-		user_command_buffer[i] = '\0';
-	char buf[21];
-	buf[0] = '\0';
+	//blank out the buffers
+	clear_user_command_buffer();
+	clear_serial_command_buffer();
 	while(1){
-		char i = read(serialport,buf,USERCOMMANDBUFFERSIZE-1);	
-		if (i < 3){
-			// No data read, or we only got "\r\n".
-		}else{
-			buf[i-2] = '\0';
-			move(0,6);
-			printw("                    ");
-			move(0,6);
-			printw("%s",buf);
-			move(1,6);
-			printw("                    ");
-			move(1,6);
-			printw("%x",buf);
-		}
-		run_in_loop();
+		read_from_serial_port();
+		buffer_input();
+		refresh();
 	}
 	return quit();
 }
+
+void clear_serial_command_buffer(){
+	//blank out the serial buffer
+	char i;
+	for(i=0; i<COMMANDBUFFERSIZE;i++)
+		serial_command_buffer[i] = '\0';
+	serial_command_index = 0; // reset to the beginning of the buffer
+}
+
+void read_from_serial_port(){
+	char buf;
+	char i = read(serialport,&buf,1);	
+	if (i == 1){
+		serial_command_buffer[serial_command_index] = buf;
+		serial_command_index++;
+		serial_command_buffer[serial_command_index] = '\0';
+		
+		if ((serial_command_index>2)&&((serial_command_buffer[serial_command_index-1]=='\n')&&(serial_command_buffer[serial_command_index-2]=='\r'))){
+			serial_command_buffer[serial_command_index-2] = '\0'; // strip of CR NL
+			post_serial_command();
+			clear_serial_command_buffer();
+		}else if (serial_command_index >= COMMANDBUFFERSIZE-1){
+			sprintf(serial_command_buffer,"Command Too Long.");
+			post_serial_command();
+			clear_serial_command_buffer();
+		}
+	}
+}
+
+void post_serial_command(){
+	move(0,6);
+	printw("                                        ");
+	move(0,6);
+	printw("%s",serial_command_buffer);
+	move(1,6);
+	printw("                                                            ");
+	move(1,6);
+	char i;
+	for (i=0; i<serial_command_index-1;i++)
+		printw("%x",serial_command_buffer[i]);
+
+	if (LOG){
+		write(logfile,"SERIAL: ",8);
+		write(logfile,serial_command_buffer,strlen(serial_command_buffer));
+		write(logfile,"\n",1);
+	}
+}
+
 void clear_user_command_buffer(){
 	//blank out the input buffer
 	char i;
-	for(i=0; i<USERCOMMANDBUFFERSIZE; i++)
+	for(i=0; i<COMMANDBUFFERSIZE; i++)
 		user_command_buffer[i] = '\0';
 	move(5,0);
-	printw("                              ");
+	printw(":                                                   ");
 }
 
 void transmit(char* c){
@@ -84,9 +127,12 @@ void transmit(char* c){
 	move(13,0);
 	printw("                        ");
 	move(13,0);
-	char temp[strlen(c)-1];
-	snprintf(temp,strlen(c)-2,"%s",c);
 	printw(c);
+	if (LOG){
+		write(logfile,"PC: ",4);
+		write(logfile,c,strlen(c)-2);
+		write(logfile,"\n",1);
+	}
 }
 
 void mysetup_serial_port(char* serial_port_name){	
@@ -110,8 +156,8 @@ void mysetup_serial_port(char* serial_port_name){
 	attribs.c_oflag |= 0;
 	attribs.c_lflag &= ~ICANON;
 	cfmakeraw(&attribs);
-	cfsetispeed(&attribs,BAUDRATE);
-	cfsetospeed(&attribs,BAUDRATE);
+	cfsetispeed(&attribs,PCBAUDRATE);
+	cfsetospeed(&attribs,PCBAUDRATE);
 	
 	tcsetattr(serialport,TCSANOW,&attribs);
 	PRINTDEBUG&&printf("done with attributes...\n");
@@ -130,14 +176,12 @@ void configureUI(){
 	printw("Type 'q' to quit");
 }
 
-void run_in_loop(){
-	buffer_input();
-	refresh(); // refreshes curses window
-}
-
 int quit(){
 	endwin(); // end curses window mode
 	close(serialport);
+	if (LOG)
+		close(logfile);
+	exit(0);
 	return 0;
 }
 
@@ -151,12 +195,12 @@ void buffer_input(){
 		if ((character == '\r')||(character == '\n')){
 			process_input();
 			clear_user_command_buffer();
-		}else if (character == 0x7f){ // handle backspace
+		}else if (character == 0x7f){ // handle delete
 			char bufferlength = strlen(user_command_buffer);
 			if (bufferlength > 0){
 				user_command_buffer[bufferlength-1] = '\0';
 			}
-		}else if(strlen(user_command_buffer)< USERCOMMANDBUFFERSIZE-3){
+		}else if(strlen(user_command_buffer)< COMMANDBUFFERSIZE-3){
 			c[0] = character;
 			strcat(user_command_buffer,c);
 		}
@@ -169,7 +213,9 @@ void buffer_input(){
 
 void process_input(){
 	if ((!strcmp("q",user_command_buffer))||(!strcmp("Q",user_command_buffer))){
-		exit(quit());
+		quit();
+	}else if(!strcmp("r",user_command_buffer)){
+		transmit("RESET\r\n");
 	}else{
 		strcat(user_command_buffer,"\r\n");	
 		transmit(user_command_buffer);

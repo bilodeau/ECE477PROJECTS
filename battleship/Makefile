@@ -31,4 +31,4 @@ fuses:
 	avrdude $(ADFLAGS) -U hfuse:w:0xd9:m
 
 monitor:
-	gcc PCbattleship.c -o monitor -lncurses
+	gcc PCmonitor.c -o monitor -lncurses

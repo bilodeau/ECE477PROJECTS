@@ -3,31 +3,38 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <fcntl.h>
-#include <ncurses.h>
 #include <string.h>
 #include "baud.h"
+#include "data.h"
 
-#define LOG 1// saves all commands into a log file
-#define PRINTDEBUG 1
+#define LOG 0// saves all commands into a log file
+#define PRINTDEBUG 0
 #define COMMANDBUFFERSIZE 41
 #define SERIALPORTDEFAULT "/dev/tty.usbmodemfd1221"
 
 void clear_serial_command_buffer();
 void clear_user_command_buffer();
-void mysetup_serial_port(char* serial_port_name);
-void buffer_input();
-void process_input();
-void configureUI();
+void setup_serial_port(char* serial_port_name);
+void buffer_user_input();
+void process_user_input();
+void configure_user_input();
 void transmit(char* c);
 void read_from_serial_port();
-void post_serial_command();
+void process_serial_command();
+void log_serial_command();
+void save_sensor_data_packet(char code);
 
 struct termios originalsettings;
 int serialport; // file handle for the serial port
 char user_command_buffer[COMMANDBUFFERSIZE]; // holds characters typed by the user
 char serial_command_buffer[COMMANDBUFFERSIZE]; // holds characters sent over the serial port
 char serial_command_index; // index for the next empty position in the serial_command_buffer
+char last_command_received[COMMANDBUFFERSIZE];
+char last_command_sent[COMMANDBUFFERSIZE];
+char number_of_bytes_sent;
 int logfile; // file handle for the log file
+
+#include "display.h" // requires access to some of the globals, so must be included after them
 
 int main(int argc, char *argv[]){
 	char* serial_port_name;
@@ -39,9 +46,11 @@ int main(int argc, char *argv[]){
 		printf("Usage is: monitor [serial port name]\n");
 	}
 	PRINTDEBUG&&printf("main called..\n");
-	mysetup_serial_port(serial_port_name);
+	setup_serial_port(serial_port_name);
 	PRINTDEBUG&&printf("done setup...\n");
-	configureUI();
+	
+	setup_display();
+	configure_user_input();
 	
 	// setup the log file
 	if (LOG)
@@ -52,8 +61,8 @@ int main(int argc, char *argv[]){
 	clear_serial_command_buffer();
 	while(1){
 		read_from_serial_port();
-		buffer_input();
-		refresh();
+		buffer_user_input();
+		refresh_display();
 	}
 	return quit();
 }
@@ -76,28 +85,69 @@ void read_from_serial_port(){
 		
 		if ((serial_command_index>2)&&((serial_command_buffer[serial_command_index-1]=='\n')&&(serial_command_buffer[serial_command_index-2]=='\r'))){
 			serial_command_buffer[serial_command_index-2] = '\0'; // strip of CR NL
-			post_serial_command();
+			process_serial_command();
 			clear_serial_command_buffer();
 		}else if (serial_command_index >= COMMANDBUFFERSIZE-1){
 			sprintf(serial_command_buffer,"Command Too Long.");
-			post_serial_command();
+			log_serial_command();
 			clear_serial_command_buffer();
 		}
 	}
 }
 
-void post_serial_command(){
-	move(0,6);
-	printw("                                        ");
-	move(0,6);
-	printw("%s",serial_command_buffer);
-	move(1,6);
-	printw("                                                            ");
-	move(1,6);
-	char i;
-	for (i=0; i<serial_command_index-1;i++)
-		printw("%x",serial_command_buffer[i]);
+void process_serial_command(){
+	if (serial_command_buffer[0] == SENSORDATAPACKETCHARACTER){
+		save_sensor_data_packet(serial_command_buffer[1]);
+	}else{
+		sprintf(last_command_received,"%s",serial_command_buffer);
+		log_serial_command();
+	}
+}
 
+void save_sensor_data_packet(char code){
+	long value;
+	sscanf(serial_command_buffer + 2,"%ld",&value);
+	switch(code){
+		case COMPASSHEADING:
+			sensor_data_cache.compass_heading = value;
+			break;
+		case SONARDISTANCE:	
+			sensor_data_cache.sonar_distance = value;
+			break;
+		case BAROMETERTEMPERATURE:
+			sensor_data_cache.barometer_temperature = value;
+			break;
+		case BAROMETERPRESSURE:
+			sensor_data_cache.barometer_pressure = value;
+			break;
+		case BAROMETERALTITUDE:
+			sensor_data_cache.barometer_altitude = value;
+			break;
+		case GYROSCOPEX:
+			sensor_data_cache.gyroscope_x_rotational_velocity = value;
+			break;
+		case GYROSCOPEY:
+			sensor_data_cache.gyroscope_y_rotational_velocity = value;
+			break;
+		case GYROSCOPETEMPERATURE:
+			sensor_data_cache.gyroscope_temperature = value;
+			break;
+		case NUNCHUCKX:
+			sensor_data_cache.nunchuck_x_angular_position = value;
+			break;
+		case NUNCHUCKY:
+			sensor_data_cache.nunchuck_y_angular_position = value;
+			break;
+		case NUNCHUCKZ:
+			sensor_data_cache.nunchuck_z_angular_position = value;
+			break;
+		default:
+			sprintf(serial_command_buffer,"Bad Sensor Data Packet.");
+	}
+	log_serial_command();
+}
+
+void log_serial_command(){
 	if (LOG){
 		write(logfile,"SERIAL: ",8);
 		write(logfile,serial_command_buffer,strlen(serial_command_buffer));
@@ -110,24 +160,12 @@ void clear_user_command_buffer(){
 	char i;
 	for(i=0; i<COMMANDBUFFERSIZE; i++)
 		user_command_buffer[i] = '\0';
-	move(5,0);
-	printw(":                                                   ");
 }
 
 void transmit(char* c){
-	move(6,0);
-	printw("                   ");
-	int test = write(serialport,c,strlen(c));
-	move(10,0);
-	printw("               ");
-	move(10,0);
-	printw("bytes sent:  %d",test);
-	move(12,0);
-	printw("last string sent:");
-	move(13,0);
-	printw("                        ");
-	move(13,0);
-	printw(c);
+	number_of_bytes_sent = write(serialport,c,strlen(c));
+	sprintf(last_command_sent,"%s",c);
+	last_command_sent[strlen(last_command_sent)-2] = '\0';
 	if (LOG){
 		write(logfile,"PC: ",4);
 		write(logfile,c,strlen(c)-2);
@@ -135,7 +173,7 @@ void transmit(char* c){
 	}
 }
 
-void mysetup_serial_port(char* serial_port_name){	
+void setup_serial_port(char* serial_port_name){	
 	PRINTDEBUG&&printf("about to open port...\n");
 	serialport = open(serial_port_name,O_NONBLOCK|O_RDWR|O_NOCTTY);
 	PRINTDEBUG&&printf("opened port, now check if null\n");
@@ -163,21 +201,15 @@ void mysetup_serial_port(char* serial_port_name){
 	PRINTDEBUG&&printf("done with attributes...\n");
 }
 
-// sets up curses and a custom 'raw' mode for handling user input and
-// data display
-void configureUI(){
-	initscr();  // setup the curses screen
+// sets up  a custom 'raw' mode for handling user input
+void configure_user_input(){
 	cbreak(); // get characters types immediately
 	noecho(); // don't print anything the user types
 	nodelay(stdscr,TRUE);
-	move(0,0);
-	printw("AVR : ");
-	move(4,0);
-	printw("Type 'q' to quit");
 }
 
 int quit(){
-	endwin(); // end curses window mode
+	quit_display();
 	close(serialport);
 	if (LOG)
 		close(logfile);
@@ -185,15 +217,13 @@ int quit(){
 	return 0;
 }
 
-void buffer_input(){
+void buffer_user_input(){
 	char c[2];
 	int character = getch();
 	c[1] = '\0';
 	if (character != ERR){
-		move(15,0);	
-		printw("character pressed:  %x",character);
 		if ((character == '\r')||(character == '\n')){
-			process_input();
+			process_user_input();
 			clear_user_command_buffer();
 		}else if (character == 0x7f){ // handle delete
 			char bufferlength = strlen(user_command_buffer);
@@ -204,14 +234,10 @@ void buffer_input(){
 			c[0] = character;
 			strcat(user_command_buffer,c);
 		}
-	move(5,0);
-	printw(":                                  ");
-	move(5,0);
-	printw(": %s",user_command_buffer);
 	}
 }
 
-void process_input(){
+void process_user_input(){
 	if ((!strcmp("q",user_command_buffer))||(!strcmp("Q",user_command_buffer))){
 		quit();
 	}else if(!strcmp("r",user_command_buffer)){

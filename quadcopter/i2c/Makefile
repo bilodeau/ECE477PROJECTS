@@ -5,7 +5,7 @@ OBJ2HEX=avr-objcopy
 TARGET=control
 ADFLAGS=-p atmega328p -c avrispmkII -P usb
 
-.PHONY: fuses prog erase monitor
+.PHONY: fuses prog erase monitor status
 
 
 prog : $(TARGET).hex $(TARGET).eeprom
@@ -33,3 +33,6 @@ fuses:
 
 monitor:
 	gcc ../lib/PCmonitor.c -o monitor -lncurses
+
+status:
+	gcc ../lib/PCstatus.c -o status -lncurses
