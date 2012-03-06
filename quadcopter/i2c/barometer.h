@@ -67,7 +67,9 @@ void query_barometer(){
 	buffer[0] = 0xF6;       // the data register
 	buffer[1] = '\0';       // clear second byte just in case
 	process_i2c_bus_write(0xEE, buffer, 1);     // sets pointer to the data register now holding temperature data
-
+	
+	buffer[0] = '\0';
+	buffer[1] = '\0';
 	process_i2c_bus_read(0xEF,buffer,2);        // read in the 2 data bytes byte from the data register
 	send_stop_condition();
 	temperature = (buffer[0]<<8)|buffer[1];   // reassemble the 16-bit value
@@ -90,7 +92,9 @@ void query_barometer(){
 	buffer[0] = 0xF6;       // the data register
 	buffer[1] = '\0';       // clear second byte just in case
 	process_i2c_bus_write(0xEE, buffer, 1);     // sets pointer to the data register now holding temperature data
-
+	
+	buffer[0] = '\0';
+	buffer[1] = '\0';
 	process_i2c_bus_read(0xEF,buffer,2);    // read in the 2 bytes from the data register in MSB, LSB order
 	send_stop_condition();
 	pressure = (buffer[0]<<8)|buffer[1];   // reassemble the 16-bit value
