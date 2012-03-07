@@ -3,20 +3,20 @@
 
 // leading character for all sensor data packets
 // recall that the GPS module uses $
-#define SENSORDATAPACKETCHARACTER '@'
+#define SENSORDATAPACKETCHARACTER 64//'@'
 
 // data packet codes:
-#define COMPASSHEADING 0
-#define SONARDISTANCE 1
-#define	BAROMETERTEMPERATURE 2
-#define BAROMETERPRESSURE 3
-#define BAROMETERALTITUDE 4
-#define GYROSCOPEX 5
-#define GYROSCOPEY 6
-#define GYROSCOPETEMPERATURE 7
-#define NUNCHUCKX 8
-#define NUNCHUCKY 9
-#define NUNCHUCKZ 10
+#define COMPASSHEADING 1
+#define SONARDISTANCE 2
+#define	BAROMETERTEMPERATURE 3
+#define BAROMETERPRESSURE 4
+#define BAROMETERALTITUDE 5
+#define GYROSCOPEX 6
+#define GYROSCOPEY 7
+#define GYROSCOPETEMPERATURE 8
+#define NUNCHUCKX 9
+#define NUNCHUCKY 10
+#define NUNCHUCKZ 11
 
 struct sensor_data{
 	long compass_heading;

@@ -32,7 +32,7 @@ void setup_motors(){
 	TCCR2A = 0xA1; // clear output pins on compare match, counts up and down from zero to FF
 	TCCR2B = (1<<WGM02)|(5);
 	
-	OCRA = 156; // TOP value: leaves a period of 50.08 Hz
+	OCRA = 156; // TOP value: leaves a frequency of 50.08 Hz
 	OC0A = 8; // yields a pulse on of about 1 millisecond
 	OC0B = 8;
 	OC2A = 8;

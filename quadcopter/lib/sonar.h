@@ -1,6 +1,9 @@
 #include <avr/io.h>
 #include <avr/interrupt.h>
 #include <stdio.h>
+#include "data.h"
+
+// sonar uses PB0 (ICP1) as well as TIMER1
 
 // define pin modes
 #define PINGING 0
@@ -8,6 +11,13 @@
 char sonar_pinMode;
 int sonar_beginEchoTime;
 volatile double sonar_distance = 0;
+
+void spam_sonar(){
+	long d = sonar_distance*100;
+	char temp[40];
+	sprintf(temp,"%c%c%ld",SENSORDATAPACKETCHARACTER,SONARDISTANCE,d);
+	transmit(temp);
+}
 
 void query_sonar(){
 	int temp = sonar_distance;

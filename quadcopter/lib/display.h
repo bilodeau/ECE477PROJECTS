@@ -21,32 +21,42 @@ void refresh_display(){
 	move(2,0);
 	printw("                                        ");
 	move(2,0);
-	printw("Compass Heading (degrees): %ld",sensor_data_cache.compass_heading);
+	printw("Compass Heading (degrees): %ld.%ld",sensor_data_cache.compass_heading/100,sensor_data_cache.compass_heading%100);
 	
 	move(2,40);
 	printw("                                        ");
 	move(2,40);
-	printw("Sonar Distance (feet): %ld",sensor_data_cache.sonar_distance);
+	printw("Sonar Distance (feet): %ld.%ld",sensor_data_cache.sonar_distance/100,sensor_data_cache.sonar_distance%100);
 	
 	move(3,0);
 	printw("                                        ");
 	move(3,0);
-	printw("Barometer Temperature: %ld",sensor_data_cache.barometer_temperature);
+	printw("Barometer Temperature: %ld.%ld",sensor_data_cache.barometer_temperature/100,sensor_data_cache.barometer_temperature%100);
 
 	move(3,40);
 	printw("                                        ");
 	move(3,40);
-	printw("Barometer Pressure: %ld",sensor_data_cache.barometer_pressure);
+	printw("Barometer Pressure: %ld.%ld",sensor_data_cache.barometer_pressure/100,sensor_data_cache.barometer_pressure%100);
 	
 	move(4,0);
 	printw("                                        ");
 	move(4,0);
-	printw("Barometer Altitude: %ld",sensor_data_cache.barometer_altitude);
+	printw("Barometer Altitude: %ld.%ld",sensor_data_cache.barometer_altitude/100,sensor_data_cache.barometer_altitude%100);
 	
 	move(5,0);
 	printw("                                        ");
 	move(5,0);
-	printw("");
+	printw("Nunchuck X: %ld.%ld",sensor_data_cache.nunchuck_x_angular_position/100,sensor_data_cache.nunchuck_x_angular_position%100);
+	
+	move(6,0);
+	printw("                                        ");
+	move(6,0);
+	printw("Nunchuck Y: %ld.%ld",sensor_data_cache.nunchuck_y_angular_position/100,sensor_data_cache.nunchuck_y_angular_position%100);
+	
+	move(7,0);
+	printw("                                        ");
+	move(7,0);
+	printw("Nunchuck Z: %ld.%ld",sensor_data_cache.nunchuck_z_angular_position/100,sensor_data_cache.nunchuck_z_angular_position%100);
 	
 	move(20,0);
 	printw("Type 'q' to quit.");

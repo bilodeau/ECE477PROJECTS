@@ -1,16 +1,40 @@
 #include <avr/io.h>
+#include <math.h>
 #include <string.h>
 #include "../lib/delay.h"
 #include <stdio.h>
 #include "i2c.h"
 
-void query_barometer();
-void get_barometer_calibration();
-void query_barometer_true();
-
 short ac1, ac2, ac3, b1, b2, mb, mc, md; // the 11 calibration values
 unsigned short ac4,ac5,ac6;
 long temperature, pressure;     // the temp and pressure vars from the device
+long true_temp, true_pressure;
+double true_altitude;
+
+void hard_barometer_calibration(){
+	ac1 = -125;
+	ac2 = -121;
+	ac3 = -14472;
+	ac4 = 33850;
+	ac5 = 25136;
+	ac6 = 24000;
+	b1 = 5498;
+	b2 = 61;
+	mb = -32768;
+	mc = -8711;
+	md = 2868;
+
+    // now transmit back the values.
+    char temp[75];
+    sprintf(temp, "ac1 = %d, ac2= %d, ac3= %d", ac1, ac2, ac3);
+    transmit(temp);
+    sprintf(temp, "ac4= %u, ac5= %u, ac6= %u", ac4, ac5, ac6);
+    transmit(temp);
+    sprintf(temp, "b1= %d, b2= %d", b1, b2);
+    transmit(temp);
+    sprintf(temp, "mb= %d, mc= %d, md= %d", mb, mc, md);
+    transmit(temp);
+}
 
 void get_barometer_calibration(){
 	char starting_pos = 0xAA;       // 0xAA = start of calibration data
@@ -48,7 +72,7 @@ void get_barometer_calibration(){
 }
 
 // gets the temperature and pressure data
-void query_barometer(){
+void get_data_barometer(){
 	char buffer[2];
 	char count;
 	for (count=0;count<1;count++){
@@ -101,13 +125,17 @@ void query_barometer(){
 }// READS TWICE
 	// ** This only reads the pressure data once.  The spec sheet mentioned doing it twice.
 
+}
 
+void query_barometer(){
+	get_data_barometer();
 	char temp[50];      // this should be a big enough buffer
 	sprintf(temp,"p: %ld, t: %ld",pressure,temperature);
 	transmit(temp);
 }
 
-void query_barometer_true() {
+void get_data_barometer_true(){
+	get_data_barometer();
 	long ut;
 	long up;
 	long x1, x2, b5, b6, x3, b3, p;
@@ -119,7 +147,7 @@ void query_barometer_true() {
 	x1 = ((ut - ac6) * ac5) >> 15;
 	x2 = (mc << 11) / (x1 + md);
 	b5 = x1 + x2;
-	temperature = (b5 + 8) >> 4;
+	true_temp = (b5 + 8) >> 4;
 	
 	b6 = b5 - 4000;
 	x1 = (b2 * ((b6 * b6) >> 12)) >> 11;
@@ -135,10 +163,32 @@ void query_barometer_true() {
 	x1 = (p >> 8) * (p >> 8);
 	x1 = (x1 * 3038) >> 16;
 	x2 = (-7357 * p) >> 16;
-	pressure = p + ((x1 + x2 + 3791) >> 4);
-	
+	true_pressure = p + ((x1 + x2 + 3791) >> 4);
+
+
+	// compute altitude
+	double temp = true_pressure / 10132.5;
+	//temp = 1 - pow(temp,.19029);	
+	true_altitude = 44330 * temp;
+}
+
+void query_barometer_true(){
+	get_data_barometer_true();	
 	char temp[75];      // this should be a big enough buffer
-	sprintf(temp,"true_p: %ld, true_t: %ld",pressure,temperature);
+	sprintf(temp,"true_p: %ld, true_t: %ld",true_pressure,true_temp);
+	transmit(temp);	
+}
+
+void spam_barometer(){
+	get_data_barometer_true();
+	long t = true_temp;
+	long p = true_pressure;
+	long a = 100*true_altitude;
+	char temp[40];
+	sprintf(temp,"%c%c%ld",SENSORDATAPACKETCHARACTER,BAROMETERTEMPERATURE,t);
 	transmit(temp);
-	
+	sprintf(temp,"%c%c%ld",SENSORDATAPACKETCHARACTER,BAROMETERPRESSURE,p);
+	transmit(temp);
+	sprintf(temp,"%c%c%ld",SENSORDATAPACKETCHARACTER,BAROMETERALTITUDE,a);
+	transmit(temp);
 }

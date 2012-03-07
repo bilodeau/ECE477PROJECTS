@@ -7,7 +7,7 @@
 #include "baud.h"
 #include "data.h"
 
-#define LOG 0// saves all commands into a log file
+#define LOG 1// saves all commands into a log file
 #define PRINTDEBUG 0
 #define COMMANDBUFFERSIZE 41
 #define SERIALPORTDEFAULT "/dev/tty.usbmodemfd1221"
@@ -144,7 +144,6 @@ void save_sensor_data_packet(char code){
 		default:
 			sprintf(serial_command_buffer,"Bad Sensor Data Packet.");
 	}
-	log_serial_command();
 }
 
 void log_serial_command(){
