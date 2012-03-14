@@ -13,6 +13,8 @@
 char flags[5];
 char animation_flags[20];
 char animation_counter = 0;
+void led_on(char row, char col);
+void led_off();
 void led_on_i(int index);
 void flash_leds();
 void clear();

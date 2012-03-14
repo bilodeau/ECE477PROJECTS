@@ -5,14 +5,30 @@
 #include <string.h>
 #include "baud.h"
 
-void setup_serial();
-void transmit(char* str);
-void transmit_byte(char byte);
-void receive();
+// These two variables are globals used to tell when and what command has been received from the PC
+char receive_buffer[21];  // buffer to hold the actual characters received
+volatile char serial_command_ready = 0;  // this is a flag that's set when a complete command
+					 // has been received.  It is the responsibility of the
+					 // command processing code to ensure that this flag
+					 // is cleared when the command is processed.
 
-char receive_buffer[21];
-volatile char serial_command_ready = 0;
+void transmit_byte(char byte){
+	while( !(UCSRA & (1<<UDRE))); // wait for the data register to be empty
+	UDR = byte;		  // load the given byte into the data register for transmission
+}
 
+// sends the specified string to the PC and sends carriage return newline as terminating characters
+void transmit(char* str){
+	char x;
+	for(x=0; x <strlen(str);x++){
+		transmit_byte(str[x]); // transmit each byte in the string
+	}
+	transmit_byte('\r'); // transmit the terminating bytes
+	transmit_byte('\n');
+}
+
+// simple echo function that transmits back to the PC whatever command was send in.
+// used for debugging
 int test_echo(void) {
 	while(1){
 		if (serial_command_ready){
@@ -23,38 +39,24 @@ int test_echo(void) {
 	return 0;
 }
 
-void transmit(char* str){
-	char x;
-	for(x=0; x <strlen(str);x++){
-		transmit_byte(str[x]);
-	}
-	transmit_byte('\r');
-	transmit_byte('\n');
-}
-
-void transmit_byte(char byte){
-	while( !(UCSRA & (1<<UDRE)));
-	UDR = byte;
-
-}
-
+// Interrupt handler: called when we're just received a byte over serial
 ISR(USART_RXC_vect){
-	DDRB = 2;
-	PORTB = 0;
-	serial_command_ready = 1;
+	serial_command_ready = 1; // set the flag so that the rest of the program knows we'll have a command ready for processing
 	int x;
-	for(x=0;x<20;x++){
+	for(x=0;x<20;x++){  // wait and receive up to the next 20 bytes
 		while (!(UCSRA & (1<<RXC)));
 		receive_buffer[x] = UDR;
+		
+		// if we've just received carriage return newline
 		if((receive_buffer[x] == '\n')&&(receive_buffer[x-1] == '\r')){
 			receive_buffer[x-1] = '\0'; // terminates the string before carriage return newline
 			x = 20;
-			break;
+			break; // stop receiving
 		}
 	}
-	PORTB = 2;
 }
 
+// blanks out the receive buffer so we're ready for new data
 void clear_receive_buffer(){
 	char x;
 	for(x=0;x<21;x++)

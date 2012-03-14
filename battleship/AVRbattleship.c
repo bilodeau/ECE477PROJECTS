@@ -3,7 +3,7 @@
 #include "../charlie/charlie.h"
 #include "AVRserial.h"
 
-int init_game();
+void init_game();
 void add_three_ship();
 void add_two_ship();
 int game_status();
@@ -11,40 +11,44 @@ int process_request();
 void check_hits(int request);
 void setup_interrupt();
 
-unsigned int mode = 0;
-char init_game_flag = 1;
-char ship_pos[20], shots_fired[20], shots_hit[20];  // create arrays for game
+unsigned int mode = 0;  // this is the current display mode setting, 0 is misses lit, hits off.
+char init_game_flag = 1; // this is a flag that indicates when we need to setup a new game
+char ship_pos[20], shots_fired[20], shots_hit[20];  // create arrays for holding game board data
 
 int main() {
 	setup_serial();                    	// initialize serial port
 	setup_interrupt();			// setup interrupt
 	sei(); // enable interrupts globally
-	while (1) {         // until game is over
-		if (init_game_flag)
+	while (1) {         // loop forever
+		if (init_game_flag){ // if the flag is set, begin a new game
+			init_game_flag = 0; // clear the flag
 			init_game();        // zero out arrays and add ships to game
-		
-		if (serial_command_ready){
-			serial_command_ready = 0;
+		}
+		if (serial_command_ready){  // if we have received a complete command from the PC
+			serial_command_ready = 0;  // clear the flag
 			int request = process_request();    // process request
         		if (request > -1) {                 // if request >= 0, then it is a shot
             			shots_fired[request] = 1;       // update shots fired array
             			check_hits(request);  // check if shot is successful
-            			if (game_status()){       // check if game is over
-        				// animate yay!
+            			if (game_status()){   // check if game is over
+        				// switch to victory animation mode (60<mode<100)
+					// how MUCH greater than 60 determines the duration of
+					// the animation
 					mode = 100;
 				}
-			} else if (request == -1) {         // if request == -1, then RESET the game
-            			//show ships
+			} else if (request == -1) {  // if request == -1, then RESET the game
+            			// switch to show ships mode, (1<mode<60)
+				// distance from 60 determines the duration of the animation
 				mode = 2;
         		}
 		}
-		if(mode == 0){
+		if(mode == 0){ // misses lit, hits off
 			flash_leds_from_array_AND_NOT(shots_fired,shots_hit);
-		} else if (mode == 1) {
+		} else if (mode == 1) { // misses and hits lit
 			flash_leds_from_array(shots_fired);
-		} else if(mode < 60){
+		} else if(mode < 60){ // 'show ships' mode
 			flash_leds_from_array(ship_pos);
-    		} else {
+    		} else { // victory animation mode
 			flash_leds_from_array(animation_flags);
 		}	
     	}
@@ -52,11 +56,11 @@ int main() {
 }
 
 ISR(TIMER1_COMPA_vect){	
-	if (mode ==  60){ // timed out, restart the game		
+	if (mode ==  60){ // animation timed out, restart the game		
 		init_game_flag = 1;
-	}else if(mode == 101){
+	}else if(mode == 101){ // radar animation mode
 		radar_animation_loop(); // radar animation mode is ended by user input
-	}else if (mode > 60){ // explosion mode counts down from 100 to 60 
+	}else if (mode > 60){ // victory animation mode counts down from 100 to 60 
 		explosion_animation_loop();
 		mode--;
 	}else if (mode < 2){
@@ -66,26 +70,25 @@ ISR(TIMER1_COMPA_vect){
 	}
 }
 
+// Waits in radar mode for user input
 // Takes the three game arrays and zeroes them out.
 // Then adds a 3-ship and a 2-ship to the ship_pos array
-int init_game() {
-	init_game_flag = 0;
-	setup_animation();
-	mode = 101;
-	while(!serial_command_ready){
-		rand(); // discard pseudo random numbers
+void init_game() {
+	setup_animation(); // charlie.h call zeros out the animation array we're going to use
+	mode = 101; // set radar animation mode
+	while(!serial_command_ready){  // wait until we get user input
+		rand(); // discard pseudo random numbers so we get a random 'seed'
 		flash_leds_from_array(animation_flags);
 	}
-	mode = 0;
+	mode = 0; // switch back to hits/misses mode
 	int i;
-    for (i = 0; i < 20; i++) {  // zero out char arrays
+    for (i = 0; i < 20; i++) {  // zero out game board arrays
         shots_fired[i] = 0;
         shots_hit[i] = 0;
         ship_pos[i] = 0;
     }
     add_three_ship();       // add three_ship
     add_two_ship();         // add two ship
-    return 0;                // return game
 }
 
 // Adds a ship of length three to the ship_pos array
@@ -256,8 +259,8 @@ void check_hits(int request) {
 
 // Setup interrupt
 void setup_interrupt() {
-	TCCR1A = 0;
-	TCCR1B = 0x0b;
-	OCR1A = 8000;
-	TIMSK = 16;
+	TCCR1A = 0;  // Don't use any output compare pins
+	TCCR1B = 0x0b;  // Use WGM mode 4 (CTC) with prescaler 1/64
+	OCR1A = 8000; // TOP value for the timer
+	TIMSK = (1<<OCIE1A); // enable interrupt for when timer = TOP
 }
