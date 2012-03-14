@@ -8,6 +8,7 @@
 #include "data.h"
 
 #define LOG 1// saves all commands into a log file
+#define LOGSPAM 0
 #define PRINTDEBUG 0
 #define COMMANDBUFFERSIZE 41
 #define SERIALPORTDEFAULT "/dev/tty.usbmodemfd1221"
@@ -98,6 +99,8 @@ void read_from_serial_port(){
 void process_serial_command(){
 	if (serial_command_buffer[0] == SENSORDATAPACKETCHARACTER){
 		save_sensor_data_packet(serial_command_buffer[1]);
+		if (LOGSPAM)
+			log_serial_command();
 	}else{
 		sprintf(last_command_received,"%s",serial_command_buffer);
 		log_serial_command();

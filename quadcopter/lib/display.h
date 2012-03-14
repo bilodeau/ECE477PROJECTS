@@ -57,6 +57,16 @@ void refresh_display(){
 	printw("                                        ");
 	move(7,0);
 	printw("Nunchuck Z: %ld.%ld",sensor_data_cache.nunchuck_z_angular_position/100,sensor_data_cache.nunchuck_z_angular_position%100);
+
+	move(8,0);
+	printw("                                        ");
+	move(8,0);
+	printw("Gyroscope X (deg/sec): %ld",sensor_data_cache.gyroscope_x_rotational_velocity);
+	
+	move(8,40);
+	printw("                                        ");
+	move(8,40);
+	printw("Gyroscope Y (deg/sec): %ld",sensor_data_cache.gyroscope_y_rotational_velocity);
 	
 	move(20,0);
 	printw("Type 'q' to quit.");

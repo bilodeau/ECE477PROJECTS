@@ -6,6 +6,7 @@
 #include "barometer.h"
 #include "../lib/sonar.h"
 #include "nunchuck.h"
+#include "gyro.h"
 
 void forward_command();
 void setup_spam();
@@ -32,9 +33,12 @@ int main(){
         return 0;
 }
 
-// issues the command in serial_command_buffer to the i2c bus
 void forward_command(){
-        if (!strcmp(receive_buffer,"MD")){
+	if(!strcmp(receive_buffer,"GP")){
+		power_on_gyro();
+	}else if(!strcmp(receive_buffer,"GD")){
+		query_gyro();	
+	}else if(!strcmp(receive_buffer,"MD")){
                 query_magnetometer();
         }else if (!strcmp(receive_buffer,"MP")){
                power_on_magnetometer();
@@ -56,6 +60,8 @@ void forward_command(){
 		power_on_nunchuck();
 	}else if(!strcmp(receive_buffer,"ND")){
 		query_nunchuck();
+	}else if(!strcmp(receive_buffer,"NC")){
+		get_forty_nunchuck();
 	}
 }
 
@@ -73,8 +79,9 @@ ISR(TIMER0_OVF_vect){
 
 // queries all devices and sends appropriate data packets out to the PC
 void send_spam(){
-	//spam_magnetometer();
-	//spam_barometer();
+	spam_magnetometer();
+	spam_barometer();
 	spam_sonar();
 	//spam_nunchuck();
+	spam_gyro();
 }

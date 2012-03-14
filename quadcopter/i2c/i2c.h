@@ -17,9 +17,8 @@ void process_i2c_bus_write(char write_address, char* data, char numbytes);
 void send_stop_condition();
 
 void setup_i2c(){
-	TWBR = 2; // use 100kHz
+	TWBR = 2; // use 400kHz
 	TWSR &= ~3; // use prescaler 1
-	TWSR |= 2; // just kidding, usae prescaler 16
 }
 
 void send_stop_condition(){

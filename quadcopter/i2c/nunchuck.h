@@ -8,9 +8,17 @@ long nunchuck_x, nunchuck_y, nunchuck_z;
 long button1, button2;
 
 void power_on_nunchuck(){
-        char init[2] = {0x40,0x00};
+        char init[2];
+	init[0] = 0x40;
+	init[1] = 0x00;
         process_i2c_bus_write(0xA4,init,2);
 	send_stop_condition();
+/*	delay(1);
+	init[0] = 0xFB;
+	init[1] = 0x00;
+	process_i2c_bus_write(0xA4,init,2);
+	send_stop_condition();
+*/
 }
 
 void get_nunchuck_status(){
@@ -24,10 +32,26 @@ void get_nunchuck_status(){
 	transmit(temp);
 }
 
+void get_forty_nunchuck(){
+	char b = 0x40;
+	process_i2c_bus_write(0xA4,&b,1);
+	process_i2c_bus_read(0xA5,&b,1);
+	send_stop_condition();
+	char temp[40];
+	sprintf(temp,"control byte is: %x", b);
+	transmit(temp);
+}
+
+void send_zero_nunchuck(){
+	char b = 0;
+	process_i2c_bus_write(0xA4,&b,1);
+	send_stop_condition();
+}
+
 void get_data_nunchuck(){
-        char buffer[6];
-	buffer[0] = 0x00;
-	process_i2c_bus_write(0xA4,buffer,1);
+	char b = 0;
+	process_i2c_bus_write(0xA4,&b,1);
+	char buffer[6];
         process_i2c_bus_read(0xA5,buffer,6); 
 	send_stop_condition();
 	
