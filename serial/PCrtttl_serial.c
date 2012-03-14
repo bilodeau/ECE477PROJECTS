@@ -11,7 +11,7 @@
 #include "baud.h"
 
 #define SOUNDOFF 1
-#define PRINTDEBUG 1
+#define PRINTDEBUG 0
 
 void play_tune(struct note notes[], int tempo, int count, int serialport);
 void mysetup_serial_port(int *serialport);
@@ -26,6 +26,7 @@ int main() {
 	PRINTDEBUG&&printf("notes parsed OK\n");
 	play_tune(notes, bpm, num_notes, serialport);
 	free(notes);
+	transmit_note(serialport,0); // make sure the led is off at the end
 }
 
 void play_tune(struct note notes[], int tempo, int count, int serialport){

@@ -37,7 +37,7 @@ void process_command(){
 		}
 	}else if(!strncmp(receive_buffer,"SET",3)){
 		if (!strncmp(receive_buffer+3," B1 ",4)){
-			char temp;
+			int temp;
 			if ((sscanf(receive_buffer+7,"%d",&temp)==1)&&((temp>=0)&&(temp<=100))){
 				brightness = temp;
 				char echo[20];
@@ -75,24 +75,23 @@ void receive(){
 }
 
 void setup_PWM(){
-	DDRB = 2;
-	OCR1A = 0;
-	TCCR1A = 0xc0;
-	TCCR1B = 0x11;
-	ICR1 = 10000;
+	DDRB = 2;  // use PB1 as an output pin
+	OCR1A = 0;  // initial compare value is zero (zero duty cycle = zero brightness)
+	TCCR1A = 0xc0; // set on compare match (the led is connected high so this turns it off) 
+	TCCR1B = 0x11; // WGM mode 8, prescaler 1
+	ICR1 = 10000; // TOP value
 	sei();
 }
 
 void setup_serial(){
-	// setup baud rate
-	UBRRH = MYUBRRH;// 0;//(unsigned char) ((MYUBRR)>>8);
-	UBRRL = MYUBRRL;//12;//(unsigned char) MYUBRR;
-	
-	UCSRA |= MYUCSRA;//(1<<UDRE)|(1<<U2X); // turn on double speed mode!!
+	// setup baud rate and frame according to the defines in baud.h
+	UBRRH = MYUBRRH;
+	UBRRL = MYUBRRL;
+	UCSRA = MYUCSRA;
+	UCSRC = MYUCSRC;
+
 	// enable receiver and transmitter
 	UCSRB = (1<<RXEN)|(1<<TXEN);
-	// set frame format: 8 data, 2 stop bit
-	UCSRC = MYUCSRC;//(1<<URSEL)|(1<<USBS)|(3<<UCSZ0);
 	
 	// configure interrupts
 	UCSRB |= (0<<RXCIE)|(0<<TXCIE)|(0<<UDRIE);	

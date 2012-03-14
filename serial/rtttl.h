@@ -22,6 +22,3 @@ struct defaults {
    	int oct;
 };
 #endif
-
-void error(char* errorcode);
-

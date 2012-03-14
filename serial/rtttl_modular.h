@@ -29,6 +29,7 @@ char *break_up_string(char *ptr, char *defs);
 int count_notes(char song[], char c);
 char *clear_space(char *ptr);
 int isEmpty(char* ptr);
+void error(char* errorcode);
 
 struct note* get_note_array(int *bpm, int *num_notes) {
   char song[] = "HauntedHouse: d=4,o=5,b=120: 2a4, 2e, 2d#, 2b4, 2a4, 2c, 2d, 2a#4, 2e., e, 1f4, 1a4, 1d#, 2e., d, 2c., b4, 1a4, 1p, 2a4, 2e, 2d#, 2b4, 2a4, 2c, 2d, 2a#4, 2e., e, 1f4, 1a4, 1d#, 2e., d, 2c., b4, 1a4";
