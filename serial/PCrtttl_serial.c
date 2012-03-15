@@ -2,6 +2,7 @@
 #include <string.h>
 #include <ctype.h>
 #include <math.h>
+#include <sys/io.h>
 #include <stdlib.h>
 #include <termios.h>
 #include <unistd.h>
@@ -10,7 +11,7 @@
 #include "rtttl_modular.h"
 #include "baud.h"
 
-#define SOUNDOFF 1
+#define SOUNDOFF 0
 #define PRINTDEBUG 0
 
 void play_tune(struct note notes[], int tempo, int count, int serialport);
@@ -22,7 +23,7 @@ int main() {
 	int serialport;
 	struct note *notes;
 	mysetup_serial_port(&serialport);	
-	notes = get_note_array(&bpm, &num_notes);
+	notes = get_note_array(&bpm, &num_notes); // parses the notes into an array of note structs
 	PRINTDEBUG&&printf("notes parsed OK\n");
 	play_tune(notes, bpm, num_notes, serialport);
 	free(notes);
@@ -34,16 +35,16 @@ void play_tune(struct note notes[], int tempo, int count, int serialport){
   	int i = 0;
   	for(i = 0; i < count; i++) {
     		struct note n = notes[i];
-		if(SOUNDOFF){
+		if(SOUNDOFF){ // simulate playing the tune without trying to actually use the speaker
       			printf("playing freq: %d\n", n.divisor);
       			printf("waiting for: %f\n",n.cycles/1000000.);      
-			transmit_note(serialport, n.divisor);
+			transmit_note(serialport, n.divisor); // send a command to AVR with a given brightness
 			usleep(n.cycles);
 			query_note(serialport);
     		} else {
       			int temp = n.divisor;
       			if (n.divisor != 0) {		// this note is not a rest
-				transmit_note(serialport, n.divisor);
+				transmit_note(serialport, n.divisor); // send a command to the AVR with the given brightness
 				query_note(serialport);
 				outb(inb(0x61)|3,0x61);		// speaker on
 				outb(temp&255,0x42); 		// low byte out
@@ -58,14 +59,15 @@ void play_tune(struct note notes[], int tempo, int count, int serialport){
   	}
 }
 
+// sends the AVR a command to set a brightness which we calculate from the given divisor
 int transmit_note(int serialport, int divisor) {
-	char brightness = ((log(1./divisor) + 9) * 34.6);// calc normalized brightness
+	char brightness = ((log(1./divisor) + 9) * 34.6);// calculate normalized brightness
 	PRINTDEBUG&&printf("calculated brightness is: %d\n",brightness);
 	char *string = malloc(20*sizeof(char));
-	sprintf(string, "SET B1 %d\r\n", brightness);	
+	sprintf(string, "SET B1 %d\r\n", brightness);
 	
 	// send brightness value to AVR
-	if (strlen(string) > 20){
+	if (strlen(string) > 20){ // don't send it if the command string is too long / misformatted
 		PRINTDEBUG&&printf("Command Too Long...");
 	} else {
 		int test = write(serialport,string,strlen(string));
@@ -74,13 +76,8 @@ int transmit_note(int serialport, int divisor) {
 	return 0;
 }
 
+// waits for, reads in, and prints out the AVR's response
 int query_note(int serialport) {
-/*
-	// send brightness query
-	char string[] = "GET B1\r\n";
-	int test = write(serialport,string,strlen(string));
-	PRINTDEBUG&&printf("string sent: %s\nbytes sent:  %d\n",string,test);
-*/
 	// read AVR response and print data to stdout
 	char buffer[21];
 	int test = read(serialport, buffer, 20);
@@ -92,8 +89,10 @@ int query_note(int serialport) {
 	}		 
 }
 
+// configure the serial port for communication
 void mysetup_serial_port(int *serialport) {	
 	PRINTDEBUG&&printf("about to open port...\n");
+	// open the port non-blocking, read/write
 	*serialport = open("/dev/tty.usbmodemfd1221",O_NONBLOCK|O_RDWR|O_NOCTTY);
 	PRINTDEBUG&&printf("opened port, now check if null\n");
 	if (*serialport  == -1){
@@ -106,16 +105,16 @@ void mysetup_serial_port(int *serialport) {
 	tcgetattr(*serialport,&attribs);
 
 	PRINTDEBUG&&printf("got attributes ok...\n");
-	attribs.c_cflag &= ~CSIZE;
-	attribs.c_cflag |= CS8;
-	attribs.c_cflag |= CLOCAL|CREAD;
-	attribs.c_iflag |= IGNPAR;
+	attribs.c_cflag &= ~CSIZE; // this mask is required when setting the frame size
+	attribs.c_cflag |= CS8;	// use the frame size of 8 bits
+	attribs.c_cflag |= CLOCAL|CREAD; // enable receiver and don't transfer control of the port
+	attribs.c_iflag |= IGNPAR; // ignore parity
 	attribs.c_oflag |= 0;
-	attribs.c_lflag &= ~ICANON;
+	attribs.c_lflag &= ~ICANON;  // don't use canonical mode, so that bytes are sent instantly
 	cfmakeraw(&attribs);
-	cfsetispeed(&attribs,PCBAUDRATE);
+	cfsetispeed(&attribs,PCBAUDRATE); // use the baud rate define from baud.h
 	cfsetospeed(&attribs,PCBAUDRATE);
 
-	tcsetattr(*serialport,TCSANOW,&attribs);
+	tcsetattr(*serialport,TCSANOW,&attribs); // actually set the attributes we've setup
 	PRINTDEBUG&&printf("done with attributes...\n");
 }
