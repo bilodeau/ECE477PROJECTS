@@ -31,7 +31,7 @@ int main() {
 }
 
 void play_tune(struct note notes[], int tempo, int count, int serialport){
-(!SOUNDOFF)&&outb(0xb6,0x43);	// config byte out
+	(!SOUNDOFF)&&outb(0xb6,0x43);	// config byte out
   	int i = 0;
   	for(i = 0; i < count; i++) {
     		struct note n = notes[i];
