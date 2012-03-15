@@ -58,7 +58,7 @@ struct note* get_note_array(int *bpm, int *num_notes) {
   *bpm = defs.bpm;
   *num_notes = i;
 
-  free(defaultsstring);					// free memory
+  free(defaultsstring); // free memory
   return notes;
 }
 
