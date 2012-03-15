@@ -93,8 +93,7 @@ int query_note(int serialport) {
 // configure the serial port for communication
 void mysetup_serial_port(int *serialport) {	
 	PRINTDEBUG&&printf("about to open port...\n");
-	// open the port non-blocking, read/write
-	// place file index into the var serialport
+	// open the port non-blocking, read/write and place the file index into the var serialport
 	*serialport = open("/dev/tty.usbmodemfd1221",O_NONBLOCK|O_RDWR|O_NOCTTY);
 	PRINTDEBUG&&printf("opened port, now check if null\n");
 	if (*serialport  == -1){	// catch a bad serial port open call
