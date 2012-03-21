@@ -31,21 +31,23 @@ char *clear_space(char *ptr);
 int isEmpty(char* ptr);
 void error(char* errorcode);
 
+// returns an array of note structs corresponding to the notes of Haunted House.
+// takes pointers to variables for bpm and number of notes and fills them
+// with the proper vaalues.
 struct note* get_note_array(int *bpm, int *num_notes) {
   char song[] = "HauntedHouse: d=4,o=5,b=120: 2a4, 2e, 2d#, 2b4, 2a4, 2c, 2d, 2a#4, 2e., e, 1f4, 1a4, 1d#, 2e., d, 2c., b4, 1a4, 1p, 2a4, 2e, 2d#, 2b4, 2a4, 2c, 2d, 2a#4, 2e., e, 1f4, 1a4, 1d#, 2e., d, 2c., b4, 1a4";
-
   char *defaultsstring, *tune;
   struct defaults defs;
 
-  defaultsstring = malloc(strlen(song) + 1);  	// allocate memory for the defaults section of the string
+  defaultsstring = malloc(strlen(song) + 1);    // allocate memory for the defaults section of the string
   if (defaultsstring == NULL){error("Out of memory.");}
 
   tune = break_up_string(song, defaultsstring);		// break up song into its 3 parts.
 
   parse_defaults(defaultsstring,&defs);			// parse default string into default struct
 
-  int count = count_notes(tune, ',');
-  struct note* notes = malloc(sizeof(struct note)*count);
+  int count = count_notes(tune, ','); // get number of notes
+  struct note* notes = malloc(sizeof(struct note)*count); // allocate memory for notes
 
   int i = 0;
   char *currentNote = tune;				// while there are notes in the note section, parse them into the array
@@ -55,11 +57,11 @@ struct note* get_note_array(int *bpm, int *num_notes) {
     i++;
   }
 
-  *bpm = defs.bpm;
-  *num_notes = i;
+  *bpm = defs.bpm;  // assign proper bpm
+  *num_notes = i;   // assign proper number of notes
 
   free(defaultsstring); // free memory
-  return notes;
+  return notes; // return note struct array
 }
 
 // counts the number of commas in the song section and returns the count + 1
@@ -79,68 +81,73 @@ int count_notes(char song[], char c) {
 char *break_up_string(char *ptr, char *defs) {
   char *defsstr, *tune;
 
-  defsstr = strchr(ptr, ':') + 1;
-  tune = strchr(defsstr, ':') + 1;
+  defsstr = strchr(ptr, ':') + 1; // advance ptr beyond first ':'
+  tune = strchr(defsstr, ':') + 1;  // advance ptr beyond second ':'
 
-  sscanf(defsstr, "%[^:]", defs);
+  sscanf(defsstr, "%[^:]", defs); // parse defaults
 
-  return tune;
+  return tune;  // return ptr to the "tune" section opf the RTTTL string
 }
 
+// advances a char ptr to the next character in the string that isn't white space
+// returns the new ptr
 char *clear_space(char *ptr) {
-  char* dummy = malloc(strlen(ptr) + 1);
-  dummy[0] = '\0';
-  sscanf(ptr,"%[ ]",dummy);
-  ptr += strlen(dummy);
+  char* dummy = malloc(strlen(ptr) + 1);  // allocate memory
+  dummy[0] = '\0';  // set delimiter
+  sscanf(ptr,"%[ ]",dummy); // scan all chars that are white space and put into dummy buffer
+  ptr += strlen(dummy); // advance pointer the length of "dummy"
   free(dummy);
-  return ptr;
+  return ptr; // return new ptr
 }
 
+// parse defaults values into a defaults struct
 void parse_defaults(char *ptr, struct defaults *def) {
 
   // Establish default values
 
   ptr = clear_space(ptr);		// advance ptr through empty space
 
-  def->len = DDURATION;		// establish default values
-  def->bpm = DBPM;
-  def->oct = DOCTAVE;
+  def->len = DDURATION;		// establish default duration
+  def->bpm = DBPM;        // establish default bpm
+  def->oct = DOCTAVE;     // establish default octave
 
   char *temp = malloc(strlen(ptr) + 1);		// temp var to hold scanned items
 
   sscanf(ptr, "%[^,]", temp);	// scan first item and parse
-  parse_s_def(temp, def);
+  parse_s_def(temp, def);     // parse a single element of the defaults section
 
   while ((ptr = strchr(ptr, ',')) != NULL) {	// while there are more defaults, scan them and parse
-    ptr += 1;
-    sscanf(ptr, "%[^,]", temp);
-    parse_s_def(temp, def);
+    ptr += 1;   // increment ptr since it is currently pointing at ','
+    sscanf(ptr, "%[^,]", temp);   // scan up to next ','
+    parse_s_def(temp, def);       // parse the scanned single element
   }
 
   free (temp);		// free memory
 }
 
+// parses a given char ptr as a type of default assignment and places it into the
+// specified defaults struct
 void parse_s_def(char *ptr, struct defaults *def) {
 
-  ptr = clear_space(ptr);
+  ptr = clear_space(ptr); // clear any white space
 
-  char *temp = malloc(strlen(ptr) + 1);
-  if (temp == NULL){error("Out of memory.");}
+  char *temp = malloc(strlen(ptr) + 1);   // allocate var to hold
+  if (temp == NULL){error("Out of memory.");}   // check for Out of Memory
 
-  if (sscanf(ptr, "%[^=]", temp) > 1) {error("Bad Defaults String.");
-  }
+  if (sscanf(ptr, "%[^=]", temp) > 1) {error("Bad Defaults String.");}  // scan up to '='
 
-  *temp = toupper(*temp);
+  *temp = toupper(*temp);   // capitalize temp to simplify case checking
 
+  // check if char is equal to one of the value octave categories. return Bad if not.
   if (*temp == 'D') {
-    ptr = strchr(ptr, '=') + 1;
-    sscanf(ptr, "%d", &(def->len));
+    ptr = strchr(ptr, '=') + 1;   // advance pointed beyond '='
+    sscanf(ptr, "%d", &(def->len)); // scan decimal value at ptr into the len of defs
   } else if (*temp == 'B') {
-    ptr = strchr(ptr, '=') + 1;
-    sscanf(ptr, "%d", &(def->bpm));
+    ptr = strchr(ptr, '=') + 1;   // advance pointed beyond '='
+    sscanf(ptr, "%d", &(def->bpm)); // scan decimal value at ptr into the bpm of defs
   } else if (*temp =='O') {
-    ptr = strchr(ptr, '=') + 1;
-    sscanf(ptr, "%d", &(def->oct));
+    ptr = strchr(ptr, '=') + 1;  // advance pointed beyond '='
+    sscanf(ptr, "%d", &(def->oct)); // scan decimal value at ptr into the oct of defs
   }
   else {
     error("Bad Default Identifier.");
@@ -148,6 +155,7 @@ void parse_s_def(char *ptr, struct defaults *def) {
 
   free(temp);
 }
+
 
 char *parse_note_string(char *ptr, struct defaults *def, struct note *note){
   char len_string[3];
