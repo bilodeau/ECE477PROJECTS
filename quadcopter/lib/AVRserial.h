@@ -6,6 +6,7 @@
 
 
 #define FLASHONSERIAL 0 // flashes the led on PB1 every time serial communication happens
+			// note that the actual flash lines are commented out below
 #define RECEIVEBUFFERSIZE 20
 
 void setup_serial();
@@ -37,7 +38,7 @@ void transmit_byte(char byte){
 }
 
 ISR(USART_RX_vect){
-	FLASHONSERIAL&&(DDRB = 2,PORTB = 0);
+	//if(FLASHONSERIAL)DDRB = 2,PORTB = 0;
 	if (receive_buffer_index == 0){
 		clear_receive_buffer();
 		serial_command_ready = 0;
@@ -45,7 +46,7 @@ ISR(USART_RX_vect){
 	while (!(UCSR0A & (1<<RXC0)));
 	receive_buffer[receive_buffer_index] = UDR0;
 	check_buffer();
-	FLASHONSERIAL&&(PORTB = 2);
+	//if(FLASHONSERIAL)PORTB = 2;
 }
 
 // checks to see if we've got a complete command in the buffer

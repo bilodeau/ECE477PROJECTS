@@ -24,7 +24,7 @@ This is supposed to be the basis of our final lab report.  Ideally, each section
 I've listed part numbers (and sparkfun SKUs, they have spec sheets and examples) for each of the devices I have already (or if they are in the mail).  If something is obviously wrong, or there's a much better alternative out there let me know ASAP so I can get something on order.  I'm anticipating placing another parts order in the near future so please share any 'maybe' ideas also.  I definitely do not want to run into a time crunch with parts still in the mail.
 
 \section{Frame}
-The quadcopter frame is constructed from 3/4" square aluminium tubing, in a 'X' with 55cm arms.  Motors are mounted 3cm from the end of each arm, using 5mm bolts, washers and locknuts.  The center of the frame has matching notches in each arm and plastic squares are bolted above and below to provide an electronics mounting platform.
+The quadcopter frame is constructed from 3/4" square aluminium tubing, in a 'X' with 55cm arms.  Motors are mounted 3cm from the end of each arm, using 5mm bolts, washers and nylon locknuts.  The center of the frame has matching notches in each arm and plastic squares are bolted above and below to provide an electronics mounting platform.
 
 electronics mounting (sonar / sensors)\\
 electonics protection\\
@@ -41,13 +41,12 @@ wire dressing\\
 3.3v power supply (voltage regulator)\\
 Li-Po alarm (TURNIGY 3~8S Voltage Detector)\\
 battery life (on the order of 3-10minutes?)\\
-do we need to order another / bigger battey pack?\\
+do we need to order another / bigger battery pack to increase flight time?\\
 battery charging is a little complicated\\
 battery storage (thing is dangerous man)\\
 
 \section{Communication}
-PC to ATmega328 via serial\\
-wireless coms over ZigBee?\\
+PC to ATmega328 via serial over XBee modules\\
 
 Serial communications are buffered on both the PC and AVR.  Communications sent and received by the PC are dumped into a log file for later reference.  (Logs should be timestamped...)
 
@@ -71,16 +70,16 @@ What are the thrust limits for these motors / props? Any vibration or balancing 
 What is the function mapping RPM to thrust?  How much thrust do we lose when flying at an angle?\\
 How much of an RPM difference is necessary to generate rotation about the yaw axis?\\
 
-HK-SS18A/6456 Hobbyking SS Series 15-18A ESC\\
+During debugging, we shorted two ESCs (HK-SS18A/6456 Hobbyking SS Series 15-18A ESC) so we switched to Hoobywing 18A FlyFun ESCs which are higher quality and have more programming options.\\
 DT700/6246 hexTronik DT700 Brushless Outrunner 700kv Motors\\
 HCB-10/11333 10x6 Propellers (Standard and Counter Rotating) These are 10 inch props.\\
 
-ESC input spec (either PWM or pulse per second based?)\\
+ESC require PWM input pulses of 1-2us (ms?) width.  1 ms pulses correspond to zero throttle or idle, and 2ms pulses correspond to full throttle.\\
 ESC 'programming' via full throttle/idle toggling on boot up\\
-ESC modes are based on battery type?\\
+ESC modes are based on battery type.  LiPoly, NiMH.\\
 
 \section{Microcontroller}
-ATmega328 - the chip I have currently has an Arduino bootloader on it, not sure what that means with respect to fuses / programming
+For the main control and communication processing, we use an ATmega328p chip.  This chip is connected via serial to an XBee module for communication to the PC and connected to sensors and a dedicated sensor control ATmega328p via an $i2c$ bus.
 
 \section{Sensors}
 what can we use for indoor (or short distance) position/movement sensing?
@@ -89,7 +88,8 @@ what can we use for indoor (or short distance) position/movement sensing?
 PING))) Ultrasonic Distance Sensor\\
 2 cm to 3m range\\
 use for takeoff and landing as well as smart low altitude hold\\
-already have some working AVR code for this device
+
+The sonar sensor has three pins: power, ground, and signal.  The signal line is used both to trigger a sonar pulse, and to transmit a pulse corresponding to the distance to target.
 
 \subsection{2-Axis Gyroscope}
 IDG500 - SEN-09094\\
