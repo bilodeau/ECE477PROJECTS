@@ -8,8 +8,14 @@
 #define SLAVEADDRESS 0xAA
 
 void setup_i2c_slave();
-void process_slave_write();
-void process_slave_read();
+void process_slave_receive();
+void process_slave_transmit();
+
+char slave_receive_buffer_index;
+char slave_receive_buffer[20];
+
+char slave_transmit_buffer_index;
+char slave_transmit_buffer[20];
 
 void setup_i2c_slave(){
 	TWAR = SLAVEADDRESS; // set this chip's own slave address
@@ -19,21 +25,36 @@ void setup_i2c_slave(){
 
 // interrupt handler for watching the TWINT flag
 ISR(TWI_vect){
-	TWSR &= ~(1<<TWINT); 
+	TWSR |= (1<<TWINT); // have to set the bit to clear the flag
 	// read out from the status register
-	char status = TWSR&(~3); // mask off the prescaler bits
-	if (status = ){
-		process_slave_write();
-	}else if (status = ){
-		process_slave_read();
-	}	
+	char status = TWSR & 0xF8; // mask off the prescaler bits
+	if (status == 0x60){
+		slave_receive_buffer_index = 0;
+	}else if(){
+		process_slave_receive();
+	}else if (status == 0xA8){
+		process_slave_transmit();
+	}else{
+		// BAD STATUS CODE READ
+	}
 }
 
-void process_slave_write(){
+void process_slave_receive(){
 	// switch to slave receiver mode
+	slave_receive_buffer_index = 0;
+	while((TWSR & 0xF8) != 0xA0){
+		while();
+		slave_receive_buffer[slave_receive_buffer_index] = TWDR;
+		slave_receive_buffer_index++;
+	}
+	
+	// first byte is the sensor code
+	// second byte is set or get
+	// third (optional) byte is the high byte of the value to set
+	// fourth (optional) byte is the low byte of the value to set
 }
 
-void process_slave_read(){
+void process_slave_transmit(){
 	// switch to slave transmitter mode
 }
 

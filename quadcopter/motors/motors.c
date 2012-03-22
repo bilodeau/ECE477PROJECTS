@@ -32,6 +32,7 @@ void setup_motors(){
 	TCCR2B = (1<<WGM02)|5;
 	
 	// TOP value of FF leaves a frequency of ~30hz Hz	
+	// pwm frequency needs to be 50hz to 500hz
 		
 	OCR0A = 156; // yields a pulse on of about 1 millisecond
 	OCR0B = 8;
