@@ -13,12 +13,6 @@ void power_on_nunchuck(){
 	init[1] = 0x00;
         process_i2c_bus_write(0xA4,init,2);
 	send_stop_condition();
-/*	delay(1);
-	init[0] = 0xFB;
-	init[1] = 0x00;
-	process_i2c_bus_write(0xA4,init,2);
-	send_stop_condition();
-*/
 }
 
 void get_nunchuck_status(){
@@ -49,8 +43,6 @@ void send_zero_nunchuck(){
 }
 
 void get_data_nunchuck(){
-	char b = 0;
-	process_i2c_bus_write(0xA4,&b,1);
 	char buffer[6];
         process_i2c_bus_read(0xA5,buffer,6); 
 	send_stop_condition();
@@ -60,6 +52,8 @@ void get_data_nunchuck(){
 	nunchuck_z = (buffer[4]<<2)|((buffer[5]>>6)&(3));
 	button1 = buffer[5]&1;
 	button2 = (buffer[5]>>1)&1;
+
+	send_zero_nunchuck();
 }
 
 void query_nunchuck(){

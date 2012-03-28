@@ -4,10 +4,10 @@
 #include <string.h>
 #include "magnetometer.h"
 #include "barometer.h"
-#include "../lib/sonar.h"
 #include "nunchuck.h"
 #include "gyro.h"
 
+void query_slave(char sensor_address, char numbytes);
 void forward_command();
 void setup_spam();
 void send_spam();
@@ -18,7 +18,6 @@ int main(){
 	setup_delay();
 	setup_serial();
         setup_i2c();
-	setup_sonar();
         serial_command_ready = 0;
         while(1){
 		if (serial_command_ready){
@@ -31,6 +30,27 @@ int main(){
 		}   
         }   
         return 0;
+}
+
+void query_slave(char sensor_address, char numbytes){
+	
+	char b[2];
+	b[0] = 12;//sensor_address;
+	b[1] = 0;
+	process_i2c_bus_write(0xAA,b,1);
+	send_stop_condition();
+	transmit("done writing to slave");
+	delay(10);
+	
+	char buf[20];
+	process_i2c_bus_read(0xAA+1,buf,numbytes);
+	send_stop_condition();
+	buf[numbytes] = '\0';
+	char temp[20];
+	sprintf(temp,"hex: %x %x %x %x %x", buf[0],buf[1],buf[2],buf[3],buf[4]);
+	transmit(temp);
+	sprintf(temp,"string: %s",buf);
+	transmit(temp);
 }
 
 void forward_command(){
@@ -53,7 +73,7 @@ void forward_command(){
 	}else if(!strcmp(receive_buffer,"BT")){
 		query_barometer_true();
 	}else if(!strcmp(receive_buffer,"SONAR")){
-		query_sonar();
+		query_slave(0x00,5);//sizeof(double));
 	}else if(!strcmp(receive_buffer,"NS")){
 		get_nunchuck_status();
 	}else if(!strcmp(receive_buffer,"NP")){
@@ -65,15 +85,16 @@ void forward_command(){
 	}
 }
 
-// sets up the timer for sending data at regular intervals
+// sets up Timer1 for sending data at regular intervals
 void setup_spam(){
-	TCCR0A = 0;
-	TCCR0B = 5; // normal port mode, use prescaler 1/1024, TOP is FF, so overflows every 32.768ms
-	TIMSK0 = 1; // enable overflow interrupt
+	TCCR1A = 0; // use WGM mode 4, CTC, OCR1A is TOP
+	TCCR1B = 10; // normal port operation, use prescaler 1/8, counts in us
+	OCR1A = 0x7FFF;// TOP value, so overflows every 32.768ms
+	TIMSK1 = 2; // enable overflow interrupt
 	sei();	
 }
 
-ISR(TIMER0_OVF_vect){
+ISR(TIMER1_COMPA_vect){
 	spam_flag = 1;
 }
 
@@ -81,7 +102,6 @@ ISR(TIMER0_OVF_vect){
 void send_spam(){
 	spam_magnetometer();
 	spam_barometer();
-	spam_sonar();
-	//spam_nunchuck();
+	spam_nunchuck();
 	spam_gyro();
 }

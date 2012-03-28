@@ -16,7 +16,7 @@ void refresh_display(){
 	move(0,40);
 	printw("Hex: ");
 	for(i=0; i<strlen(last_command_received); i++)
-		printw("%x",last_command_received[i]);
+		printw("%hhx",last_command_received[i]);
 
 	move(2,0);
 	printw("                                        ");
@@ -88,7 +88,7 @@ void refresh_display(){
 	move(23,40);
 	printw("Hex: ");
 	for(i=0; i<strlen(last_command_sent); i++)
-		printw("%x",last_command_sent[i]);
+		printw("%hhx",last_command_sent[i]);
 	
 	// return the cursor to the command input line
 	move(21,strlen(user_command_buffer)+2);
