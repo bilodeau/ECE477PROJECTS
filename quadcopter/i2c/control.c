@@ -6,8 +6,8 @@
 #include "barometer.h"
 #include "nunchuck.h"
 #include "gyro.h"
+#include "spam.h"
 
-void query_slave(char sensor_address, char numbytes);
 void forward_command();
 void setup_spam();
 void send_spam();
@@ -32,29 +32,18 @@ int main(){
         return 0;
 }
 
-void query_slave(char sensor_address, char numbytes){
-	
-	char b[2];
-	b[0] = 12;//sensor_address;
-	b[1] = 0;
-	process_i2c_bus_write(0xAA,b,1);
-	send_stop_condition();
-	transmit("done writing to slave");
-	delay(10);
-	
-	char buf[20];
-	process_i2c_bus_read(0xAA+1,buf,numbytes);
-	send_stop_condition();
-	buf[numbytes] = '\0';
-	char temp[20];
-	sprintf(temp,"hex: %x %x %x %x %x", buf[0],buf[1],buf[2],buf[3],buf[4]);
-	transmit(temp);
-	sprintf(temp,"string: %s",buf);
-	transmit(temp);
-}
-
 void forward_command(){
-	if(!strcmp(receive_buffer,"GP")){
+	if(!strcmp(receive_buffer,"BOOT")){
+	// the delays here are necessary to allow each device to finish booting
+	// otherwise we run into some problems with the i2c bus
+		power_on_gyro();
+		delay(10);
+		power_on_magnetometer();
+		delay(10);
+		hard_barometer_calibration();
+		delay(10);
+		power_on_nunchuck();
+	}else if(!strcmp(receive_buffer,"GP")){
 		power_on_gyro();
 	}else if(!strcmp(receive_buffer,"GD")){
 		query_gyro();	
@@ -72,8 +61,6 @@ void forward_command(){
 		query_barometer();
 	}else if(!strcmp(receive_buffer,"BT")){
 		query_barometer_true();
-	}else if(!strcmp(receive_buffer,"SONAR")){
-		query_slave(0x00,5);//sizeof(double));
 	}else if(!strcmp(receive_buffer,"NS")){
 		get_nunchuck_status();
 	}else if(!strcmp(receive_buffer,"NP")){
@@ -82,6 +69,10 @@ void forward_command(){
 		query_nunchuck();
 	}else if(!strcmp(receive_buffer,"NC")){
 		get_forty_nunchuck();
+	}else if(!strcmp(receive_buffer,"NZ")){
+		zero_nunchuck();
+	}else if(!strncmp(receive_buffer,"SET",3)){
+		// set something
 	}
 }
 
@@ -103,5 +94,7 @@ void send_spam(){
 	spam_magnetometer();
 	spam_barometer();
 	spam_nunchuck();
+	spam_nunchuck_angles();
 	spam_gyro();
+	spam_sonar();
 }

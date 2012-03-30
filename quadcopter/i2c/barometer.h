@@ -23,7 +23,7 @@ void hard_barometer_calibration(){
 	mb = -32768;
 	mc = -8711;
 	md = 2868;
-
+/*
     // now transmit back the values.
     char temp[75];
     sprintf(temp, "ac1 = %d, ac2= %d, ac3= %d", ac1, ac2, ac3);
@@ -34,6 +34,7 @@ void hard_barometer_calibration(){
     transmit(temp);
     sprintf(temp, "mb= %d, mc= %d, md= %d", mb, mc, md);
     transmit(temp);
+*/
 }
 
 void get_barometer_calibration(){

@@ -46,17 +46,17 @@ void refresh_display(){
 	move(5,0);
 	printw("                                        ");
 	move(5,0);
-	printw("Nunchuck X: %ld.%ld",sensor_data_cache.nunchuck_x_angular_position/100,sensor_data_cache.nunchuck_x_angular_position%100);
+	printw("Nunchuck X: %ld",sensor_data_cache.nunchuck_x_value);
 	
 	move(6,0);
 	printw("                                        ");
 	move(6,0);
-	printw("Nunchuck Y: %ld.%ld",sensor_data_cache.nunchuck_y_angular_position/100,sensor_data_cache.nunchuck_y_angular_position%100);
+	printw("Nunchuck Y: %ld",sensor_data_cache.nunchuck_y_value);
 	
 	move(7,0);
 	printw("                                        ");
 	move(7,0);
-	printw("Nunchuck Z: %ld.%ld",sensor_data_cache.nunchuck_z_angular_position/100,sensor_data_cache.nunchuck_z_angular_position%100);
+	printw("Nunchuck Z: %ld",sensor_data_cache.nunchuck_z_value);
 
 	move(8,0);
 	printw("                                        ");
@@ -67,6 +67,22 @@ void refresh_display(){
 	printw("                                        ");
 	move(8,40);
 	printw("Gyroscope Y (deg/sec): %ld",sensor_data_cache.gyroscope_y_rotational_velocity);
+
+
+	move(9,0);
+	printw("                                        ");
+	move(9,0);
+	printw("Yaw   (deg): %ld",sensor_data_cache.yaw/100);
+	
+	move(10,0);
+	printw("                                        ");
+	move(10,0);
+	printw("Pitch (deg): %ld",sensor_data_cache.pitch/100);
+	
+	move(11,0);
+	printw("                                        ");
+	move(11,0);
+	printw("Roll  (deg): %ld",sensor_data_cache.roll/100);
 	
 	move(20,0);
 	printw("Type 'q' to quit.");

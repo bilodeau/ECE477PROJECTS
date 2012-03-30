@@ -1,14 +1,14 @@
 #include <avr/io.h>
 #include <stdio.h>
 #include "i2c_slave.h"
-//#include "../lib/sonar.h"
+#include "sonar_slave.h"
 
 void process_command_received();
 void load_sonar_packet();
 void load_gps_packet();
 
 int main(){
-//	setup_sonar();
+	setup_sonar();
 	setup_i2c_slave();
 	for(;;){ // loop forever (most efficient declaration of an infinite loop)
 		if(TWCR&(1<<TWINT))
@@ -32,14 +32,11 @@ void process_command_received(){
 	}
 }
 
-void load_sonar_packet(){ // X bytes
-	/*
+void load_sonar_packet(){ // 4 bytes (size of a double = size of a float = 4 bytes)
 	char i;
 	char *ptr =(char *) &sonar_distance;
 	for(i=0; i<sizeof(double);i++)
 		slave_transmit_buffer[i] = ptr[i];
-*/
-	sprintf(slave_transmit_buffer,"TEST.");
 }
 
 void load_gps_packet(){

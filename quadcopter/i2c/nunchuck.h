@@ -3,9 +3,44 @@
 #include <string.h>
 #include "i2c.h"
 #include "../lib/data.h"
+#include <math.h>
 
 long nunchuck_x, nunchuck_y, nunchuck_z;
-long button1, button2;
+long yaw,pitch,roll;  // all values in degrees
+int nunchuck_zero_x = 0;
+int nunchuck_zero_y = 0;
+int nunchuck_zero_z = 0;
+
+// converts the current component values to yaw pitch and roll values
+void nunchuck_to_degrees(){
+	float inverse_length = 1./sqrtf(nunchuck_x*nunchuck_x + nunchuck_y*nunchuck_y + nunchuck_z*nunchuck_z); // compute the normalization factor
+
+	// normalize all of the components (so that the vector is normalized)	
+	float x = nunchuck_x * inverse_length;
+	float y = nunchuck_y * inverse_length;
+	float z = nunchuck_z * inverse_length;
+
+	float pitchf = y;//-asin(y);
+	float rollf = x;//asin(x);
+	float yawf = z;//0;
+
+	char temp[100];
+	sprintf(temp,"inv len is: %d",(int)(inverse_length*10000));
+	transmit(temp);
+		
+	// adjust to within the range (-180 , 180]
+	// yaw is [0,360)
+
+	yaw = yawf*100;  // multiply by 100 since we're storing them as longs
+	pitch = pitchf*100;
+	roll = rollf*100;
+}
+
+void zero_nunchuck(){
+	nunchuck_zero_x = nunchuck_x;
+	nunchuck_zero_y = nunchuck_y;
+	nunchuck_zero_z = nunchuck_z;
+}
 
 void power_on_nunchuck(){
         char init[2];
@@ -42,17 +77,40 @@ void send_zero_nunchuck(){
 	send_stop_condition();
 }
 
+void decode_nunchuck_data(){
+	nunchuck_x ^= 0x17;
+	nunchuck_x += 0x17;
+	nunchuck_y ^= 0x17;
+	nunchuck_y += 0x17;
+	nunchuck_z ^= 0x17;
+	nunchuck_z += 0x17;
+}
+
 void get_data_nunchuck(){
 	char buffer[6];
         process_i2c_bus_read(0xA5,buffer,6); 
 	send_stop_condition();
 	
-	nunchuck_x = (buffer[2]<<2)|((buffer[5]>>2)&(3));
-	nunchuck_y = (buffer[3]<<2)|((buffer[5]>>4)&(3));
-	nunchuck_z = (buffer[4]<<2)|((buffer[5]>>6)&(3));
-	button1 = buffer[5]&1;
-	button2 = (buffer[5]>>1)&1;
+	decode_nunchuck_data();
+	
+	nunchuck_x = (buffer[2]);
+	nunchuck_x <<= 2;
+	nunchuck_x |= ((buffer[5]>>2)&(3));
+	nunchuck_x &= 0x3FF;
 
+	nunchuck_y = (buffer[3]);
+	nunchuck_y <<= 2;
+	nunchuck_y |= ((buffer[5]>>4)&(3));
+	nunchuck_y &= 0x3FF;
+
+	nunchuck_z = (buffer[4]);
+	nunchuck_z <<= 2;
+	nunchuck_z |= ((buffer[5]>>6)&(3));
+	nunchuck_z &= 0x3FF;
+	
+//	nunchuck_x -= nunchuck_zero_x;
+//	nunchuck_y -= nunchuck_zero_y;
+//	nunchuck_z -= nunchuck_zero_z;
 	send_zero_nunchuck();
 }
 
@@ -60,8 +118,6 @@ void query_nunchuck(){
 	get_data_nunchuck();
 	char temp[41];
 	sprintf(temp,"X: %ld Y: %ld Z: %ld",nunchuck_x,nunchuck_y,nunchuck_z);
-	transmit(temp);
-	sprintf(temp,"Button1: %ld Button2: %ld",button1,button2);
 	transmit(temp);
 }
 
@@ -73,5 +129,17 @@ void spam_nunchuck(){
 	sprintf(temp,"%c%c%ld",SENSORDATAPACKETCHARACTER,NUNCHUCKY,nunchuck_y);
 	transmit(temp);	
 	sprintf(temp,"%c%c%ld",SENSORDATAPACKETCHARACTER,NUNCHUCKZ,nunchuck_z);
+	transmit(temp);	
+}
+
+void spam_nunchuck_angles(){
+        get_data_nunchuck();	
+	nunchuck_to_degrees();
+	char temp[41];
+	sprintf(temp,"%c%c%ld",SENSORDATAPACKETCHARACTER,YAW,yaw);
+	transmit(temp);	
+	sprintf(temp,"%c%c%ld",SENSORDATAPACKETCHARACTER,PITCH,pitch);
+	transmit(temp);	
+	sprintf(temp,"%c%c%ld",SENSORDATAPACKETCHARACTER,ROLL,roll);
 	transmit(temp);	
 }

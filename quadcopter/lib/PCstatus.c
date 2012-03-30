@@ -10,7 +10,7 @@
 #define LOG 1// saves all commands into a log file
 #define LOGSPAM 0
 #define PRINTDEBUG 0
-#define COMMANDBUFFERSIZE 41
+#define COMMANDBUFFERSIZE 80
 #define SERIALPORTDEFAULT "/dev/tty.usbmodemfd1221"
 
 void clear_serial_command_buffer();
@@ -136,13 +136,22 @@ void save_sensor_data_packet(char code){
 			sensor_data_cache.gyroscope_temperature = value;
 			break;
 		case NUNCHUCKX:
-			sensor_data_cache.nunchuck_x_angular_position = value;
+			sensor_data_cache.nunchuck_x_value = value;
 			break;
 		case NUNCHUCKY:
-			sensor_data_cache.nunchuck_y_angular_position = value;
+			sensor_data_cache.nunchuck_y_value = value;
 			break;
 		case NUNCHUCKZ:
-			sensor_data_cache.nunchuck_z_angular_position = value;
+			sensor_data_cache.nunchuck_z_value = value;
+			break;
+		case YAW:
+			sensor_data_cache.yaw = value;
+			break;
+		case PITCH:
+			sensor_data_cache.pitch = value;
+			break;
+		case ROLL:
+			sensor_data_cache.roll = value;
 			break;
 		default:
 			sprintf(serial_command_buffer,"Bad Sensor Data Packet.");

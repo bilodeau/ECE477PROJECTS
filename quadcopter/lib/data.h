@@ -17,19 +17,25 @@
 #define NUNCHUCKX 9
 #define NUNCHUCKY 10
 #define NUNCHUCKZ 11
+#define YAW 12
+#define PITCH 13
+#define ROLL 14
 
 struct sensor_data{
-	long compass_heading;
-	long sonar_distance;
-	long barometer_temperature;
-	long barometer_pressure;
-	long barometer_altitude;
-	long gyroscope_x_rotational_velocity;
-	long gyroscope_y_rotational_velocity;
-	long gyroscope_temperature;
-	long nunchuck_x_angular_position;
-	long nunchuck_y_angular_position;
-	long nunchuck_z_angular_position;
+	long compass_heading; // degrees * 100
+	long sonar_distance;	// millimeters
+	long barometer_temperature;	// invalid data
+	long barometer_pressure;	// invalid data
+	long barometer_altitude;	// invalid data
+	long gyroscope_x_rotational_velocity;	// degrees/sec (+- 100)
+	long gyroscope_y_rotational_velocity;	// degrees/sec (+- 100)
+	long gyroscope_temperature;		// unused
+	long nunchuck_x_value;	// raw data values from the nunchuck
+	long nunchuck_y_value;	//
+	long nunchuck_z_value;	//
+	long yaw;		// converted angular position values
+	long pitch;
+	long roll;
 };
 
 struct sensor_data sensor_data_cache;
