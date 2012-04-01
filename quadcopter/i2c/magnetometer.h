@@ -28,6 +28,10 @@ void power_on_magnetometer(){
 }
 
 double convert_raw_heading_to_degrees(int x, int y, int z){
+	double norm_factor = sqrt(x*x+y*y+z*z);
+	x *= norm_factor;
+	y *= norm_factor;
+	z *= norm_factor;
 	double heading = atan2(y,x); // calculate the heading for when the compass is level
 	if (heading < 0)
 		heading += 2*M_PI;

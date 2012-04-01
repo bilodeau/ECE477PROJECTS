@@ -19,6 +19,9 @@ void setup_motors();
 void set_motor_power(char motor, int power);
 void forward_command();
 
+float ledmin = 1;
+float ledmax = 1;
+
 int main(){
         setup_serial();
         setup_motors();
@@ -33,18 +36,55 @@ int main(){
 }
 
 void forward_command(){
-        if(!strcmp(receive_buffer,"IDLE")){
+        if(!strcmp(receive_buffer,"LEDS")){
+		ledmin = 0;
+		ledmax = 255./(MAXIMUMSIGNAL - MINIMUMSIGNAL);
+	}else if(!strcmp(receive_buffer,"LEDS OFF")){
+		ledmin = 1;
+		ledmax = 1;	
+	}else if(!strcmp(receive_buffer,"IDLE")){
+		set_motor_power(NORTHMOTOR,6);
 		set_motor_power(SOUTHMOTOR,6);
+		set_motor_power(EASTMOTOR,6);
+		set_motor_power(WESTMOTOR,6);
 	}else if(!strcmp(receive_buffer,"FULL")){
+		set_motor_power(NORTHMOTOR,100);
 		set_motor_power(SOUTHMOTOR,100);
+		set_motor_power(EASTMOTOR,100);
+		set_motor_power(WESTMOTOR,100);
 	}else if(!strncmp(receive_buffer,"SET ",4)){
 		int power;
 		sscanf(receive_buffer+4,"%d",&power);
-		if ((power >= 0 )&&(power<=100))
+		if ((power >= 0 )&&(power<=100)){
+			set_motor_power(NORTHMOTOR,(int)power);
 			set_motor_power(SOUTHMOTOR,(int)power);
+			set_motor_power(EASTMOTOR,(int)power);
+			set_motor_power(WESTMOTOR,(int)power);
+		}
 	}else if(!strcmp(receive_buffer,"OFF")){
+		set_motor_power(NORTHMOTOR,0);
 		set_motor_power(SOUTHMOTOR,0);
+		set_motor_power(EASTMOTOR,0);
+		set_motor_power(WESTMOTOR,0);
+	}else if(!strncmp(receive_buffer,"SET",3)){
+		int power;
+		sscanf(receive_buffer+4,"%d",&power);
+		if(!strncmp(receive_buffer+3,"N",1)){
+			set_motor_power(NORTHMOTOR,(int)power);
+		}else if(!strncmp(receive_buffer+3,"S",1)){
+			set_motor_power(SOUTHMOTOR,(int)power);
+		}else if(!strncmp(receive_buffer+3,"E",1)){
+			set_motor_power(EASTMOTOR,(int)power);
+		}else if(!strncmp(receive_buffer+3,"W",1)){
+			set_motor_power(WESTMOTOR,(int)power);
+		}
+	}else {
+		transmit("Bad Command ID.");
 	}
+	char temp[40];
+	sprintf(temp,"ocr0a= %d",OCR0A);
+	transmit(temp);
+	transmit("got command");
 }
 
 void setup_motors(){
@@ -73,19 +113,22 @@ void setup_motors(){
 }
 
 // sets the percent power of the given motor
-void set_motor_power(char motor, int power){
+void set_motor_power(char motor, int p){
+	float power = p;
 	switch(motor){
 		case NORTHMOTOR:
-			OCR0A = MINIMUMSIGNAL + power/100.*(MAXIMUMSIGNAL-MINIMUMSIGNAL);
+			OCR0A = MINIMUMSIGNAL*ledmin + ledmax*power/100.*(MAXIMUMSIGNAL-MINIMUMSIGNAL);
 			break;
 		case SOUTHMOTOR:
-			OCR0A = MINIMUMSIGNAL + power/100.*(MAXIMUMSIGNAL-MINIMUMSIGNAL);
+			OCR0B = MINIMUMSIGNAL*ledmin + ledmax*power/100.*(MAXIMUMSIGNAL-MINIMUMSIGNAL);
 			break;
 		case EASTMOTOR:
-			OCR0A = MINIMUMSIGNAL + power/100.*(MAXIMUMSIGNAL-MINIMUMSIGNAL);
+			OCR2A = MINIMUMSIGNAL*ledmin + ledmax*power/100.*(MAXIMUMSIGNAL-MINIMUMSIGNAL);
 			break;
 		case WESTMOTOR:
-			OCR0A = MINIMUMSIGNAL + power/100.*(MAXIMUMSIGNAL-MINIMUMSIGNAL);
+			OCR2B = MINIMUMSIGNAL*ledmin + ledmax*power/100.*(MAXIMUMSIGNAL-MINIMUMSIGNAL);
 			break;
+		default:
+			transmit("Bad Motor ID.");
 	}
 }

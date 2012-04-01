@@ -7,9 +7,9 @@
 
 long nunchuck_x, nunchuck_y, nunchuck_z;
 long yaw,pitch,roll;  // all values in degrees
-int nunchuck_zero_x = 0;
-int nunchuck_zero_y = 0;
-int nunchuck_zero_z = 0;
+int nunchuck_zero_x = 510;
+int nunchuck_zero_y = 490;
+int nunchuck_zero_z = 460;
 
 // converts the current component values to yaw pitch and roll values
 void nunchuck_to_degrees(){
@@ -20,20 +20,20 @@ void nunchuck_to_degrees(){
 	float y = nunchuck_y * inverse_length;
 	float z = nunchuck_z * inverse_length;
 
-	float pitchf = y;//-asin(y);
-	float rollf = x;//asin(x);
+	float pitchf = acos(y)/M_PI*180 - 90; // minus 90 to rotate
+	float rollf = -atan2(x,z)/M_PI*180;
 	float yawf = z;//0;
 
-	char temp[100];
-	sprintf(temp,"inv len is: %d",(int)(inverse_length*10000));
-	transmit(temp);
+//	char temp[100];
+//	sprintf(temp,"x is now: %d",(int)(pitchf*100));
+//	transmit(temp);
 		
 	// adjust to within the range (-180 , 180]
 	// yaw is [0,360)
 
-	yaw = yawf*100;  // multiply by 100 since we're storing them as longs
-	pitch = pitchf*100;
-	roll = rollf*100;
+	yaw = (long)(yawf);  // multiply by 100 since we're storing them as longs
+	pitch = (long)(pitchf);
+	roll = (long)(rollf);
 }
 
 void zero_nunchuck(){
@@ -108,9 +108,9 @@ void get_data_nunchuck(){
 	nunchuck_z |= ((buffer[5]>>6)&(3));
 	nunchuck_z &= 0x3FF;
 	
-//	nunchuck_x -= nunchuck_zero_x;
-//	nunchuck_y -= nunchuck_zero_y;
-//	nunchuck_z -= nunchuck_zero_z;
+	nunchuck_x -= nunchuck_zero_x;
+	nunchuck_y -= nunchuck_zero_y;
+	nunchuck_z -= nunchuck_zero_z;
 	send_zero_nunchuck();
 }
 

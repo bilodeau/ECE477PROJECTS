@@ -15,3 +15,15 @@ void delay(unsigned char millis){
 	TCNT0 = 0;
 	while(TCNT0 <= 8*millis);
 }
+
+
+
+
+/*#define CLOCKSPEED 8000000
+void delay(unsigned char millis){
+	unsigned char i;
+	for(i=0;i<millis;i++){	
+	volatile unsigned int j;
+		for(j=0; j < 8000; j++);
+	}
+}*/

@@ -1,7 +1,6 @@
 #include <avr/io.h>
 #include <math.h>
 #include <string.h>
-#include "../lib/delay.h"
 #include <stdio.h>
 #include "i2c.h"
 
@@ -87,7 +86,7 @@ void get_data_barometer(){
 	// need to wait 4.5 ms here
 	//char time;
 	//for (time =0; time <10;time++)
-		delay(15);
+		delay(10);
 
 	buffer[0] = 0xF6;       // the data register
 	buffer[1] = '\0';       // clear second byte just in case
@@ -112,7 +111,7 @@ void get_data_barometer(){
 	// need to wait 4.5 ms here
 	//char time;
 	//for (time =0; time <10;time++)
-		delay(15);
+		delay(10);
 
 	buffer[0] = 0xF6;       // the data register
 	buffer[1] = '\0';       // clear second byte just in case

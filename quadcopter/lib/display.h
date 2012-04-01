@@ -72,17 +72,17 @@ void refresh_display(){
 	move(9,0);
 	printw("                                        ");
 	move(9,0);
-	printw("Yaw   (deg): %ld",sensor_data_cache.yaw/100);
+	printw("Yaw   (deg): %ld",sensor_data_cache.yaw);
 	
 	move(10,0);
 	printw("                                        ");
 	move(10,0);
-	printw("Pitch (deg): %ld",sensor_data_cache.pitch/100);
+	printw("Pitch (deg): %ld",sensor_data_cache.pitch);
 	
 	move(11,0);
 	printw("                                        ");
 	move(11,0);
-	printw("Roll  (deg): %ld",sensor_data_cache.roll/100);
+	printw("Roll  (deg): %ld",sensor_data_cache.roll);
 	
 	move(20,0);
 	printw("Type 'q' to quit.");

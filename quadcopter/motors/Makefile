@@ -22,7 +22,7 @@ prog : $(TARGET).hex $(TARGET).eeprom
 	$(OBJ2HEX) -j .eeprop -O ihex $< $@
 
 erase :
-	avrdude $(ADFLAGS) -E noreset -e
+	avrdude $(ADFLAGS) -e
 clean :
 	rm -f *.hex *.obj *.o *.eeprom
 

@@ -7,7 +7,7 @@
 
 #define FLASHONSERIAL 0 // flashes the led on PB1 every time serial communication happens
 			// note that the actual flash lines are commented out below
-#define RECEIVEBUFFERSIZE 80
+#define RECEIVEBUFFERSIZE 41
 
 void setup_serial();
 void transmit(char* str);
@@ -58,7 +58,7 @@ void check_buffer(){
 	}else if (receive_buffer_index < RECEIVEBUFFERSIZE){
 		receive_buffer_index++;
 	}else{
-		transmit("Bad Command\r\n");
+		transmit("Bad Command");
 		receive_buffer_index = 0;
 	}
 }

@@ -2,22 +2,26 @@
 #include <avr/interrupt.h>
 #include "../lib/AVRserial.h"
 #include <string.h>
+#include "../lib/delay.h"
 #include "magnetometer.h"
 #include "barometer.h"
 #include "nunchuck.h"
 #include "gyro.h"
 #include "spam.h"
+#include "motors.h"
 
 void forward_command();
 void setup_spam();
 void send_spam();
 char spam_flag = 0;
+char update_motors_flag = 0;
+char begin = 0;
 
 int main(){
 	setup_spam();
-	setup_delay();
 	setup_serial();
         setup_i2c();
+	setup_motors();
         serial_command_ready = 0;
         while(1){
 		if (serial_command_ready){
@@ -27,7 +31,13 @@ int main(){
 		if (spam_flag){
 			send_spam();
 			spam_flag = 0;
-		}   
+		}
+		if (update_motors_flag && begin){
+			update_motors();
+			update_motors_flag = 0;  
+		}else{
+			stop_motors();
+		}
         }   
         return 0;
 }
@@ -43,6 +53,10 @@ void forward_command(){
 		hard_barometer_calibration();
 		delay(10);
 		power_on_nunchuck();
+	}else if(!strcmp(receive_buffer,"BEGIN")){
+		begin = 1;
+	}else if(!strcmp(receive_buffer,"STOP")){
+		begin = 0;
 	}else if(!strcmp(receive_buffer,"GP")){
 		power_on_gyro();
 	}else if(!strcmp(receive_buffer,"GD")){
@@ -87,6 +101,7 @@ void setup_spam(){
 
 ISR(TIMER1_COMPA_vect){
 	spam_flag = 1;
+	update_motors_flag = 1;
 }
 
 // queries all devices and sends appropriate data packets out to the PC
