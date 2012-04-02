@@ -39,7 +39,8 @@ void setup_motors(){
 	
 // setup timer2 for east and west
 	TCCR2A = 0xA3; // clear output pins on compare match, counts up and down from zero to OCRA
-	TCCR2B = (0<<WGM02)|6;
+	TCCR2B = (0<<WGM02)|6; // NOTE: the prescaler values for timer2 use a different table, that's why this is 6 not 4
+	
 	
 	// TOP value of FF leaves a frequency of ~122hz Hz	
 	// pwm frequency needs to be 50hz to 500hz
