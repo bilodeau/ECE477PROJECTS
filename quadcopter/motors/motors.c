@@ -82,7 +82,7 @@ void forward_command(){
 		transmit("Bad Command ID.");
 	}
 	char temp[40];
-	sprintf(temp,"ocr0a= %d",OCR0A);
+	sprintf(temp,"ocr0x= %d %d %d %d",OCR0A,OCR0B,OCR2A,OCR2B);
 	transmit(temp);
 	transmit("got command");
 }
@@ -96,7 +96,7 @@ void setup_motors(){
 	
 // setup timer2 for east and west
 	TCCR2A = 0xA3; // clear output pins on compare match, counts up and down from zero to OCRA
-	TCCR2B = (0<<WGM02)|4;
+	TCCR2B = (0<<WGM02)|6;
 	
 	// TOP value of FF leaves a frequency of ~122hz Hz	
 	// pwm frequency needs to be 50hz to 500hz

@@ -16,7 +16,7 @@ void send_spam();
 char spam_flag = 0;
 char update_motors_flag = 0;
 char begin = 0;
-
+char idle = 0;
 int main(){
 	setup_spam();
 	setup_serial();
@@ -35,6 +35,8 @@ int main(){
 		if (update_motors_flag && begin){
 			update_motors();
 			update_motors_flag = 0;  
+		}else if(idle){
+			set_motors(10);
 		}else{
 			stop_motors();
 		}
@@ -57,6 +59,9 @@ void forward_command(){
 		begin = 1;
 	}else if(!strcmp(receive_buffer,"STOP")){
 		begin = 0;
+		idle = 0;
+	}else if(!strcmp(receive_buffer,"IDLE")){
+		idle = 1;
 	}else if(!strcmp(receive_buffer,"GP")){
 		power_on_gyro();
 	}else if(!strcmp(receive_buffer,"GD")){

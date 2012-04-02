@@ -39,7 +39,7 @@ void nunchuck_to_degrees(){
 void zero_nunchuck(){
 	nunchuck_zero_x = nunchuck_x;
 	nunchuck_zero_y = nunchuck_y;
-	nunchuck_zero_z = nunchuck_z;
+//	nunchuck_zero_z = nunchuck_z;
 }
 
 void power_on_nunchuck(){

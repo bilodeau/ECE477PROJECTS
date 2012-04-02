@@ -1,29 +1,17 @@
 #include <avr/io.h>
-#include <avr/interrupt.h>
-#include <stdio.h>
-// DELAYS using timer0 based on the defined clock speed
+// DELAYS using timer1 based on the defined clock speed
 
-#define CLOCKSPEED 8000000
+volatile char delay_flag = 0;
 
-void setup_delay(){
-	TCCR0A = 0;
-	TCCR0B = 5; // use prescalar 1024 so the clock counts in units of 128 microseconds
+// can't delay more than 32 ms
+void delay(unsigned char millis){
+	TIMSK1 |= (1<<OCIE1B);	
+	delay_flag = 1;
+	OCR1B = (TCNT1 + 1000*millis) % OCR1A;
+	while(delay_flag);
+	TIMSK1 &= ~(1<<OCIE1B);	
 }
 
-void delay(unsigned char millis){
-	// delay for 8*millis as each tick is 128 us
-	TCNT0 = 0;
-	while(TCNT0 <= 8*millis);
+ISR(TIMER1_COMPB_vect){
+	delay_flag = 0;
 }
-
-
-
-
-/*#define CLOCKSPEED 8000000
-void delay(unsigned char millis){
-	unsigned char i;
-	for(i=0;i<millis;i++){	
-	volatile unsigned int j;
-		for(j=0; j < 8000; j++);
-	}
-}*/
