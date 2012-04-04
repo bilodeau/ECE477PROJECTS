@@ -52,7 +52,7 @@ ISR (TIMER1_COMPA_vect) {
 	
 void transmit_burst() {
 	timer = 0;
-	num_cycles = get_burst_value(&receive_buffer[receive_buffer_index]);	// set first duration
+	num_cycles = get_burst_value(receive_buffer + receive_buffer_index);	// set first duration
 	TIMSK |= (1<<OCIE1A);					// enable the output compare match interrupt
 	while (timer != num_cycles);			// wait for the signal to be broadcast for the num of cycles
 	TIMSK &= ~(1<<OCIE1A);
