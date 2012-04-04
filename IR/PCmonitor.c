@@ -9,7 +9,7 @@
 
 #define LOG 1// saves all commands into a log file
 #define PRINTDEBUG 0 // prints debug info to the console when setting up the serial port
-#define COMMANDBUFFERSIZE 41
+#define COMMANDBUFFERSIZE 200
 #define SERIALPORTDEFAULT "/dev/tty.usbmodemfd1221"
 
 void clear_serial_command_buffer();
@@ -25,7 +25,7 @@ void post_serial_command();
 int serialport; // file handle for the serial port
 char user_command_buffer[COMMANDBUFFERSIZE]; // holds characters typed by the user
 char serial_command_buffer[COMMANDBUFFERSIZE]; // holds characters sent in from the serial port
-char serial_command_index; // points to the next empty position in the serial_command_buffer
+unsigned char serial_command_index; // points to the next empty position in the serial_command_buffer
 int logfile; // file handle for the log file
 
 int main(int argc, char *argv[]){
@@ -59,7 +59,7 @@ int main(int argc, char *argv[]){
 
 void clear_serial_command_buffer(){
 	//blank out the serial buffer
-	char i;
+	unsigned char i;
 	for(i=0; i<COMMANDBUFFERSIZE;i++)
 		serial_command_buffer[i] = '\0';
 	serial_command_index = 0; // reset to the beginning of the buffer
@@ -68,7 +68,7 @@ void clear_serial_command_buffer(){
 // check if there's any new bytes waiting on the serial port
 void read_from_serial_port(){
 	char buf;
-	char i = read(serialport,&buf,1);	
+	unsigned char i = read(serialport,&buf,1);	
 	if (i == 1){ // if we read in a character, put it into the buffer and move down the null
 		serial_command_buffer[serial_command_index] = buf;
 		serial_command_index++;
@@ -100,7 +100,7 @@ void post_serial_command(){
 	move(1,6);
 	printw("                                                            ");
 	move(1,6);
-	char i;
+	unsigned char i;
 	for (i=0; i<serial_command_index-1;i++)
 		printw("%x",serial_command_buffer[i]);
 
@@ -113,7 +113,7 @@ void post_serial_command(){
 
 void clear_user_command_buffer(){
 	//blank out the input buffer
-	char i;
+	unsigned char i;
 	for(i=0; i<COMMANDBUFFERSIZE; i++)
 		user_command_buffer[i] = '\0';
 	move(5,0);
@@ -125,6 +125,10 @@ void clear_user_command_buffer(){
 void transmit(char* c){
 	move(6,0);
 	printw("                   ");
+	char prefix[2];
+	prefix[0] = '\r';
+	prefix[1] = '\n';
+	write(serialport,prefix,2);
 	int test = write(serialport,c,strlen(c));
 	move(10,0);
 	printw("               ");
@@ -206,7 +210,7 @@ void buffer_input(){
 			process_input();
 			clear_user_command_buffer();
 		}else if (character == 0x7f){ // handle delete so we can backspace
-			char bufferlength = strlen(user_command_buffer);
+			unsigned char bufferlength = strlen(user_command_buffer);
 			if (bufferlength > 0){
 				user_command_buffer[bufferlength-1] = '\0';
 			}

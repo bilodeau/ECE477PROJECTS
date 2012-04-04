@@ -105,6 +105,7 @@ void setup_serial(){
 unsigned int get_burst_value(char *ptr) {
 	unsigned int result = 0;
 	unsigned char temp;
+	char i;
 	for (i = 0; i <4; i++) {
 		temp = *ptr - '0';
 		result |= (temp<<(8*(3-i)));
