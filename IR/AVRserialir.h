@@ -63,14 +63,14 @@ ISR(USART_RXC_vect){
 void check_buffer(){
 	if ((receive_buffer_index>0)&&(receive_buffer[receive_buffer_index] == '\n')&&(receive_buffer[receive_buffer_index-1] == '\r')){
 	
-		if (receive_buffer_index == (get_burst_value(&receive_buffer[8])*8 + get_burst_value(&receive_buffer[12])*8 + 17)) {	// if command is the proper size
+		if (receive_buffer_index == (get_burst_value(receive_buffer + 10)*10 + get_burst_value(receive_buffer + 15)*10 + 21)) {	// if command is the proper size
 			receive_buffer[receive_buffer_index - 1] = '\0'; // terminates the string before carriage return newline
 			serial_command_ready = mode = 1;
 		}else{						// else the command is too short
 			receive_buffer_index = 0;	// reset the buffer
 		}
 	}else if (receive_buffer_index < RECEIVEBUFFERSIZE){
-		if (receive_buffer_index == (get_burst_value(&receive_buffer[8])*8 + get_burst_value(&receive_buffer[12])*8 + 17))	// if the command is too long
+		if (receive_buffer_index == (get_burst_value(receive_buffer + 10)*10 + get_burst_value(receive_buffer + 15)*10 + 21))	// if the command is too long
 			receive_buffer_index = 0;	// reset the buffer
 		else
 			receive_buffer_index++;		// else increment the index and wait for the next byte
@@ -103,7 +103,12 @@ void setup_serial(){
 }
 
 unsigned int get_burst_value(char *ptr) {
-	unsigned int result;
-	sscanf(ptr,"%ud",&result);
+	unsigned int result = 0;
+	unsigned char temp;
+	for (i = 0; i <4; i++) {
+		temp = *ptr - '0';
+		result |= (temp<<(8*(3-i)));
+		ptr++;
+	}
 	return result;
 }

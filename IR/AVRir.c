@@ -19,20 +19,19 @@ serial_command_ready = 1;
 
 int main() {
 
-    mode = 0;
+    	mode = 0;
 	setup_serial();
 	setup_pwm();
 	
-transmit("started test");
+	transmit("started test");
 
-    for ( ; ; ) {
-	PORTB ^= 2;
-//	test();
+    	for ( ; ; ) {
+		//test();
 		if (serial_command_ready) {
-			OCR1A = 100*get_burst_value(&receive_buffer[5]);				// set carrier frequency
-			receive_buffer_index = 19;
+			OCR1A = 100*get_burst_value(receive_buffer + 5);				// set carrier frequency
+			receive_buffer_index = 20;
 			while (receive_buffer[receive_buffer_index] != '\0') {	// while there are still bursts to be sent
-				mode ^= 1;						// flip the mode from whatever it was previously
+										// flip the mode from whatever it was previously
 				transmit_burst();				//	trransmit the burst
 				receive_buffer_index += 5;		// increment index to the next burst
 			}
