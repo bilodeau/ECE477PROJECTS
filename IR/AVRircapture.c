@@ -1,12 +1,17 @@
 // A beginning setup for Timers for IR Part B
 // Notice that the interrupts reset TCNT1.
 // This might be bad, but the Datasheet used a TCNT1 reset as a coding example.
+#include <stdio.h>
+#include <string.h>
+#include "AVRserl.h"
+
 
 #define NOT_RDY 0
 #define WAIT_ON_SIG 1
 #define GET_DIV 2
 #define COUNT_L_PULSE 3
 #define COUNT_D_PULSE 4
+
 
 void setup_input_capture(){
 	// enable input capture interrupt and compare match a
@@ -16,8 +21,46 @@ void setup_input_capture(){
 int signal_array[100];
 int signal_index;
 
-int light_count, dark_count, start_time, mode, signal_ready, divisor;
+int light_count, dark_count, start_time, mode, signal_ready, divisor, num_signals;
 
+int main(void) {
+	setup_input_capture();
+	setup_serial();
+	signal_ready = 0;
+	mode = WAIT_ON_SIG;
+	transmit("About to enter for-loop.");
+	for ( ; ; ) {
+		if(signal_ready) {
+			transmit("About to concatenate String.");
+			char *word = malloc((signal_index + 2)*5 + 1);
+			strcat(word, get_ascii_hex(signal_array[0]));	// concatentate the divisor
+			strcat(word, get_ascii_hex((signal_index - 2)/2));// concat the num 1st burst pair
+			strcat(word, get_ascii_hex(0));			// concat 0 for 2nd burst pair
+			transmit("Header concat complete.");
+			int i;
+			for (i = 1; i < signal_index - 1; i++) {
+				strcat(word, get_ascii_hex(signal_array[i]));
+			}
+			strcat(word, "0FFF");
+			transmit("Done concatenating. Now transmitting.");
+			transmit(word);
+			transmit("Done sending Signal.");
+			signal_ready = 0;
+		}
+	}
+}
+
+char *get_ascii_hex(int i) {
+	char word[6];
+	/*word[5] = '\0';
+	word[4] = ' ';
+	word[3] = ;
+	word[2] = ;
+	word[1] = ;
+	word[0] = ;*/
+	sprintf(word, "00%x ", i);
+	return word; 
+}
 
 // handles the input pulse from the IR
 //cycles through 4 modes:
