@@ -2,8 +2,14 @@
 // Notice that the interrupts reset TCNT1.
 // This might be bad, but the Datasheet used a TCNT1 reset as a coding example.
 
+#define NOT_RDY 0
+#define WAIT_ON_SIG 1
+#define GET_DIV 2
+#define COUNT_L_PULSE 3
+#define COUNT_D_PULSE 4
 
-int light_count, dark_count, start_time, mode;
+unsigned int light_count, dark_count, start_time, divisor, mode;
+char signal_receive_flag;
 
 // handles the input pulse from the IR
 //cycles through 4 modes:
@@ -17,28 +23,34 @@ int light_count, dark_count, start_time, mode;
 // I am not sure how to fix this.
 ISR(TIM1_CAPT_vect) {
 	int time = ICR1;
-	TCNT1 = 0;
 	switch (mode) {
-		case 1:	// mode 1 = was waiting to capture signal
+		case WAIT_ON_SIG :	// was waiting to capture signal
+			start_time = time;	// get start time
 			signal_index = 0;	// start at beginning of signal_array
-			mode++;			// start getting the divisor
+			mode++;			// mode = GET_DIV
 			break;
-		case 2:	// mode 2 = was getting divisor
-			OCR1A = time*2;		// set val to determine when pulse shouldve occurred
-			OCR0A = time;		// create clock to track num periods of dark burst
-			signal_array[signal_index++] = time;	// record divisor in array  		
+		case GET_DIV :		// was getting divisor
+			divisor = time - start_time;	// calc divisor
+			if (divisor < 0) {	// if divisor is neg, ovflow occurred
+				divisor = time + (0xFFFF - start_time) + 1;
+			}
+			OCR1A = time + 1.5*divisor;		// set val to catch missed pulse
+			OCR1B = time + divisor;			// set up timer to measure cycles
+			signal_array[signal_index++] = divisor;	// record divisor in array  		
 			light_count = 2;		// two light periods have occurred so far
-			mode++;				// start counting light burst length
+			mode++;				// mode = COUNT_L_PULSE
 			break;
-		case 3:	// mode 3 = was counting length of light burst
-			light_count++;
+		case COUNT_L_PULSE :	// was counting length of light burst
+			light_count++;	// increment num cycles
+			OCR1A = time + 1.5*divisor;	// move dark pulse catch
+			OCR1B = time + divisor;		// time of expected pulse
 			break;
-		case 4:	// mode 4 = was counting length of dark burst
-			signal_array[signal_index++] = dark_count;
-			light_count = 1;
-			mode = 3;	// switch back to counting light burst length
+		case COUNT_D_PULSE :	// was counting length of dark burst
+			signal_array[signal_index++] = dark_count;	// update sig array
+			light_count = 1;		// one light pulse has occurred
+			mode = COUNT_L_PULSE;	//switch baqck to counting light pulses
 			break;
-		default:// else mode 0 = not waiting for signal, so do nothing
+		default:// else not waiting for signal, so do nothing
 			break;
 	}
 }
@@ -47,21 +59,22 @@ ISR(TIM1_CAPT_vect) {
 // if an input capture hasn't happened by the time this fires, then 
 // the light burst is done and the dark burst has started
 ISR(TIM1_COMPA_vect) {
-	if (light_count != 0) {	// just finished counting a light pair length
+	if (mode == COUNT_L_PULSE) {	// just finished counting a light pair length
 		signal_array[signal_index++] = light_count;	// put val into array
 		light_count = 0;	// reset light count
-		dark_count =1;		// one dark burst has occurred so far
-		mode = 4;		// set mode to counting dark burst length 
+		dark_count = 1;		// one dark burst has occurred so far
+		mode = COUNT_D_PULSE;	// set mode to counting dark burst length 
 	}
 }
 
 // this interrupt fires in snyc with the carrier frequency
 // it is used to keep track of the length of dark bursts
-ISR(TIM0_COMPA_vect) {
+ISR(TIMER1_COMPB_vect) {
 	dark_count++;
-	if ((dark_count > 225) && (mode == 4)) {
+	if ((dark_count > 225) && (mode == COUNT_D_PULSE)) {
 		signal_array[signal_index++] = 0x0FFF;
 		signal_array[signal_index] = '\0';
-		mode = 5;	// mode 5 = signal_array is ready to be sent back to PC
+		signal_recieve_flag = 1;	// signal has been received. set flag.
+		mode = NOT_RDY;
 	}
 }
