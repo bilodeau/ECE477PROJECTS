@@ -3,16 +3,21 @@
 #include <string.h>
 #include "AVRserial.h"
 #include "baud.h"
+#include "AVRircapture.c"
 
 volatile int timer;	// the number of times the interrupt has been called
 
-char cmd[] = "0000 0069 0009 0000 0100 0060 0020 0060 0020 0020 0020 0020 0020 0020 0020 0020 0020 0060 0020 0020 0020 0FFF";
 
 void transmit_burst();
 void setup_pwm();
+
+
 int receive_buffer_index = 0;
 
+// simulates the sending of a sample command from the PC
+// this lets us test the emitter side sending anything from the PC
 void test(){
+char cmd[] = "0000 0069 0009 0000 0100 0060 0020 0060 0020 0020 0020 0020 0020 0020 0020 0020 0020 0060 0020 0020 0020 0FFF";
 sprintf(receive_buffer,"%s",cmd);
 serial_command_ready = 1;
 }

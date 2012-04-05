@@ -8,8 +8,16 @@
 #define COUNT_L_PULSE 3
 #define COUNT_D_PULSE 4
 
-unsigned int light_count, dark_count, start_time, divisor, mode;
-char signal_receive_flag;
+void setup_input_capture(){
+	// enable input capture interrupt and compare match a
+	TIMSK |= (1<<TICIE1)|(1<<OCIE1A);
+	sei();
+}
+int signal_array[100];
+int signal_index;
+
+int light_count, dark_count, start_time, mode, signal_ready, divisor;
+
 
 // handles the input pulse from the IR
 //cycles through 4 modes:
@@ -21,7 +29,7 @@ char signal_receive_flag;
 // **** This Interrupt resets TCNT1, which will cause one Compare match to not happen.******
 //  This might cause problems since OCR1A is set so close to when the Input Capture occurs.
 // I am not sure how to fix this.
-ISR(TIM1_CAPT_vect) {
+ISR(TIMER1_CAPT_vect) {
 	int time = ICR1;
 	switch (mode) {
 		case WAIT_ON_SIG :	// was waiting to capture signal
@@ -58,7 +66,7 @@ ISR(TIM1_CAPT_vect) {
 // uses a compare value slightly above the carrier frequency.
 // if an input capture hasn't happened by the time this fires, then 
 // the light burst is done and the dark burst has started
-ISR(TIM1_COMPA_vect) {
+ISR(TIMER1_COMPA_vect) {
 	if (mode == COUNT_L_PULSE) {	// just finished counting a light pair length
 		signal_array[signal_index++] = light_count;	// put val into array
 		light_count = 0;	// reset light count
