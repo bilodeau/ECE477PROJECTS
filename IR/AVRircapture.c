@@ -59,4 +59,9 @@ ISR(TIM1_COMPA_vect) {
 // it is used to keep track of the length of dark bursts
 ISR(TIM0_COMPA_vect) {
 	dark_count++;
+	if ((dark_count > 225) && (mode == 4)) {
+		signal_array[signal_index++] = 0x0FFF;
+		signal_array[signal_index] = '\0';
+		mode = 5;	// mode 5 = signal_array is ready to be sent back to PC
+	}
 }
