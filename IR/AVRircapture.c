@@ -15,7 +15,7 @@
 
 void setup_input_capture(){
 	// enable input capture interrupt and compare match a
-	TIMSK |= (1<<TICIE1)|(1<<OCIE1A);
+	TIMSK |= (1<<TICIE1)|(1<<OCIE1A)|(1<<OCIE1B);
 	sei();
 }
 int signal_array[100];
