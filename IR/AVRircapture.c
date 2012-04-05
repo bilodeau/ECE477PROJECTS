@@ -24,12 +24,11 @@ ISR(TIM1_CAPT_vect) {
 			mode++;			// start getting the divisor
 			break;
 		case 2:	// mode 2 = was getting divisor
-			OCR1A = time + 1;	// set val to determine when pulse shouldve occurred
+			OCR1A = time*2;		// set val to determine when pulse shouldve occurred
 			OCR0A = time;		// create clock to track num periods of dark burst
 			signal_array[signal_index++] = time;	// record divisor in array  		
 			light_count = 2;		// two light periods have occurred so far
 			mode++;				// start counting light burst length
-			TCNT1 = 0;
 			break;
 		case 3:	// mode 3 = was counting length of light burst
 			light_count++;
@@ -51,7 +50,7 @@ ISR(TIM1_COMPA_vect) {
 	if (light_count != 0) {	// just finished counting a light pair length
 		signal_array[signal_index++] = light_count;	// put val into array
 		light_count = 0;	// reset light count
-		dark_count =0;		// reset dark_count to get accurate dark burst length
+		dark_count =1;		// one dark burst has occurred so far
 		mode = 4;		// set mode to counting dark burst length 
 	}
 }
