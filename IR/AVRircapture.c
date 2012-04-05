@@ -125,7 +125,7 @@ ISR(TIMER1_COMPB_vect) {
 	if ((dark_count > 225) && (mode == COUNT_D_PULSE)) {
 		signal_array[signal_index++] = 0x0FFF;
 		signal_array[signal_index] = '\0';
-		signal_recieve_flag = 1;	// signal has been received. set flag.
+		signal_ready = 1;	// signal has been received. set flag.
 		mode = NOT_RDY;
 	}
 }
