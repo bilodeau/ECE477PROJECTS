@@ -3,7 +3,16 @@
 // This might be bad, but the Datasheet used a TCNT1 reset as a coding example.
 
 
-int light_count, dark_count, start_time, mode;
+void setup_input_capture(){
+	// enable input capture interrupt and compare match a
+	TIMSK |= (1<<TICIE1)|(1<<OCIE1A);
+	sei();
+}
+int signal_array[100];
+int signal_index;
+
+int light_count, dark_count, start_time, mode, signal_ready;
+
 
 // handles the input pulse from the IR
 //cycles through 4 modes:
@@ -15,7 +24,7 @@ int light_count, dark_count, start_time, mode;
 // **** This Interrupt resets TCNT1, which will cause one Compare match to not happen.******
 //  This might cause problems since OCR1A is set so close to when the Input Capture occurs.
 // I am not sure how to fix this.
-ISR(TIM1_CAPT_vect) {
+ISR(TIMER1_CAPT_vect) {
 	int time = ICR1;
 	TCNT1 = 0;
 	switch (mode) {
@@ -46,7 +55,7 @@ ISR(TIM1_CAPT_vect) {
 // uses a compare value slightly above the carrier frequency.
 // if an input capture hasn't happened by the time this fires, then 
 // the light burst is done and the dark burst has started
-ISR(TIM1_COMPA_vect) {
+ISR(TIMER1_COMPA_vect) {
 	if (light_count != 0) {	// just finished counting a light pair length
 		signal_array[signal_index++] = light_count;	// put val into array
 		light_count = 0;	// reset light count
@@ -57,7 +66,7 @@ ISR(TIM1_COMPA_vect) {
 
 // this interrupt fires in snyc with the carrier frequency
 // it is used to keep track of the length of dark bursts
-ISR(TIM0_COMPA_vect) {
+ISR(TIMER0_COMPA_vect) {
 	dark_count++;
 	if ((dark_count > 225) && (mode == 4)) {
 		signal_array[signal_index++] = 0x0FFF;
