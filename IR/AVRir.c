@@ -44,7 +44,6 @@ transmit(temp);
 	if (strlen(receive_buffer) != 19 + numPairs1*10 + numPairs2*10)
 		return 0;
 	return 1;
-
 }
 
 int main() {
@@ -84,7 +83,7 @@ void transmit_burst() {
 
 
 void setup_pwm() {
-    DDRB = 2;
+    	DDRB = 2;
 	TCCR1A = (0<<COM1A0);
 	TCCR1B = (1<<WGM12)|1; // use WGM mode 4 CTC with OCR1A as TOP, prescaler of 1
 	OCR1A = 0xFFFF;
