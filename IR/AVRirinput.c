@@ -8,33 +8,36 @@
 #define WAITINGFORECHO 1
 char sonar_pinMode;
 int sonar_beginEchoTime;
-
+void setup();
+int counter=0;
 int main(){
 	setup_serial();
 	setup();
 	transmit("setup done");
 	while(1){
 //		transmit("SPAM");	
+	char temp[100];
+	sprintf(temp,"captures: %d",counter);
+	transmit(temp);
 	}	
 	return 0;
 }
 
-void setup(void){
+void setup(){
 	//enable input on pin B0
 	DDRB = 0;
 	PORTB = 0;
 	// use normal mode WGM = 0
 	TCCR1A = 0;
-	TCCR1B = 0x02; // use 1/8 prescaler so the clock counts in microseconds
-	TCCR1B |= (1<<ICES1);  // input capture on rising edge
+	TCCR1B = 0x01; // use 1 prescaler so the clock counts in microseconds
+	TCCR1B |= (0<<ICES1);  // input capture on falling edge
 	TIMSK = (1<<TICIE1);//|(1<<OCIE1B)|(1<<OCIE1A); // enable the three interrupts we need
 	sei();
 }
 
 ISR(TIMER1_CAPT_vect){
-	
-	transmit("input capture!!");
-	
+	counter++;
+
 	/*int time = ICR1;
 	if (sonar_pinMode == WAITINGFORECHO){
 			// mask and shift to find the current edge selection
@@ -49,16 +52,3 @@ ISR(TIMER1_CAPT_vect){
 		}
 	}*/	
 }
-
-ISR(TIMER1_COMPA_vect){
-	DDRB |= 1; // output mode
-	PORTB |= 1;  // send high
-	sonar_pinMode = PINGING;
-}
-
-ISR(TIMER1_COMPB_vect){
-	PORTB &= ~1; // send low
-	DDRB &= ~1; // setup input mode
-	sonar_pinMode = WAITINGFORECHO;
-}
-

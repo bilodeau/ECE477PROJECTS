@@ -2,10 +2,10 @@ CC=avr-gcc
 CFLAGS=-g -Os -Wall -mcall-prologues -mmcu=atmega8 -Wno-char-subscripts
 OBJ2HEX=avr-objcopy
 #UISP=/usr/local/bin/uisp
-TARGET=AVRir
+TARGET=AVRircapture
 ADFLAGS=-p m8 -c avrispmkII -P usb
 
-.PHONY: fuses prog erase monitor
+.PHONY: fuses prog erase pc
 
 
 prog : $(TARGET).hex $(TARGET).eeprom
@@ -30,5 +30,5 @@ fuses:
 	avrdude $(ADFLAGS) -U lfuse:w:0xE4:m #http://www.engbedded.com/cgi-bin/fc.cgi 
 	avrdude $(ADFLAGS) -U hfuse:w:0xd9:m
 
-monitor:
-	gcc PCmonitor.c -o monitor -lncurses
+pc:
+	gcc PCir.c -o pc -lncurses

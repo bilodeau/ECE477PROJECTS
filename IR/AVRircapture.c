@@ -1,9 +1,12 @@
 // A beginning setup for Timers for IR Part B
 // Notice that the interrupts reset TCNT1.
 // This might be bad, but the Datasheet used a TCNT1 reset as a coding example.
+#include <avr/io.h>
+#include <avr/interrupt.h>
 #include <stdio.h>
 #include <string.h>
-#include "AVRserl.h"
+#include <stdlib.h>
+#include "AVRserial.h"
 
 
 #define NOT_RDY 0
@@ -14,6 +17,12 @@
 
 
 void setup_input_capture(){
+	DDRB = 0;
+	PORTB = 0;
+	TCCR1A = 0;
+	TCCR1B = 0x01; // use no prescaler
+	TCCR1B |= (0<<ICES1); // capture on falling edge
+
 	// enable input capture interrupt and compare match a
 	TIMSK |= (1<<TICIE1)|(1<<OCIE1A)|(1<<OCIE1B);
 	sei();
@@ -22,6 +31,7 @@ int signal_array[100];
 int signal_index;
 
 int light_count, dark_count, start_time, mode, signal_ready, divisor, num_signals;
+char* get_ascii_hex(int i);
 
 int main(void) {
 	setup_input_capture();
@@ -51,7 +61,7 @@ int main(void) {
 }
 
 char *get_ascii_hex(int i) {
-	char word[6];
+	char *word = malloc(6);
 	/*word[5] = '\0';
 	word[4] = ' ';
 	word[3] = ;

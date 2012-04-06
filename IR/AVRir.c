@@ -3,7 +3,7 @@
 #include <string.h>
 #include "AVRserial.h"
 #include "baud.h"
-#include "AVRircapture.c"
+//#include "AVRircapture.c"
 
 volatile int timer;	// the number of times the interrupt has been called
 
@@ -31,7 +31,7 @@ unsigned int get_burst_value(char *ptr) {
                 result |= (temp<<(4*(3-i)));
                 ptr++;
         }
-	transmit("getting burst pair");   
+//	transmit("getting burst pair");   
         return result;
 }
 
@@ -54,6 +54,7 @@ transmit(temp);
 int main() {
 	setup_serial();
 	setup_pwm();
+	test();
     	for ( ; ; ) {
 		if (serial_command_ready) {
 			if (check_buffer()){
