@@ -20,19 +20,15 @@ int main(void) {
 	setup_serial();
 	signal_ready = 0;
 	mode = NOT_RDY;
-	transmit("About to enter for-loop.");
 	for ( ; ; ) {
 		if (serial_command_ready) {			// if command is ready to be read
 			if (serial_command_buffer[0] == 'l') {	// if command is to capture IR Signal
 				setup_input_capture();		// setup interrupts for capture
 				mode = WAIT_ON_SIG;		// start waiting for a signal
 				if(signal_ready) {		// if a code has been captured
-					transmit("About to concatenate String.");
 					char *word = malloc((signal_index + 2)*5 + 1);
 					build_ir_code(word);
-					transmit("Done concatenating. Now transmitting.");
 					transmit(word);
-					transmit("Done sending Signal.");
 					signal_ready = 0;
 				}
 			} else if (check_buffer()) {	// if IR Code is good
