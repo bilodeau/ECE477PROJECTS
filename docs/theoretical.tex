@@ -11,11 +11,16 @@ D(s) = K_p+\frac{K_i}{s}+K_ds
 \label{PIDgen}
 \end{equation}
 
+K$_p$, K$_i$, and K$_d$ are the proportional, integral, and derivative constants.  Each term manipulates the error from the desired output and applies a new input signal to the quadrotor. 
+
 \subsubsection{Proportional}
+The proportional constant takes the error from the plant and inputs a new value proportional to the error. A PID controller is not implementable without a proportional constant.  This term guides the controller to the proper final value. 
 
 \subsubsection{Derivative}
+The derivative constant dampens the error to avoid oscillation. 
 
 \subsubsection{Integral}
+The integral part of the PID controller reduces the effect of outside forces on the quadrotor.  So if the quadrotor nears gusty air, theoretically this term would help compensate for the interference. 
 
 \subsection{Controllers, Testing and Tuning}
 
