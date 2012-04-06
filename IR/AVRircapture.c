@@ -8,11 +8,13 @@
 #define COUNT_D_PULSE 4
 
 
+char* get_ascii_hex(int i);
+void setup_input_capture();
+void build_ir_code(char *word);
+
 int signal_array[100];
 int signal_index;
-
 int light_count, dark_count, start_time, mode, signal_ready, divisor, num_signals;
-char* get_ascii_hex(int i);
 
 int main(void) {
 	setup_serial();
@@ -45,15 +47,6 @@ int main(void) {
 	}	
 }
 
-// transmits an entire IR signal
-void transmit_signal() {
-	OCR1A = get_burst_value(receive_buffer + 5) - 1;// set carrier freq
-	receive_buffer_index = 20;	// point to first burst pair
-	while (receive_buffer[receive_buffer_index] != '\0') {	// while there signals to be sent
-		transmit_burst();		// transmit one burst
-		receive_buffer_index += 5;	// increment to next burst
-	}
-}
 
 // takes a char ptr and puts a Pronto format IR Code into it
 void build_ir_code(char *word) {
@@ -83,10 +76,10 @@ void setup_input_capture(){
 	PORTB = 0;
 	TCCR1A = 0;
 	TCCR1B = 0x01; // use no prescaler
-	TCCR1B |= (0<<ICES1); // capture on falling edge
+	TCCR1B = (0<<ICES1); // capture on falling edge
 
 	// enable input capture interrupt and compare match a
-	TIMSK |= (1<<TICIE1)|(1<<OCIE1A)|(1<<OCIE1B);
+	TIMSK = (1<<TICIE1)|(1<<OCIE1A)|(1<<OCIE1B);
 	sei();
 }
 

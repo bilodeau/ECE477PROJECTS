@@ -7,7 +7,13 @@
 volatile int timer;	// the number of times the interrupt has been called
 void transmit_burst();
 void setup_pwm();
+int get_burst_value(char *ptr);
+char check_buffer();
+void transmit_signal();
+
 int receive_buffer_index = 0;
+
+// gets a decimal value from a string of 4 characters
 unsigned int get_burst_value(char *ptr) {
         unsigned int result = 0;
         unsigned char temp;
@@ -18,6 +24,16 @@ unsigned int get_burst_value(char *ptr) {
                 ptr++;
         }
         return result;
+}
+
+// transmits an entire IR signal
+void transmit_signal() {
+	OCR1A = get_burst_value(receive_buffer + 5) - 1;// set carrier freq
+	receive_buffer_index = 20;	// point to first burst pair
+	while (receive_buffer[receive_buffer_index] != '\0') {	// while there signals to be sent
+		transmit_burst();		// transmit one burst
+		receive_buffer_index += 5;	// increment to next burst
+	}
 }
 
 // check to see if the receive_buffer contains a valid IR Code
