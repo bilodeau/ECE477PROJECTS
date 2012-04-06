@@ -7,6 +7,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include "AVRserial.h"
+#include "AVRir.h"
 
 
 #define NOT_RDY 0
@@ -34,42 +35,73 @@ int light_count, dark_count, start_time, mode, signal_ready, divisor, num_signal
 char* get_ascii_hex(int i);
 
 int main(void) {
-	setup_input_capture();
 	setup_serial();
 	signal_ready = 0;
-	mode = WAIT_ON_SIG;
+	mode = NOT_RDY;
 	transmit("About to enter for-loop.");
 	for ( ; ; ) {
-		if(signal_ready) {
-			transmit("About to concatenate String.");
-			char *word = malloc((signal_index + 2)*5 + 1);
-			strcat(word, get_ascii_hex(signal_array[0]));	// concatentate the divisor
-			strcat(word, get_ascii_hex((signal_index - 2)/2));// concat the num 1st burst pair
-			strcat(word, get_ascii_hex(0));			// concat 0 for 2nd burst pair
-			transmit("Header concat complete.");
-			int i;
-			for (i = 1; i < signal_index - 1; i++) {
-				strcat(word, get_ascii_hex(signal_array[i]));
+		if (serial_command_ready) {			// if command is ready to be read
+			if (serial_command_buffer[0] == 'l') {	// if command is to capture IR Signal
+				setup_input_capture();		// setup interrupts for capture
+				mode = WAIT_ON_SIG;		// start waiting for a signal
+				if(signal_ready) {		// if a code has been captured
+					transmit("About to concatenate String.");
+					char *word = malloc((signal_index + 2)*5 + 1);
+					build_ir_code(word);
+					transmit("Done concatenating. Now transmitting.");
+					transmit(word);
+					transmit("Done sending Signal.");
+					signal_ready = 0;
+				}
+			} else if (check_buffer()) {	// if IR Code is good
+				setup_pwm();		// setup pwm to send IR Signal
+				transmit_signal();	// transmit signal
+			} else {
+				receive_buffer = '\0';	// else bad command. zero out buffer
 			}
-			strcat(word, "0FFF");
-			transmit("Done concatenating. Now transmitting.");
-			transmit(word);
-			transmit("Done sending Signal.");
-			signal_ready = 0;
-		}
+			serial_command_ready = 0;	// reset ready flag
+			receive_buffer_index = 0;	// reset buffer index	
+		}				
+	}	
+}
+
+// transmits an entire IR signal
+void transmit_signal() {
+	OCR1A = get_burst_value(receive_buffer + 5) - 1;// set carrier freq
+	receive_buffer_index = 20;	// point to first burst pair
+	while (receive_buffer[receive_buffer_index] != '\0') {	// while there signals to be sent
+		transmit_burst();		// transmit one burst
+		receive_buffer_index += 5;	// increment to next burst
 	}
 }
 
+// takes a char ptr and puts a Pronto format IR Code into it
+void build_ir_code(char *word) {
+	strcat(word, "0000 ");
+	strcat(word, get_ascii_hex(signal_array[0]));	// concatentate the divisor
+	strcat(word, get_ascii_hex((signal_index - 2)/2));// concat the num 1st burst pair
+	strcat(word, "0000 ");			// concat 0 for 2nd burst pair
+	int i;
+	for (i = 1; i < signal_index - 1; i++) {	// for each signal, concat to the string
+		strcat(word, get_ascii_hex(signal_array[i]));
+	}
+	strcat(word, "0FFF");		// concat final dark burst
+}
+
+// get 5 char ascii hex representation of a decimal number
 char *get_ascii_hex(int i) {
 	char *word = malloc(6);
-	/*word[5] = '\0';
-	word[4] = ' ';
-	word[3] = ;
-	word[2] = ;
-	word[1] = ;
-	word[0] = ;*/
 	sprintf(word, "00%x ", i);
 	return word; 
+}
+
+// setup input capture interrupts
+void setup_input_capture(){
+	// enable input capture interrupt and compare match a
+	OCR1A = 0xFFFF;
+	OCR1B = 0xFFFF;
+	TIMSK |= (1<<TICIE1)|(1<<OCIE1A)|(1<<OCIE1B);
+	sei();
 }
 
 // handles the input pulse from the IR
@@ -95,8 +127,7 @@ ISR(TIMER1_CAPT_vect) {
 			if (divisor < 0) {	// if divisor is neg, ovflow occurred
 				divisor = time + (0xFFFF - start_time) + 1;
 			}
-			OCR1A = time + 1.5*divisor;		// set val to catch missed pulse
-			OCR1B = time + divisor;			// set up timer to measure cycles
+			OCR1B = time + divisor;		// time of expected pulse
 			signal_array[signal_index++] = divisor;	// record divisor in array  		
 			light_count = 2;		// two light periods have occurred so far
 			mode++;				// mode = COUNT_L_PULSE
@@ -104,7 +135,6 @@ ISR(TIMER1_CAPT_vect) {
 		case COUNT_L_PULSE :	// was counting length of light burst
 			light_count++;	// increment num cycles
 			OCR1A = time + 1.5*divisor;	// move dark pulse catch
-			OCR1B = time + divisor;		// time of expected pulse
 			break;
 		case COUNT_D_PULSE :	// was counting length of dark burst
 			signal_array[signal_index++] = dark_count;	// update sig array
@@ -131,11 +161,14 @@ ISR(TIMER1_COMPA_vect) {
 // this interrupt fires in snyc with the carrier frequency
 // it is used to keep track of the length of dark bursts
 ISR(TIMER1_COMPB_vect) {
-	dark_count++;
-	if ((dark_count > 225) && (mode == COUNT_D_PULSE)) {
-		signal_array[signal_index++] = 0x0FFF;
-		signal_array[signal_index] = '\0';
-		signal_ready = 1;	// signal has been received. set flag.
-		mode = NOT_RDY;
+	OCR1B += divisor;
+	if (mode == COUNT_D_PULSE) {
+		dark_count++;
+		if (dark_count > 225) {
+			signal_array[signal_index++] = 0x0FFF;
+			signal_array[signal_index] = '\0';
+			signal_ready = 1;	// signal has been received. set flag.
+			mode = NOT_RDY;
+		}
 	}
 }
