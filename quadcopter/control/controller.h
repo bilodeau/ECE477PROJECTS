@@ -7,16 +7,16 @@
 #include <avr/io.h>
 
 #define ALT_P_GAIN 1
-#define ALT_I_GAIN 1
-#define ALT_D_GAIN 1
+#define ALT_I_GAIN 0
+#define ALT_D_GAIN 0
 
-#define ROLL_P_GAIN 1
+#define ROLL_P_GAIN 0
 #define ROLL_I_GAIN 0
-#define ROLL_D_GAIN 1
+#define ROLL_D_GAIN 0
 
-#define PITCH_P_GAIN 1
+#define PITCH_P_GAIN 0
 #define PITCH_I_GAIN 0
-#define PITCH_D_GAIN 1
+#define PITCH_D_GAIN 0
 
 char controller_north_thrust;
 char controller_south_thrust;
@@ -53,14 +53,17 @@ void setup_target_state(){
 
 void set_altitude(int alt){
 	target_state.altitude = alt;
+	char temp[40];
+	sprintf(temp,"new alt: %d",target_state.altitude);
+	transmit(temp);
 }
 
 void setup_controller(){
 	setup_target_state();
 	int time = TCNT1;
-	set_attrib(&alt_control, ALT_P_GAIN, ALT_I_GAIN, ALT_D_GAIN, 0, time);
-	set_attrib(&roll_control, ROLL_P_GAIN, ROLL_I_GAIN, ROLL_D_GAIN, 0, time);
-	set_attrib(&pitch_control, PITCH_P_GAIN, PITCH_I_GAIN, PITCH_D_GAIN, 0, time);	
+	set_attrib(&alt_control, ALT_P_GAIN, ALT_I_GAIN, ALT_D_GAIN, time);
+	set_attrib(&roll_control, ROLL_P_GAIN, ROLL_I_GAIN, ROLL_D_GAIN, time);
+	set_attrib(&pitch_control, PITCH_P_GAIN, PITCH_I_GAIN, PITCH_D_GAIN, time);	
 }
 
 void compute_controller(){
@@ -68,10 +71,10 @@ void compute_controller(){
 	float alt_gain = get_gain(&alt_control, target_state.altitude, sensor_data_cache.sonar_distance, time);
 	float roll_gain = get_gain(&roll_control, target_state.roll, sensor_data_cache.roll, time);
 	float pitch_gain = get_gain(&pitch_control, target_state.pitch, sensor_data_cache.pitch, time);
-	controller_north_thrust += alt_gain + pitch_gain; 
-	controller_south_thrust += alt_gain - pitch_gain;
-	controller_east_thrust += alt_gain + roll_gain;
-	controller_west_thrust += alt_gain - roll_gain;
+	controller_north_thrust = alt_gain + pitch_gain; 
+	controller_south_thrust = alt_gain - pitch_gain;
+	controller_east_thrust = alt_gain + roll_gain;
+	controller_west_thrust = alt_gain - roll_gain;
 	if (controller_north_thrust > 100) {
 		controller_north_thrust = 100;
 	} else if (controller_north_thrust < 6) {
@@ -89,7 +92,7 @@ void compute_controller(){
 	}
 	if (controller_west_thrust > 100) {
 		controller_west_thrust = 100;
-	} else if (controller _west_thrust < 6) {
+	} else if (controller_west_thrust < 6) {
 		controller_west_thrust = 6;
 	}
 }

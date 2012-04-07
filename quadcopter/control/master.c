@@ -38,9 +38,9 @@ int main(){
 			update_motors_flag = 0;  
 		}else if(idle){
 			set_motors(10);
-		}else{
-			stop_motors();
 		}
+		if(!begin||!idle)
+			stop_motors();
         }   
         return 0;
 }
@@ -87,6 +87,10 @@ void forward_command(){
 		int alt;
 		sscanf(receive_buffer+6,"%d",&alt);
 		set_altitude(alt);
+	}else if(!strncmp(receive_buffer,"POWER ",6)){
+		int power;
+		sscanf(receive_buffer+6,"%d",&power);
+		set_motors(power);
 	}
 }
 

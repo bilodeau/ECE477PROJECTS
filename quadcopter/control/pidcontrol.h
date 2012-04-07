@@ -24,7 +24,7 @@ void set_attrib(struct pid_values *s, float p, float i, float d, unsigned int ti
 	s->Ki = i;
 	s->Kd = d;
 	s->accum_error = 0;
-	s->old_error = error;
+	s->old_error = 0;
 	s->old_time = time;
 }
 
