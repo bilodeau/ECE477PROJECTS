@@ -1,5 +1,5 @@
-#ifndef I2CSLAVE
-#define I2CSLAVE 1
+#ifndef I2CSLAVE_H_
+#define I2CSLAVE_H_
 #include <avr/io.h>
 
 // if the LSB of the slave address is set, slave will respond to general call 0x00 also

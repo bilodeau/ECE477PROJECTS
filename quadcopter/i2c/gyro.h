@@ -1,3 +1,6 @@
+#ifndef GRYO_H_
+#define GYRO_H_
+
 #include <avr/io.h>
 #include "../lib/data.h"
 
@@ -70,3 +73,4 @@ void spam_gyro(){
 	sprintf(temp,"%c%c%ld",SENSORDATAPACKETCHARACTER,GYROSCOPEY,gyro_y_rotational_velocity);
 	transmit(temp);
 }
+#endif

@@ -1,3 +1,5 @@
+#ifndef NUNCHUCK_H_
+#define NUNCHUCK_H_
 #include <avr/io.h>
 #include <stdio.h>
 #include <string.h>
@@ -143,3 +145,4 @@ void spam_nunchuck_angles(){
 	sprintf(temp,"%c%c%ld",SENSORDATAPACKETCHARACTER,ROLL,roll);
 	transmit(temp);	
 }
+#endif

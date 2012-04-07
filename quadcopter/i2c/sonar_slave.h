@@ -1,3 +1,6 @@
+#ifndef SONAR_SLAVE_H_
+#define SONAR_SLAVE_H_
+
 #include <avr/io.h>
 #include <avr/interrupt.h>
 #include <stdio.h>
@@ -47,4 +50,4 @@ ISR(TIMER1_COMPB_vect){
 	DDRB &= ~1; // setup input mode
 	sonar_pinMode = WAITINGFORECHO;
 }
-
+#endif

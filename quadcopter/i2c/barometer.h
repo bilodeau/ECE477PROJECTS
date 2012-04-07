@@ -1,3 +1,6 @@
+#ifndef BAROMETER_H_
+#define BAROMETER_H_
+
 #include <avr/io.h>
 #include <math.h>
 #include <string.h>
@@ -192,3 +195,4 @@ void spam_barometer(){
 	sprintf(temp,"%c%c%ld",SENSORDATAPACKETCHARACTER,BAROMETERALTITUDE,a);
 	transmit(temp);
 }
+#endif

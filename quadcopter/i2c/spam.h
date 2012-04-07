@@ -1,5 +1,5 @@
-#ifndef SPAMDATA
-#define SPAMDATA 1
+#ifndef SPAM_H_
+#define SPAM_H_
 #include "../lib/data.h"
 #include <string.h>
 void query_slave(char sensor_address, char numbytes){

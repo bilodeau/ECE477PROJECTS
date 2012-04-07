@@ -1,3 +1,6 @@
+#ifndef MAGNETOMETER_H_
+#define MAGNETOMETER_H_
+
 #include <avr/io.h>
 #include <stdio.h>
 #include <string.h>
@@ -82,3 +85,4 @@ void spam_magnetometer(){
 	sprintf(temp,"%c%c%ld",SENSORDATAPACKETCHARACTER,COMPASSHEADING,h);
 	transmit(temp);	
 }
+#endif

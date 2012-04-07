@@ -1,3 +1,5 @@
+#include "../control/controller.h"
+
 #define NORTHMOTOR 0
 #define SOUTHMOTOR 1
 #define EASTMOTOR 2
@@ -75,6 +77,7 @@ void set_motor_power(char motor, int power){
 }
 
 void update_motors(){
+/*
 	int base_thrust = 10;
 	int max_thrust = 50;
 
@@ -120,9 +123,10 @@ void update_motors(){
 		east_thrust = base_thrust;
 	if(west_thrust < base_thrust)
 		west_thrust = base_thrust;
-
-	set_motor_power(NORTHMOTOR,north_thrust);
-	set_motor_power(SOUTHMOTOR,south_thrust);
-	set_motor_power(EASTMOTOR,east_thrust);
-	set_motor_power(WESTMOTOR,west_thrust);
+*/
+	compute_controller();
+	set_motor_power(NORTHMOTOR,get_north_thrust());
+	set_motor_power(SOUTHMOTOR,get_south_thrust());
+	set_motor_power(EASTMOTOR,get_east_thrust());
+	set_motor_power(WESTMOTOR,get_west_thrust());
 }
