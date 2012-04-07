@@ -7,15 +7,6 @@
 #include "gyro.h"
 #include "nunchuck.h"
 
-void send_spam(){
-	spam_magnetometer();
-	spam_sonar();
-	spam_barometer();
-	spam_gyro();
-	spam_nunchuck();
-	spam_nunchuck_angles();
-}
-
 void spam(int sensor_code,long value){
 	char temp[40];	
         sprintf(temp,"%c%c%ld",SENSORDATAPACKETCHARACTER,sensor_code,value);
@@ -58,5 +49,14 @@ void spam_nunchuck_angles(){
 	spam(PITCH,sensor_data_cache.pitch);
 	spam(ROLL,sensor_data_cache.roll);
 
+}
+
+void send_spam(){
+	spam_magnetometer();
+	spam_sonar();
+	spam_barometer();
+	spam_gyro();
+	spam_nunchuck();
+	spam_nunchuck_angles();
 }
 #endif

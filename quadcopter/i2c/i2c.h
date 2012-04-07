@@ -2,6 +2,7 @@
 #define I2C_H_
 #include <avr/io.h>
 #include <string.h>
+#include "../lib/data.h"
 
 #define FLASHONI2C  0
 #define START 0x08

@@ -55,18 +55,15 @@ void get_data_magnetometer(){
         int z = (buffer[2]<<8)|buffer[3];
         int y = (buffer[4]<<8)|buffer[5];
 	
-	double heading = conver_raw_heading_to_degrees(x,y,z);
+	double heading = convert_raw_heading_to_degrees(x,y,z);
 	sensor_data_cache.compass_heading = (long)(100*heading);
 }
         
 void query_magnetometer(){
 	get_data_magnetometer();
 	char temp[41];
-        sprintf(temp,"MagRaw: %d %d %d",x,z,y);
-        transmit(temp);
-	double heading = convert_raw_heading_to_degrees(x,y,z);
-	int h = heading;
-	int h2 = 100*(heading-h);	
+	int h = sensor_data_cache.compass_heading/100;
+	int h2 = sensor_data_cache.compass_heading-h;	
 	sprintf(temp,"Heading: %d.%d",h,h2);
 	transmit(temp);
 }

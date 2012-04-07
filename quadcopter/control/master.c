@@ -95,11 +95,11 @@ void forward_command(){
 	}else if(!strncmp(receive_buffer,"SET",3)){
 		int calib_value;
 		if (sscanf(receive_buffer+5,"%d",&calib_value) == 1){
-			if(!strncmp(receive_buffer+3,"P")){
+			if(!strncmp(receive_buffer+3,"P",1)){
 				set_controller_p(calib_value/100.);
-			}else if(!strncmp(receive_buffer+3,"I")){
+			}else if(!strncmp(receive_buffer+3,"I",1)){
 				set_controller_i(calib_value/100.);
-			}else if(!strncmp(receive_buffer+3,"D")){
+			}else if(!strncmp(receive_buffer+3,"D",1)){
 				set_controller_d(calib_value/100.);
 			}
 		}
@@ -120,14 +120,4 @@ void setup_spam(){
 ISR(TIMER1_COMPA_vect){
 	spam_flag = 1;
 	update_motors_flag = 1;
-}
-
-// queries all devices and sends appropriate data packets out to the PC
-void send_spam(){
-	spam_magnetometer();
-	spam_barometer();
-	spam_nunchuck();
-	spam_nunchuck_angles();
-	spam_gyro();
-	spam_sonar();
 }

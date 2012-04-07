@@ -9,9 +9,9 @@
 
 long nunchuck_x, nunchuck_y, nunchuck_z;
 long yaw,pitch,roll;  // all values in degrees
-int nunchuck_zero_x = 510;
-int nunchuck_zero_y = 490;
-int nunchuck_zero_z = 460;
+int nunchuck_zero_x = 0;//502;
+int nunchuck_zero_y = 0;//509;
+int nunchuck_zero_z = 0;//460;
 
 // converts the current component values to yaw pitch and roll values
 void nunchuck_to_degrees(){

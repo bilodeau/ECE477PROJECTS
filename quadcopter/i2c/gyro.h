@@ -1,4 +1,4 @@
-#ifndef GRYO_H_
+#ifndef GYRO_H_
 #define GYRO_H_
 
 #include <avr/io.h>
@@ -51,13 +51,13 @@ void power_on_gyro(){
 	// zero the gyro with correct bias,  gyro should be stationary when power_on is called
 	gyroscope_x_bias = 0;
 	gyroscope_y_bias = 0;
-	get_gyro_data();	
+	get_data_gyro();	
 	gyroscope_x_bias = gyro_x_rotational_velocity;
 	gyroscope_y_bias = gyro_y_rotational_velocity;
 }
 
 void query_gyro(){
-	get_gyro_data();
+	get_data_gyro();
 	char temp[40];
 	sprintf(temp,"Gyro's X (deg/s): %ld",gyro_x_rotational_velocity);
 	transmit(temp);
