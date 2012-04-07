@@ -88,7 +88,8 @@ void forward_command(){
 	}else if(!strncmp(receive_buffer,"HOVER ",6)){
 		int alt;
 		sscanf(receive_buffer+6,"%d",&alt);
-		set_altitude(alt);
+		if ((alt >= 0)&&(alt <= 400))
+			set_altitude(alt);
 	}else if(!strncmp(receive_buffer,"POWER ",6)){
 		int power;
 		sscanf(receive_buffer+6,"%d",&power);

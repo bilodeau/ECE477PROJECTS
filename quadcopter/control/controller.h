@@ -18,10 +18,10 @@
 #define PITCH_I_GAIN 0
 #define PITCH_D_GAIN 0
 
-char controller_north_thrust;
-char controller_south_thrust;
-char controller_east_thrust;
-char controller_west_thrust;
+long controller_north_thrust;
+long controller_south_thrust;
+long controller_east_thrust;
+long controller_west_thrust;
 
 struct pid_values alt_control, roll_control, pitch_control;
 struct goal_attrib target_state;
@@ -33,14 +33,17 @@ void query_cntrl_vals() {
 }
 
 void set_controller_p(float i){
+        alt_control.accum_error = 0;
 	alt_control.Kp = i;
 }
 
 void set_controller_i(float i) {
-        alt_control.Ki = i;
+        alt_control.accum_error = 0;
+	alt_control.Ki = i;
 }
 
 void set_controller_d(float i) {
+        alt_control.accum_error = 0;
         alt_control.Kd = i;
 }
 
@@ -77,24 +80,27 @@ void compute_controller(){
 	controller_west_thrust = alt_gain - roll_gain;
 	if (controller_north_thrust > 100) {
 		controller_north_thrust = 100;
-	} else if (controller_north_thrust < 6) {
-		controller_north_thrust = 6;
+	} else if (controller_north_thrust < 10) {
+		controller_north_thrust = 10;
 	}
 	if (controller_south_thrust > 100) {
 		controller_south_thrust = 100;
-	} else if (controller_south_thrust < 6) {
-		controller_south_thrust = 6;
+	} else if (controller_south_thrust < 10) {
+		controller_south_thrust = 10;
 	}
 	if (controller_east_thrust > 100) {
 		controller_east_thrust = 100;
-	} else if (controller_east_thrust < 6) {
-		controller_east_thrust = 6;
+	} else if (controller_east_thrust < 10) {
+		controller_east_thrust = 10;
 	}
 	if (controller_west_thrust > 100) {
 		controller_west_thrust = 100;
-	} else if (controller_west_thrust < 6) {
-		controller_west_thrust = 6;
+	} else if (controller_west_thrust < 10) {
+		controller_west_thrust = 10;
 	}
+	char temp[100];
+	sprintf(temp,"power: %d gain: %d",(int)controller_north_thrust,(int)(alt_gain*100));
+	transmit(temp);
 }
 
 char get_north_thrust(){
