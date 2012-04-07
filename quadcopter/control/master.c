@@ -93,7 +93,18 @@ void forward_command(){
 	}else if(!strcmp(receive_buffer,"NZ")){
 		zero_nunchuck();
 	}else if(!strncmp(receive_buffer,"SET",3)){
-		// set something
+		int calib_value;
+		if (sscanf(receive_buffer+5,"%d",&calib_value) == 1){
+			if(!strncmp(receive_buffer+3,"P")){
+				set_controller_p(calib_value/100.);
+			}else if(!strncmp(receive_buffer+3,"I")){
+				set_controller_i(calib_value/100.);
+			}else if(!strncmp(receive_buffer+3,"D")){
+				set_controller_d(calib_value/100.);
+			}
+		}
+	}else if(!strcmp(receive_buffer,"FETCH")){
+		query_controller_constants();
 	}
 }
 

@@ -11,7 +11,7 @@ long gyro_y_rotational_velocity;
 int gyroscope_x_bias;
 int gyroscope_y_bias;
 
-void get_gyro_data(){
+void get_data_gyro(){
 	PRR &= ~(1<<PRADC); // disable power reduction for ADC so that it works
 	
 	ADMUX &= ~1; // make sure bit 0 is clear, so we're using ADC0
@@ -65,6 +65,7 @@ void query_gyro(){
 	transmit(temp);
 }
 
+/* see spam.h
 void spam_gyro(){
 	get_gyro_data();
 	char temp[40];
@@ -72,5 +73,5 @@ void spam_gyro(){
 	transmit(temp);
 	sprintf(temp,"%c%c%ld",SENSORDATAPACKETCHARACTER,GYROSCOPEY,gyro_y_rotational_velocity);
 	transmit(temp);
-}
+}*/
 #endif
