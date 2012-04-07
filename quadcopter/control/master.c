@@ -93,7 +93,7 @@ void forward_command(){
 	}else if(!strncmp(receive_buffer,"POWER ",6)){
 		int power;
 		sscanf(receive_buffer+6,"%d",&power);
-		set_motors(power);
+		set_base_thrust(power);
 	}
 }
 

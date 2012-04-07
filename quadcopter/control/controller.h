@@ -18,6 +18,8 @@
 #define PITCH_I_GAIN 0
 #define PITCH_D_GAIN 0
 
+int base_thrust;
+
 long controller_north_thrust;
 long controller_south_thrust;
 long controller_east_thrust;
@@ -28,7 +30,7 @@ struct goal_attrib target_state;
 
 void query_cntrl_vals() {
         char temp[60];
-	sprintf(temp, "Kp: %d, Ki: %d, Kp: %d",(int)(alt_control.Kp*100), (int)(alt_control.Ki*100), (int)(alt_control.Kd*100));
+	sprintf(temp, "Kp: %d, Ki: %d, Kp: %d",alt_control.Kp*100, alt_control.Ki*100, alt_control.Kd*100);
 	transmit(temp);
 }
 
@@ -54,6 +56,13 @@ void setup_target_state(){
 	target_state.yaw = 0;
 }
 
+void set_base_thrust(int i){
+	base_thrust = i;
+	char temp[40];
+	sprintf(temp,"new base: %d",base_thrust);
+	transmit(temp);
+}
+
 void set_altitude(int alt){
 	target_state.altitude = alt;
 	char temp[40];
@@ -74,10 +83,11 @@ void compute_controller(){
 	float alt_gain = get_gain(&alt_control, target_state.altitude, sensor_data_cache.sonar_distance, time);
 	float roll_gain = get_gain(&roll_control, target_state.roll, sensor_data_cache.roll, time);
 	float pitch_gain = get_gain(&pitch_control, target_state.pitch, sensor_data_cache.pitch, time);
-	controller_north_thrust = alt_gain + pitch_gain; 
-	controller_south_thrust = alt_gain - pitch_gain;
-	controller_east_thrust = alt_gain + roll_gain;
-	controller_west_thrust = alt_gain - roll_gain;
+	
+	controller_north_thrust = base_thrust + alt_gain + pitch_gain; 
+	controller_south_thrust = base_thrust + alt_gain - pitch_gain;
+	controller_east_thrust = base_thrust + alt_gain + roll_gain;
+	controller_west_thrust = base_thrust + alt_gain - roll_gain;
 	if (controller_north_thrust > 100) {
 		controller_north_thrust = 100;
 	} else if (controller_north_thrust < 10) {
