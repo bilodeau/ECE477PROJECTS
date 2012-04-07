@@ -6,6 +6,7 @@ struct pid_values{
 float Kp; //constants for the pid controllers
 float Ki;
 float Kd;
+float accum_error;
 int old_error; //the old error value
 unsigned int old_time;	//time between readings
 };
@@ -18,10 +19,11 @@ int altitude;
 int roll;
 };
 
-void set_attrib(struct pid_values *s, float p, float i, float d, int error, unsigned int time) {
+void set_attrib(struct pid_values *s, float p, float i, float d, unsigned int time) {
 	s->Kp = p;
 	s->Ki = i;
 	s->Kd = d;
+	s->accum_error = 0;
 	s->old_error = error;
 	s->old_time = time;
 }
@@ -33,8 +35,8 @@ int get_diff(int goal, int measure){
 
 //calculates the integral of error
 float get_integral(struct pid_values *s, int error, int delta_t){
-	float integral = delta_t * ((s->old_error + error) / 2.);		
-	return integral;
+	s->accum_error += delta_t * error;		
+	return s->accum_error;
 }
 
 //calculates the derivative error

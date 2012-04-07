@@ -6,10 +6,6 @@
 #include "../lib/AVRserial.h"
 #include <avr/io.h>
 
-#define ALT_ADJ 5
-#define ROLL_ADJ 5
-#define PITCH_ADJ 5
-
 #define ALT_P_GAIN 1
 #define ALT_I_GAIN 1
 #define ALT_D_GAIN 1
@@ -72,10 +68,30 @@ void compute_controller(){
 	float alt_gain = get_gain(&alt_control, target_state.altitude, sensor_data_cache.sonar_distance, time);
 	float roll_gain = get_gain(&roll_control, target_state.roll, sensor_data_cache.roll, time);
 	float pitch_gain = get_gain(&pitch_control, target_state.pitch, sensor_data_cache.pitch, time);
-	controller_north_thrust += alt_gain*ALT_ADJ + pitch_gain*PITCH_ADJ; 
-	controller_south_thrust += alt_gain*ALT_ADJ - pitch_gain*PITCH_ADJ;
-	controller_east_thrust += alt_gain*ALT_ADJ + roll_gain*ROLL_ADJ;
-	controller_west_thrust += alt_gain*ALT_ADJ - roll_gain*ROLL_ADJ;
+	controller_north_thrust += alt_gain + pitch_gain; 
+	controller_south_thrust += alt_gain - pitch_gain;
+	controller_east_thrust += alt_gain + roll_gain;
+	controller_west_thrust += alt_gain - roll_gain;
+	if (controller_north_thrust > 100) {
+		controller_north_thrust = 100;
+	} else if (controller_north_thrust < 6) {
+		controller_north_thrust = 6;
+	}
+	if (controller_south_thrust > 100) {
+		controller_south_thrust = 100;
+	} else if (controller_south_thrust < 6) {
+		controller_south_thrust = 6;
+	}
+	if (controller_east_thrust > 100) {
+		controller_east_thrust = 100;
+	} else if (controller_east_thrust < 6) {
+		controller_east_thrust = 6;
+	}
+	if (controller_west_thrust > 100) {
+		controller_west_thrust = 100;
+	} else if (controller _west_thrust < 6) {
+		controller_west_thrust = 6;
+	}
 }
 
 char get_north_thrust(){
