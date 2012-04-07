@@ -9,11 +9,10 @@
 #include "../i2c/gyro.h"
 #include "../i2c/spam.h"
 #include "../motors/motors.h"
-#include "controller.h"
 
 void forward_command();
 void setup_spam();
-void send_spam();
+void set_calibs();
 char spam_flag = 0;
 char update_motors_flag = 0;
 char begin = 0;
@@ -66,46 +65,42 @@ void forward_command(){
 		idle = 1;
 	}else if(!strcmp(receive_buffer,"GP")){
 		power_on_gyro();
-	}else if(!strcmp(receive_buffer,"GD")){
-		query_gyro();	
-	}else if(!strcmp(receive_buffer,"MD")){
-                query_magnetometer();
         }else if (!strcmp(receive_buffer,"MP")){
                power_on_magnetometer();
         }else if(!strcmp(receive_buffer,"MS")){
                 get_magnetometer_status();
-        }else if(!strcmp(receive_buffer,"BHC")){
+        }else if(!strcmp(receive_buffer,"BC")){
 	       	hard_barometer_calibration();
-	}else if(!strcmp(receive_buffer,"BC")){
-		get_barometer_calibration();
-	}else if(!strcmp(receive_buffer,"BD")){
-		query_barometer();
 	}else if(!strcmp(receive_buffer,"BT")){
 		query_barometer_true();
-	}else if(!strcmp(receive_buffer,"NS")){
-		get_nunchuck_status();
 	}else if(!strcmp(receive_buffer,"NP")){
 		power_on_nunchuck();
 	}else if(!strcmp(receive_buffer,"ND")){
 		query_nunchuck();
-	}else if(!strcmp(receive_buffer,"NC")){
-		get_forty_nunchuck();
 	}else if(!strcmp(receive_buffer,"NZ")){
 		zero_nunchuck();
-	}else if(!strncmp(receive_buffer,"SET",3)){
-		int calib_value;
-		if (sscanf(receive_buffer+5,"%d",&calib_value) == 1){
-			if(!strncmp(receive_buffer+3,"P",1)){
-				set_controller_p(calib_value/100.);
-			}else if(!strncmp(receive_buffer+3,"I",1)){
-				set_controller_i(calib_value/100.);
-			}else if(!strncmp(receive_buffer+3,"D",1)){
-				set_controller_d(calib_value/100.);
-			}
-		}
 	}else if(!strcmp(receive_buffer,"FETCH")){
-		query_controller_constants();
+		query_cntrl_vals();
+	}else if(!strncmp(receive_buffer,"SET",3)){
+		set_calibs();
+	}else if(!strncmp(receive_buffer,"HOVER ",6)){
+		int alt;
+		sscanf(receive_buffer+6,"%d",&alt);
+		set_altitude(alt);
 	}
+}
+
+void set_calibs(){
+		int calib_value = 0;
+		sscanf(receive_buffer+5,"%d",&calib_value);
+		float calib_valf = calib_value / 100.;
+		if(receive_buffer[3] == 'P'){
+			set_controller_p(calib_valf);
+		}else if(receive_buffer[3] == 'I'){
+			set_controller_i(calib_valf);
+		}else if(receive_buffer[3] == 'D'){
+			set_controller_d(calib_valf);
+		}	
 }
 
 // sets up Timer1 for sending data at regular intervals

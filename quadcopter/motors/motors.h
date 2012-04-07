@@ -1,3 +1,6 @@
+#ifndef MOTORS_H_
+#define MOTORS_H_
+
 #include "../control/controller.h"
 
 #define NORTHMOTOR 0
@@ -130,3 +133,4 @@ void update_motors(){
 	set_motor_power(EASTMOTOR,get_east_thrust());
 	set_motor_power(WESTMOTOR,get_west_thrust());
 }
+#endif

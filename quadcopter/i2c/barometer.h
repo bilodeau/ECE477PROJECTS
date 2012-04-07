@@ -6,6 +6,7 @@
 #include <string.h>
 #include <stdio.h>
 #include "i2c.h"
+#include "../lib/delay.h"
 
 short ac1, ac2, ac3, b1, b2, mb, mc, md; // the 11 calibration values
 unsigned short ac4,ac5,ac6;
@@ -125,9 +126,9 @@ void get_data_barometer(){
 	process_i2c_bus_read(0xEF,buffer,2);    // read in the 2 bytes from the data register in MSB, LSB order
 	send_stop_condition();
 	pressure = (buffer[0]<<8)|buffer[1];   // reassemble the 16-bit value
-}// READS TWICE
+	}// READS TWICE
 	// ** This only reads the pressure data once.  The spec sheet mentioned doing it twice.
-
+	
 }
 
 void query_barometer(){
@@ -173,6 +174,9 @@ void get_data_barometer_true(){
 	double temp = true_pressure / 10132.5;
 	//temp = 1 - pow(temp,.19029);	
 	true_altitude = 44330 * temp;
+	
+	sensor_data_cache.barometer_pressure = true_pressure;
+	sensor_data_cache.barometer_temperature = true_temp;
 }
 
 void query_barometer_true(){

@@ -1,3 +1,6 @@
+#ifndef DELAY_H_
+#define DELAY_H_
+
 #include <avr/io.h>
 // DELAYS using timer1 based on the defined clock speed
 
@@ -15,3 +18,4 @@ void delay(unsigned char millis){
 ISR(TIMER1_COMPB_vect){
 	delay_flag = 0;
 }
+#endif

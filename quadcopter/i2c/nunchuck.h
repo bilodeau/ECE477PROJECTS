@@ -36,6 +36,10 @@ void nunchuck_to_degrees(){
 	yaw = (long)(yawf);  // multiply by 100 since we're storing them as longs
 	pitch = (long)(pitchf);
 	roll = (long)(rollf);
+	
+	sensor_data_cache.yaw = yaw;
+	sensor_data_cache.pitch = pitch;
+	sensor_data_cache.roll = roll;
 }
 
 void zero_nunchuck(){
@@ -114,6 +118,10 @@ void get_data_nunchuck(){
 	nunchuck_y -= nunchuck_zero_y;
 	nunchuck_z -= nunchuck_zero_z;
 	send_zero_nunchuck();
+
+	sensor_data_cache.nunchuck_x_value = nunchuck_x;
+	sensor_data_cache.nunchuck_y_value = nunchuck_y;
+	sensor_data_cache.nunchuck_z_value = nunchuck_z;
 }
 
 void query_nunchuck(){

@@ -1,8 +1,10 @@
-#include "controller.h"
-#include "../lib/data.h"
-
 #ifndef CONTROLLER_H_
 #define CONTROLLER_H_
+#include "pidcontrol.h"
+#include "../lib/data.h"
+#include <stdio.h>
+#include "../lib/AVRserial.h"
+#include <avr/io.h>
 
 #define ALT_ADJ 5
 #define ROLL_ADJ 5
@@ -25,24 +27,55 @@ char controller_south_thrust;
 char controller_east_thrust;
 char controller_west_thrust;
 
+struct pid_values alt_control, roll_control, pitch_control;
+struct goal_attrib target_state;
+
+void query_cntrl_vals() {
+        char temp[60];
+	sprintf(temp, "Kp: %d, Ki: %d, Kp: %d",(int)(alt_control.Kp*100), (int)(alt_control.Ki*100), (int)(alt_control.Kd*100));
+	transmit(temp);
+}
+
+void set_controller_p(float i){
+	alt_control.Kp = i;
+}
+
+void set_controller_i(float i) {
+        alt_control.Ki = i;
+}
+
+void set_controller_d(float i) {
+        alt_control.Kd = i;
+}
+
+void setup_target_state(){
+	target_state.altitude = 0;
+	target_state.pitch = 0;
+	target_state.roll = 0;
+	target_state.yaw = 0;
+}
+
+void set_altitude(int alt){
+	target_state.altitude = alt;
+}
+
 void setup_controller(){
-	struct pid_values alt_control, roll_control, pitch_control;
+	setup_target_state();
 	int time = TCNT1;
 	set_attrib(&alt_control, ALT_P_GAIN, ALT_I_GAIN, ALT_D_GAIN, 0, time);
 	set_attrib(&roll_control, ROLL_P_GAIN, ROLL_I_GAIN, ROLL_D_GAIN, 0, time);
-	set_attrib(&pitch_control, PITCH_P_GAIN, PITCH_I_GAIN, PICTH_D_GAIN, 0, time);	
-	
+	set_attrib(&pitch_control, PITCH_P_GAIN, PITCH_I_GAIN, PITCH_D_GAIN, 0, time);	
 }
 
 void compute_controller(){
 	int time = TCNT1;
-	float alt_gain = get_gain(&alt_control, goal_attrib.altitude, sensor_data_cache.sonar_distance, time);
-	float roll_gain = get_gain(&roll_control, goal_attrib.roll, sensor_data_cache.roll, time);
-	float pitch_gain = get_gain(&pitch_control, goal_attrib.pitch, sensor_data_cache.pitch, time);
+	float alt_gain = get_gain(&alt_control, target_state.altitude, sensor_data_cache.sonar_distance, time);
+	float roll_gain = get_gain(&roll_control, target_state.roll, sensor_data_cache.roll, time);
+	float pitch_gain = get_gain(&pitch_control, target_state.pitch, sensor_data_cache.pitch, time);
 	controller_north_thrust += alt_gain*ALT_ADJ + pitch_gain*PITCH_ADJ; 
-	controller_south_thrust += alt_gain*ALT_ADJ - pitch_gain*PITCH_ADJ
+	controller_south_thrust += alt_gain*ALT_ADJ - pitch_gain*PITCH_ADJ;
 	controller_east_thrust += alt_gain*ALT_ADJ + roll_gain*ROLL_ADJ;
-	conroller_west_thrust += alt_gain*ALT_ADJ - roll_gain*ROLL_ADJ;
+	controller_west_thrust += alt_gain*ALT_ADJ - roll_gain*ROLL_ADJ;
 }
 
 char get_north_thrust(){

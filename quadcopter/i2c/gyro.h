@@ -40,6 +40,9 @@ void get_data_gyro(){
 	gyro_y_rotational_velocity |= (high<<8);
 	gyro_y_rotational_velocity *= HIRESMODE ? 0.3541:1.611 ;
 	gyro_y_rotational_velocity -= gyroscope_y_bias;
+
+	sensor_data_cache.gyroscope_x_rotational_velocity = gyro_x_rotational_velocity;
+	sensor_data_cache.gyroscope_y_rotational_velocity = gyro_y_rotational_velocity;
 }
 
 void power_on_gyro(){

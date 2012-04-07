@@ -13,7 +13,7 @@ prog : $(TARGET).hex
 	avrdude $(ADFLAGS) -V -U flash:w:$(TARGET).hex:i
 
 %.obj : %.o
-	$(CC) $(CFLAGS) $< -o $@
+	$(CC) $(CFLAGS) $< -o $@ -lm
 
 %.hex : %.obj
 	$(OBJ2HEX) -R .eeprom -O ihex $< $@

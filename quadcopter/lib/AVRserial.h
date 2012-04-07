@@ -1,3 +1,5 @@
+#ifndef AVRSERIAL_H_
+#define AVRSERIAL_H_
 // THIS VERSION OF CODE IS FOR ATMEGA328P
 #include <avr/io.h>
 #include <avr/interrupt.h>
@@ -83,3 +85,4 @@ void setup_serial(){
 	UCSR0B |= (1<<RXCIE0);
 	sei(); // enable global interrupts	
 }
+#endif
