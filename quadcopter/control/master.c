@@ -33,15 +33,17 @@ int main(){
 			send_spam();
 			spam_flag = 0;
 		}
-		if (update_motors_flag && begin){
-			update_motors();
-			update_motors_flag = 0;  
+		if (begin){
+			if (update_motors_flag){
+				update_motors();
+				update_motors_flag = 0;
+			} 
 		}else if(idle){
 			set_motors(10);
-		}
-		if(!begin||!idle)
+		}else{
 			stop_motors();
-        }   
+        	}
+	}   
         return 0;
 }
 
