@@ -122,7 +122,7 @@ void query_nunchuck(){
 	sprintf(temp,"X: %ld Y: %ld Z: %ld",nunchuck_x,nunchuck_y,nunchuck_z);
 	transmit(temp);
 }
-
+/* see spam.h
 void spam_nunchuck(){
         get_data_nunchuck();	
 	char temp[41];
@@ -132,8 +132,13 @@ void spam_nunchuck(){
 	transmit(temp);	
 	sprintf(temp,"%c%c%ld",SENSORDATAPACKETCHARACTER,NUNCHUCKZ,nunchuck_z);
 	transmit(temp);	
-}
+}*/
 
+void get_nunchuck_angles(){
+	get_data_nunchuck();
+	nunchuck_to_degrees();
+}
+/* see spam.h
 void spam_nunchuck_angles(){
         get_data_nunchuck();	
 	nunchuck_to_degrees();
@@ -144,5 +149,5 @@ void spam_nunchuck_angles(){
 	transmit(temp);	
 	sprintf(temp,"%c%c%ld",SENSORDATAPACKETCHARACTER,ROLL,roll);
 	transmit(temp);	
-}
+}*/
 #endif

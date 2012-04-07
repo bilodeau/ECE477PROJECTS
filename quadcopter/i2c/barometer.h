@@ -181,7 +181,7 @@ void query_barometer_true(){
 	sprintf(temp,"true_p: %ld, true_t: %ld",true_pressure,true_temp);
 	transmit(temp);	
 }
-
+/* see spam.h
 void spam_barometer(){
 	get_data_barometer_true();
 	long t = true_temp;
@@ -194,5 +194,5 @@ void spam_barometer(){
 	transmit(temp);
 	sprintf(temp,"%c%c%ld",SENSORDATAPACKETCHARACTER,BAROMETERALTITUDE,a);
 	transmit(temp);
-}
+}*/
 #endif

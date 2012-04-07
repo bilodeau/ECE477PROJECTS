@@ -1,24 +1,62 @@
 #ifndef SPAM_H_
 #define SPAM_H_
-#include "../lib/data.h"
 #include <string.h>
-void query_slave(char sensor_address, char numbytes){
-            
-        char b[2];
-        b[0] = sensor_address;
-        b[1] = 0;
-        process_i2c_bus_write(0xAA,b,1);
-	//delay is not necessary since the i2c clock is much much slower than cpu clock
-        char buf[20];
-        process_i2c_bus_read(0xAA+1,buf,numbytes);
-        send_stop_condition();
-        sensor_data_cache.sonar_distance = (*((double *)buf)*100);
+#include "../lib/data.h"
+#include "magnetometer.h"
+#include "barometer.h"
+#include "gyro.h"
+#include "nunchuck.h"
+
+void send_spam(){
+	spam_magnetometer();
+	spam_sonar();
+	spam_barometer();
+	spam_gyro();
+	spam_nunchuck();
+	spam_nunchuck_angles();
+}
+
+void spam(int sensor_code,long value){
+	char temp[40];	
+        sprintf(temp,"%c%c%ld",SENSORDATAPACKETCHARACTER,sensor_code,value);
+	transmit(temp);
+}
+void spam_magnetometer(){
+	get_data_magnetometer();
+	spam(COMPASSHEADING,sensor_data_cache.compass_heading);
 }
 
 void spam_sonar(){
 	query_slave(0x00,4);
-        char temp[40];
-        sprintf(temp,"%c%c%ld",SENSORDATAPACKETCHARACTER,SONARDISTANCE,sensor_data_cache.sonar_distance);
-        transmit(temp);
+	spam(SONARDISTANCE,sensor_data_cache.sonar_distance);
+}
+
+void spam_barometer(){
+	get_data_barometer_true();
+	spam(BAROMETERTEMPERATURE,sensor_data_cache.barometer_temperature);
+	spam(BAROMETERPRESSURE,sensor_data_cache.barometer_pressure);
+	spam(BAROMETERALTITUDE,sensor_data_cache.barometer_altitude);
+}
+
+void spam_gyro(){
+	get_data_gyro();
+	spam(GYROSCOPEY,sensor_data_cache.gyroscope_x_rotational_velocity);
+	spam(GYROSCOPEX,sensor_data_cache.gyroscope_y_rotational_velocity);
+	spam(GYROSCOPETEMPERATURE,sensor_data_cache.gyroscope_temperature);
+}
+
+void spam_nunchuck(){
+	get_data_nunchuck();
+	spam(NUNCHUCKX,sensor_data_cache.nunchuck_x_value);
+	spam(NUNCHUCKY,sensor_data_cache.nunchuck_y_value);
+	spam(NUNCHUCKZ,sensor_data_cache.nunchuck_z_value);
+}
+
+void spam_nunchuck_angles(){
+	get_nunchuck_angles();
+	spam(YAW,sensor_data_cache.yaw);
+	spam(PITCH,sensor_data_cache.pitch);
+	spam(ROLL,sensor_data_cache.roll);
+
 }
 #endif

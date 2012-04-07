@@ -16,6 +16,19 @@ void process_i2c_bus_read(char read_address, char* buffer, char numbytes);
 void process_i2c_bus_write(char write_address, char* data, char numbytes);
 void send_stop_condition();
 
+void query_slave(char sensor_address, char numbytes){
+ 
+        char b[2];
+        b[0] = sensor_address;
+        b[1] = 0;
+        process_i2c_bus_write(0xAA,b,1);
+        //delay is not necessary since the i2c clock is much much slower than cpu clock
+        char buf[20];
+        process_i2c_bus_read(0xAA+1,buf,numbytes);
+        send_stop_condition();
+        sensor_data_cache.sonar_distance = (*((double *)buf)*100);
+}
+
 void setup_i2c(){
 	TWBR = 32; // use 100kHz
 	TWSR &= ~3; // use prescaler 1
