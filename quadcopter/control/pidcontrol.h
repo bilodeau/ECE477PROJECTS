@@ -46,7 +46,7 @@ float get_deriv(struct pid_values *s, int error, int delta_t){
 	return derivative;
 }
 
-float get_gain(struct pid_values *s, float goal, float actual, unsigned int time){
+float get_gain(struct pid_values *s, int goal, int actual, unsigned int time){
 	int delta_t = time - s->old_time;
 	if (delta_t < 0) {
 		delta_t = 0xFFFF - s->old_time + time + 1; 
