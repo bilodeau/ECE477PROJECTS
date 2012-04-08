@@ -27,9 +27,13 @@ void forward_command(){
 	}else if(!strncmp(receive_buffer,"SET ",4)){
 		int power;
 		sscanf(receive_buffer+4,"%d",&power);
-		if ((power >= 0 )&&(power<=100)){
-			set_motors(power);
-		}
+		OCR0A = power;
+		OCR0B = power;
+		OCR2A = power;
+		OCR2B = power;
+	//	if ((power >= 0 )&&(power<=100)){
+	//		set_motors(power);
+	//	}
 	}else if(!strcmp(receive_buffer,"STOP")){
 		set_motors(0);
 	}else if(!strncmp(receive_buffer,"SET",3)){

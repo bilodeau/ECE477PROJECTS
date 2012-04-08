@@ -8,9 +8,9 @@
 #define EASTMOTOR 2
 #define WESTMOTOR 3
 
-#define MINIMUMSIGNAL 19
-#define IDLESIGNAL 22
-#define MAXIMUMSIGNAL 77
+#define MINIMUMSIGNAL 78
+#define IDLESIGNAL 90
+#define MAXIMUMSIGNAL 254
 
 #define PRINTTHRUST 1
 
@@ -37,14 +37,14 @@ void set_motors(char power){
 
 void setup_motors(){
 // setup timer0 for north and south
-// use WGM mode 3, CTC with TOP = 255,
+// use WGM mode 3, with TOP = 255,
 	TCCR0A = 0xA3; // clear output pins on compare match
-	TCCR0B = (0<<WGM02)|4; // use prescaler 1/256
-		// clock overflows at like 122Hz
+	TCCR0B = (0<<WGM02)|3; // use prescaler 1/64
+		// clock overflows at 488Hz
 	
 // setup timer2 for east and west
 	TCCR2A = 0xA3; // clear output pins on compare match, counts up and down from zero to OCRA
-	TCCR2B = (0<<WGM02)|6; // NOTE: the prescaler values for timer2 use a different table, that's why this is 6 not 4
+	TCCR2B = (0<<WGM02)|4; // NOTE: the prescaler values for timer2 use a different table, that's why this is 6 not 4
 	
 	
 	// TOP value of FF leaves a frequency of ~122hz Hz	

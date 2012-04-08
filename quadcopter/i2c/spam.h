@@ -54,7 +54,7 @@ void spam_nunchuck_angles(){
 void send_spam(){
 	spam_magnetometer();
 	spam_sonar();
-	spam_barometer();
+	//spam_barometer();
 	spam_gyro();
 	spam_nunchuck();
 	spam_nunchuck_angles();

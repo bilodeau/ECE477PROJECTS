@@ -5,12 +5,13 @@
 #include <avr/interrupt.h>
 #include <string.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include "baud.h"
 
 
 #define FLASHONSERIAL 0 // flashes the led on PB1 every time serial communication happens
 			// note that the actual flash lines are commented out below
-#define RECEIVEBUFFERSIZE 81
+#define RECEIVEBUFFERSIZE 41
 #define TRANSMITQUEUESIZE 20
 
 void setup_serial();
@@ -25,16 +26,16 @@ char receive_buffer[RECEIVEBUFFERSIZE+1];
 char transmit_buffer_index = 0;
 char transmit_buffer_empty_row_index = 0;
 char transmit_buffer_current_row_index = 0;
-char transmit_buffer[TRANSMITQUEUESIZE][RECEIVEBUFFERSIZE+3];
+char *transmit_buffer; // malloc'd to [TRANSMITQUEUESIZE][RECEIVEBUFFERSIZE+3];
 volatile char serial_command_ready = 0;
 
 void transmit(char* str){
 	if(strlen(str) > RECEIVEBUFFERSIZE){
-		sprintf(transmit_buffer[transmit_buffer_empty_row_index],"Command Longer Than Transmit Buffer.");
+		sprintf(transmit_buffer+ transmit_buffer_empty_row_index*TRANSMITQUEUESIZE,"Command Longer Than Transmit Buffer.");
 	}else{
-		sprintf(transmit_buffer[transmit_buffer_empty_row_index],str);
+		sprintf(transmit_buffer+transmit_buffer_empty_row_index*TRANSMITQUEUESIZE,str);
 	}
-	strcat(transmit_buffer[transmit_buffer_empty_row_index],"\r\n");
+	strcat(transmit_buffer+transmit_buffer_empty_row_index*TRANSMITQUEUESIZE,"\r\n");
 	UCSR0B |= (1<<UDRIE0); // make sure the interrupt is enabled
 	transmit_buffer_empty_row_index++;
 	if(transmit_buffer_empty_row_index >= TRANSMITQUEUESIZE)
@@ -44,17 +45,17 @@ void transmit(char* str){
 void clear_transmit_buffer(int row_index){
 	int x;
 	for(x=0;x<RECEIVEBUFFERSIZE+3;x++)
-		transmit_buffer[row_index][x] = '\0';
+		transmit_buffer[row_index*TRANSMITQUEUESIZE+x] = '\0';
 }
 
 ISR(USART_UDRE_vect){
-	char byte = transmit_buffer[transmit_buffer_current_row_index][transmit_buffer_index];
+	char byte = transmit_buffer[transmit_buffer_current_row_index*TRANSMITQUEUESIZE+transmit_buffer_index];
 	if(byte != '\0'){
 		UDR0 = byte;
 		transmit_buffer_index++;
-		if(transmit_buffer_index>=strlen(transmit_buffer[transmit_buffer_current_row_index])){
+		if(transmit_buffer_index>=strlen(transmit_buffer+transmit_buffer_current_row_index*TRANSMITQUEUESIZE)){
 			transmit_buffer_index = 0;
-			transmit_buffer[transmit_buffer_current_row_index][0] = '\0';
+			transmit_buffer[transmit_buffer_current_row_index*TRANSMITQUEUESIZE] = '\0';
 			transmit_buffer_current_row_index++;
 			if(transmit_buffer_current_row_index >= TRANSMITQUEUESIZE)
 				transmit_buffer_current_row_index = 0;
@@ -95,6 +96,7 @@ void clear_receive_buffer(){
 }
 
 void setup_serial(){
+	transmit_buffer = malloc(TRANSMITQUEUESIZE * (RECEIVEBUFFERSIZE+3));
 	// blank out the transmit buffer queue
 	int i;
 	for (i=0;i<TRANSMITQUEUESIZE;i++)
