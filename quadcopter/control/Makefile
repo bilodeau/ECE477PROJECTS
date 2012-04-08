@@ -3,10 +3,11 @@ CFLAGS=-g -Os -Wall -mcall-prologues -mmcu=atmega328p -Wno-char-subscripts
 OBJ2HEX=avr-objcopy
 #UISP=/usr/local/bin/uisp
 TARGET=master
+TEST=test
 SLAVE=../i2c/slave
 ADFLAGS=-p atmega328p -c avrispmkII -P usb
 
-.PHONY: fuses prog erase monitor status slave
+.PHONY: fuses prog erase monitor status slave test
 
 
 prog : $(TARGET).hex
@@ -36,3 +37,6 @@ status:
 
 slave: $(SLAVE).hex
 	avrdude $(ADFLAGS) -V -U flash:w:$(SLAVE).hex:i
+
+test: $(TEST).hex
+	avrdude $(ADFLAGS) -V -U flash:w:$(TEST).hex:i

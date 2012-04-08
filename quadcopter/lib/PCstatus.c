@@ -10,7 +10,7 @@
 #define LOG 1// saves all commands into a log file
 #define LOGSPAM 0
 #define PRINTDEBUG 0
-#define COMMANDBUFFERSIZE 41
+#define COMMANDBUFFERSIZE 81
 #define SERIALPORTDEFAULT "/dev/tty.usbmodemfd1221"
 
 void clear_serial_command_buffer();
@@ -89,7 +89,7 @@ void read_from_serial_port(){
 			process_serial_command();
 			clear_serial_command_buffer();
 		}else if (serial_command_index >= COMMANDBUFFERSIZE-1){
-			sprintf(serial_command_buffer,"Command Too Long.");
+		//	sprintf(serial_command_buffer,"Command Too Long.");
 			log_serial_command();
 			clear_serial_command_buffer();
 		}

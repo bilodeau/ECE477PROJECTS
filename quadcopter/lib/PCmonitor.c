@@ -9,7 +9,7 @@
 
 #define LOG 1// saves all commands into a log file
 #define PRINTDEBUG 1
-#define COMMANDBUFFERSIZE 41
+#define COMMANDBUFFERSIZE 81
 #define SERIALPORTDEFAULT "/dev/tty.usbmodemfd1221"
 
 void clear_serial_command_buffer();

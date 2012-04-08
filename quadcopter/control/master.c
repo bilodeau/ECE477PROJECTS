@@ -18,9 +18,9 @@ char update_motors_flag = 0;
 char begin = 0;
 char idle = 0;
 int main(){
-	setup_spam();
 	setup_serial();
-        setup_i2c();
+	setup_spam();
+	setup_i2c();
 	setup_motors();
         setup_controller();
 	serial_command_ready = 0;
