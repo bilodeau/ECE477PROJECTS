@@ -15,7 +15,6 @@
 
 void setup_serial();
 void transmit(char* str);
-void begin_transmit();
 void receive();
 void check_buffer();
 void clear_receive_buffer();
@@ -36,22 +35,16 @@ void transmit(char* str){
 		sprintf(transmit_buffer[transmit_buffer_empty_row_index],str);
 	}
 	strcat(transmit_buffer[transmit_buffer_empty_row_index],"\r\n");
-//	if(transmit_buffer_current_row_index == transmit_buffer_empty_row_index)
-//		begin_transmit();
+	UCSR0B |= (1<<UDRIE0); // make sure the interrupt is enabled
 	transmit_buffer_empty_row_index++;
 	if(transmit_buffer_empty_row_index >= TRANSMITQUEUESIZE)
 		transmit_buffer_empty_row_index = 0;
 }
 
-void clear_transmit_buffer(char row_index){
-	char x;
+void clear_transmit_buffer(int row_index){
+	int x;
 	for(x=0;x<RECEIVEBUFFERSIZE+3;x++)
 		transmit_buffer[row_index][x] = '\0';
-}
-
-void begin_transmit(){
-	UDR0 = transmit_buffer[transmit_buffer_current_row_index][transmit_buffer_index];
-	transmit_buffer_index++;
 }
 
 ISR(USART_UDRE_vect){
@@ -59,12 +52,14 @@ ISR(USART_UDRE_vect){
 	if(byte != '\0'){
 		UDR0 = byte;
 		transmit_buffer_index++;
-		if(transmit_buffer_index >=  strlen(transmit_buffer[transmit_buffer_current_row_index])){
+		if(transmit_buffer_index>=strlen(transmit_buffer[transmit_buffer_current_row_index])){
 			transmit_buffer_index = 0;
-			clear_transmit_buffer(transmit_buffer_current_row_index);
+			transmit_buffer[transmit_buffer_current_row_index][0] = '\0';
 			transmit_buffer_current_row_index++;
 			if(transmit_buffer_current_row_index >= TRANSMITQUEUESIZE)
 				transmit_buffer_current_row_index = 0;
+			if(transmit_buffer_current_row_index == transmit_buffer_empty_row_index)
+				UCSR0B &= ~(1<<UDRIE0); // disable interrupt
 		}
 	}
 }
@@ -74,7 +69,7 @@ ISR(USART_RX_vect){
 		clear_receive_buffer();
 		serial_command_ready = 0;
 	}
-//	while (!(UCSR0A & (1<<RXC0))); // don't need to wait since the interrupt only fires when ready
+	while (!(UCSR0A & (1<<RXC0))); // don't need to wait since the interrupt only fires when ready
 	receive_buffer[receive_buffer_index] = UDR0;
 	check_buffer();
 }
@@ -101,7 +96,7 @@ void clear_receive_buffer(){
 
 void setup_serial(){
 	// blank out the transmit buffer queue
-	char i;
+	int i;
 	for (i=0;i<TRANSMITQUEUESIZE;i++)
 		clear_transmit_buffer(i);
 
@@ -115,7 +110,7 @@ void setup_serial(){
 	UCSR0B = (1<<RXEN0)|(1<<TXEN0);
 
 	// enable receive complete interrupt
-	UCSR0B |= (1<<RXCIE0)|(1<<UDRIE0);
+	UCSR0B |= (1<<RXCIE0);
 	sei(); // enable global interrupts	
 }
 #endif

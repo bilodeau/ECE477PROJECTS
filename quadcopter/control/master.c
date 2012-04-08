@@ -3,10 +3,6 @@
 #include <string.h>
 #include "../lib/AVRserial.h"
 #include "../lib/delay.h"
-#include "../i2c/magnetometer.h"
-#include "../i2c/barometer.h"
-#include "../i2c/nunchuck.h"
-#include "../i2c/gyro.h"
 #include "../i2c/spam.h"
 #include "../motors/motors.h"
 
