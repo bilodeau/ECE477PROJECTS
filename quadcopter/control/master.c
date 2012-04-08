@@ -100,13 +100,12 @@ void forward_command(){
 void set_calibs(){
 		int calib_value = 0;
 		sscanf(receive_buffer+5,"%d",&calib_value);
-		float calib_valf = calib_value / 100.;
 		if(receive_buffer[3] == 'P'){
-			set_controller_p(calib_valf);
+			set_controller_p(calib_value);
 		}else if(receive_buffer[3] == 'I'){
-			set_controller_i(calib_valf);
+			set_controller_i(calib_value);
 		}else if(receive_buffer[3] == 'D'){
-			set_controller_d(calib_valf);
+			set_controller_d(calib_value);
 		}	
 }
 

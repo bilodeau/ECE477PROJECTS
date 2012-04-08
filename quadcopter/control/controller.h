@@ -30,7 +30,7 @@ struct goal_attrib target_state;
 
 void query_cntrl_vals() {
         char temp[60];
-	sprintf(temp, "Kp: %d, Ki: %d, Kp: %d",alt_control.Kp*100, alt_control.Ki*100, alt_control.Kd*100);
+	sprintf(temp, "Kp: %d, Ki: %d, Kd: %d",alt_control.Kp, alt_control.Ki, alt_control.Kd);
 	transmit(temp);
 }
 
@@ -80,9 +80,9 @@ void setup_controller(){
 
 void compute_controller(){
 	int time = TCNT1;
-	float alt_gain = get_gain(&alt_control, target_state.altitude, sensor_data_cache.sonar_distance, time);
-	float roll_gain = get_gain(&roll_control, target_state.roll, sensor_data_cache.roll, time);
-	float pitch_gain = get_gain(&pitch_control, target_state.pitch, sensor_data_cache.pitch, time);
+	int alt_gain = get_gain(&alt_control, target_state.altitude, sensor_data_cache.sonar_distance, time);
+	int roll_gain = get_gain(&roll_control, target_state.roll, sensor_data_cache.roll, time);
+	int pitch_gain = get_gain(&pitch_control, target_state.pitch, sensor_data_cache.pitch, time);
 	
 	controller_north_thrust = base_thrust + alt_gain + pitch_gain; 
 	controller_south_thrust = base_thrust + alt_gain - pitch_gain;
@@ -109,7 +109,7 @@ void compute_controller(){
 		controller_west_thrust = 10;
 	}
 	char temp[100];
-	sprintf(temp,"power: %d gain: %d",(int)controller_north_thrust,(int)(alt_gain*100));
+	sprintf(temp,"power: %d gain: %d",(int)controller_north_thrust,alt_gain);
 	transmit(temp);
 }
 
