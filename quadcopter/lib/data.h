@@ -21,6 +21,7 @@
 #define PITCH 13
 #define ROLL 14
 
+// old sensor data struct
 struct sensor_data{
 	long compass_heading; // degrees * 100
 	long sonar_distance;	// millimeters
@@ -38,5 +39,60 @@ struct sensor_data{
 	long roll;
 };
 
+// proposed new sensor data struct
+struct sensor_data_new{
+	struct l_data_q compass_heading;	// degress * 100
+	struct l_data_q nunchuck_x_value, nunchuck_y_value, nunchuck_z_value;	// raw data vals from nunchuck
+	struct l_data_q gyroscope_y_rotational_velocity, gyroscope_x_rotational_velocity; // degrees/sec (+- 100)
+	struct l_data_q gyroscope_temperature; 	// unused
+	struct l_data_q yaw, pitch, roll;	// converted angular positions
+	struct s_data_q barometer_temperature, barometer_pressure, barometer_altitude;	// invalid data
+	struct s_data_q sonar_distance;	// millimeters
+}
+
 struct sensor_data sensor_data_cache;
+
+// a fifo data queue holding up 4 data points
+struct s_data_q{
+	long data[4] = {0,0,0,0}
+	int index = 0;
+	sum = 0;
+};
+
+// a fifo data queue holding up to 8 data points
+struct l_data_q{
+	long data[8] = {0,0,0,0,0,0,0,0}
+	int index = 0;
+	sum = 0;
+};
+
+// adds a value to a s_data_q
+void update_s_q(struct s_data_q *q, long i) {
+	q->sum -= data[index];
+	data[index] = i;
+	q->sum += data[index++];
+	index &= 3;	// mod index by 4
+}
+
+// adds a value to a l_data_q
+void update_l_q(struct l_data_q *q, long i) {
+	q->sum -= data[index];
+	data[index] = i;
+	q->sum += data[index++];
+	index &= 7;	// mod index by 8
+}
+
+// returns the average value of a s_data_q
+// this won't give good data until queue fills up
+// otherwise only 1,2, or 3 values are summed and divided by 4
+int get_s_q_ave(struct s_data_q *q) {
+	return ((q->sum) >> 2);	// divide sum by 4
+}
+
+// returns the average value of a l_data_q
+// this won't give good data until queue fills up
+// otherwise only 1,2,3,4,5,6, or 7 values are summed and divided by 8
+int get_l_q_ave(struct l_data_q *q) {
+	return ((q->sum) >> 3);	// divide sum by 8
+}
 #endif
