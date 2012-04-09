@@ -2,6 +2,7 @@
 #define PIDCONTROL_H_
 #include <stdlib.h>
 
+
 struct pid_values{
 int Kp; //constants for the pid controllers
 int Ki;
@@ -22,30 +23,28 @@ void set_attrib(struct pid_values *s, float p, float i, float d) {
 	s->Kp = p;
 	s->Ki = i;
 	s->Kd = d;
-	s->accum_error = 0;
 	s->old_error = 0;
 }
 
-//calculates the error
-int get_error(int goal, int measure){
-	return goal - measure;
+int get_adj_roll(struct sensor_data *s) {
+	s->filt_roll_angle = (FILTER_C)*(s->filt_roll_angle + s->gyroscope.roll*DELTA_T) + (1 - FILTER_C)*(s->nunchuck_roll);
+	return s->filt_roll_angle;
 }
 
-//calculates the integral of error
-int get_integral(struct pid_values *s, int error){
-	s->accum_error += error;		
-	return s->accum_error;
+int get_adj_pitch(struct sensor_data *s) {
+	s->filt_pitch_angle = (FILTER_C)*(s->filt_pitch_angle + s->gyroscope.pitch*DELTA_T) + (1 - FILTER_C)*(s->nunchuck_pitch);
+	return s->filt_pitch_angle;
 }
 
-//calculates the derivative error
-int get_deriv(struct pid_values *s, int error){
-	int derivative = (error - s->old_error);
-	s->old_error = error;
-	return derivative;
+int get_adj_alt(struct sensor_data *s) {
+	s->filt_alt = ALT_FILTER_C*(s->filt_alt) + (1 - ALT_FILTER_C)*(s->sonar_distance);
+	return s->filt_alt;
 }
 
 int get_gain(struct pid_values *s, int goal, int actual){
-	int error = get_error(goal, actual);
-	return (s->Kp)/1000.*error + (s->Ki)/10000.*get_integral(s, error) + (s->Kd)*get_deriv(s, error);
+	int error = goal - actual;
+	int derivative = error - s->old_error;
+	s->old_error = error;
+	return (s->Kp)/1000.*error + (s->Kd)/1000.*derivative;
 }
 #endif

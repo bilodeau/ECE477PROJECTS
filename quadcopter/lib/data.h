@@ -21,7 +21,10 @@
 #define PITCH 13
 #define ROLL 14
 
-// old sensor data struct
+#define RP_FILTER_C 0.75
+#define DELTA_T 0.02
+#define ALT_FILTER_C 0.75
+
 struct sensor_data{
 	long compass_heading; // degrees * 100
 	long sonar_distance;	// millimeters
@@ -35,12 +38,32 @@ struct sensor_data{
 	long nunchuck_y_value;	//
 	long nunchuck_z_value;	//
 	long yaw;		// converted angular position values
-	long pitch;
-	long roll;
+	long nunchuck_pitch;
+	long nunchuck_roll;
+	long filt_roll_angle;
+	long filt_pitch_angle;
+	long filt_altitude;
 };
 
+struct sensor_data sensor_data_cache;
+
+int get_adj_roll(struct sensor_data *s) {
+	s->filt_roll_angle = (RP_FILTER_C)*(s->filt_roll_angle + s->gyroscope.roll*DELTA_T) + (1 - RP_FILTER_C)*(s->nunchuck_roll);
+	return s->filt_roll_angle;
+}
+
+int get_adj_pitch(struct sensor_data *s) {
+	s->filt_pitch_angle = (RP_FILTER_C)*(s->filt_pitch_angle + s->gyroscope.pitch*DELTA_T) + (1 - RP_FILTER_C)*(s->nunchuck_pitch);
+	return s->filt_pitch_angle;
+}
+
+int get_adj_alt(struct sensor_data *s) {
+	s->filt_altitude = ALT_FILTER_C*(s->filt_altitude) + (1 - ALT_FILTER_C)*(s->sonar_distance);
+	return s->filt_altitude;
+}
+
 // proposed new sensor data struct
-struct sensor_data_new{
+/*struct sensor_data_new{
 	struct l_data_q compass_heading;	// degress * 100
 	struct l_data_q nunchuck_x_value, nunchuck_y_value, nunchuck_z_value;	// raw data vals from nunchuck
 	struct l_data_q gyroscope_y_rotational_velocity, gyroscope_x_rotational_velocity; // degrees/sec (+- 100)
@@ -50,7 +73,6 @@ struct sensor_data_new{
 	struct s_data_q sonar_distance;	// millimeters
 };
 
-struct sensor_data sensor_data_cache;
 
 // a fifo data queue holding up 4 data points
 struct s_data_q{
@@ -94,5 +116,5 @@ int get_s_q_ave(struct s_data_q *q) {
 // otherwise only 1,2,3,4,5,6, or 7 values are summed and divided by 8
 int get_l_q_ave(struct l_data_q *q) {
 	return ((q->sum) >> 3);	// divide sum by 8
-}
+}*/
 #endif
