@@ -56,6 +56,10 @@ void update_adj_alt() {
 	sensor_data_cache.filt_altitude = ALT_FILTER_C*(sensor_data_cache.filt_altitude) + (1 - ALT_FILTER_C)*(sensor_data_cache.sonar_distance);
 }
 
+void update_adj_yaw() {
+	
+}
+
 // proposed new sensor data struct
 /*struct sensor_data_new{
 	struct l_data_q compass_heading;	// degress * 100
