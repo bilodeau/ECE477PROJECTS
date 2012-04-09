@@ -21,21 +21,15 @@ int main(){
 
 void forward_command(){
 	if(!strcmp(receive_buffer,"IDLE")){
-		set_motors(10);
+		idle_motors();
 	}else if(!strcmp(receive_buffer,"FULL")){
-		set_motors(100);
+		full_power_motors();
 	}else if(!strncmp(receive_buffer,"SET ",4)){
 		int power;
 		sscanf(receive_buffer+4,"%d",&power);
-		OCR0A = power;
-		OCR0B = power;
-		OCR2A = power;
-		OCR2B = power;
-	//	if ((power >= 0 )&&(power<=100)){
-	//		set_motors(power);
-	//	}
+		set_motors(power);
 	}else if(!strcmp(receive_buffer,"STOP")){
-		set_motors(0);
+		stop_motors();
 	}else if(!strncmp(receive_buffer,"SET",3)){
 		int power;
 		sscanf(receive_buffer+4,"%d",&power);
