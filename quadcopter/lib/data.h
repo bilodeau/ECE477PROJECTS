@@ -47,17 +47,17 @@ struct sensor_data{
 
 struct sensor_data sensor_data_cache;
 
-int get_adj_roll(struct sensor_data *s) {
+int update_adj_roll(struct sensor_data *s) {
 	s->filt_roll_angle = (RP_FILTER_C)*(s->filt_roll_angle + s->gyroscope.roll*DELTA_T) + (1 - RP_FILTER_C)*(s->nunchuck_roll);
 	return s->filt_roll_angle;
 }
 
-int get_adj_pitch(struct sensor_data *s) {
+int update_adj_pitch(struct sensor_data *s) {
 	s->filt_pitch_angle = (RP_FILTER_C)*(s->filt_pitch_angle + s->gyroscope.pitch*DELTA_T) + (1 - RP_FILTER_C)*(s->nunchuck_pitch);
 	return s->filt_pitch_angle;
 }
 
-int get_adj_alt(struct sensor_data *s) {
+int update_adj_alt(struct sensor_data *s) {
 	s->filt_altitude = ALT_FILTER_C*(s->filt_altitude) + (1 - ALT_FILTER_C)*(s->sonar_distance);
 	return s->filt_altitude;
 }
