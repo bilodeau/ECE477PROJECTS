@@ -48,7 +48,7 @@ struct sensor_data_new{
 	struct l_data_q yaw, pitch, roll;	// converted angular positions
 	struct s_data_q barometer_temperature, barometer_pressure, barometer_altitude;	// invalid data
 	struct s_data_q sonar_distance;	// millimeters
-}
+};
 
 struct sensor_data sensor_data_cache;
 
@@ -68,17 +68,17 @@ struct l_data_q{
 
 // adds a value to a s_data_q
 void update_s_q(struct s_data_q *q, long i) {
-	q->sum -= data[index];
-	data[index] = i;
-	q->sum += data[index++];
+	q->sum -= q->data[index];
+	q->data[index] = i;
+	q->sum += q->data[index++];
 	index &= 3;	// mod index by 4
 }
 
 // adds a value to a l_data_q
 void update_l_q(struct l_data_q *q, long i) {
-	q->sum -= data[index];
-	data[index] = i;
-	q->sum += data[index++];
+	q->sum -= q->data[index];
+	q->data[index] = i;
+	q->sum += q->data[index++];
 	index &= 7;	// mod index by 8
 }
 
