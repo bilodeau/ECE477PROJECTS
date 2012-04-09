@@ -22,7 +22,7 @@
 #define ROLL 14
 
 #define RP_FILTER_C 0.75
-#define DELTA_T 0.0082
+#define DELTA_T 8.192	// in ms
 #define ALT_FILTER_C 0.75
 
 struct sensor_data{
