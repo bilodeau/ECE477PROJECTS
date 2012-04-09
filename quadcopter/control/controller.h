@@ -8,12 +8,10 @@
 #include "../motors/motors.h"
 
 #define ALT_P_GAIN 1
-#define ALT_I_GAIN 0
 #define ALT_D_GAIN 0
 #define ALT_GAIN_LIMIT 0
 
 #define FLIP_P_GAIN 0
-#define FLIP_I_GAIN 0
 #define FLIP_D_GAIN 0
 #define FLIP_GAIN_LIMIT 0
 
@@ -29,22 +27,15 @@ struct goal_attrib target_state;
 
 void query_cntrl_vals() {
         char temp[60];
-	sprintf(temp, "Kp: %d, Ki: %d, Kd: %d",alt_control.Kp, alt_control.Ki, alt_control.Kd);
+	sprintf(temp, "Kp: %d, Kd: %d",alt_control.Kp, alt_control.Kd);
 	transmit(temp);
 }
 
-void set_controller_p(float i){
+void set_controller_p(int i){
         alt_control.accum_error = 0;
-	alt_control.Kp = i;
 }
 
-void set_controller_i(float i) {
-        alt_control.accum_error = 0;
-	alt_control.Ki = i;
-}
-
-void set_controller_d(float i) {
-        alt_control.accum_error = 0;
+void set_controller_d(int i) {
         alt_control.Kd = i;
 }
 
@@ -71,15 +62,15 @@ void set_altitude(int alt){
 
 void setup_controller(){
 	setup_target_state();
-	set_attrib(&alt_control, ALT_P_GAIN, ALT_I_GAIN, ALT_D_GAIN, ALT_GAIN_LIMIT);
-	set_attrib(&roll_control, FLIP_P_GAIN, FLIP_I_GAIN, FLIP_D_GAIN, FLIP_GAIN_LIMIT);
-	set_attrib(&pitch_control, FLIP_P_GAIN, FLIP_I_GAIN, FLIP_D_GAIN, FLIP_GAIN_LIMIT);	
+	set_attrib(&alt_control, ALT_P_GAIN, ALT_D_GAIN, ALT_GAIN_LIMIT);
+	set_attrib(&roll_control, FLIP_P_GAIN, FLIP_D_GAIN, FLIP_GAIN_LIMIT);
+	set_attrib(&pitch_control, FLIP_P_GAIN, FLIP_D_GAIN, FLIP_GAIN_LIMIT);	
 }
 
 void compute_controller(){
-	int alt_gain = get_gain(&alt_control, target_state.altitude, sensor_data_cache.sonar_distance);
-	int roll_gain = get_gain(&roll_control, target_state.roll, sensor_data_cache.roll);
-	int pitch_gain = get_gain(&pitch_control, target_state.pitch, sensor_data_cache.pitch);
+	int alt_gain = get_gain(&alt_control, target_state.altitude, sensor_data_cache.filt_altitude);
+	int roll_gain = get_gain(&roll_control, target_state.roll, sensor_data_cache.filt_roll_angle);
+	int pitch_gain = get_gain(&pitch_control, target_state.pitch, sensor_data_cache.filt_pitch_angle);
 	
 	controller_north_thrust = base_thrust + alt_gain + pitch_gain; 
 	controller_south_thrust = base_thrust + alt_gain - pitch_gain;
