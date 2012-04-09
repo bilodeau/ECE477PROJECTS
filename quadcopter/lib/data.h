@@ -22,7 +22,7 @@
 #define ROLL 14
 
 #define RP_FILTER_C 0.75
-#define DELTA_T 0.02
+#define DELTA_T 8.192	// in ms
 #define ALT_FILTER_C 0.75
 
 struct sensor_data{
@@ -47,19 +47,17 @@ struct sensor_data{
 
 struct sensor_data sensor_data_cache;
 
-int get_adj_roll(struct sensor_data *s) {
-	s->filt_roll_angle = (RP_FILTER_C)*(s->filt_roll_angle + s->gyroscope.roll*DELTA_T) + (1 - RP_FILTER_C)*(s->nunchuck_roll);
-	return s->filt_roll_angle;
+void update_adj_rp() {
+	sensor_data_cache.filt_roll_angle = RP_FILTER_C*(sensor_data_cache.filt_roll_angle + sensor_data_cache.gyroscope_roll*DELTA_T) + (1 - RP_FILTER_C)*(sensor_data_cache.nunchuck_roll);
+	sensor_data_cache.filt_pitch_angle = RP_FILTER_C*(sensor_data_cache.filt_pitch_angle + sensor_data_cache.gyroscope_pitch*DELTA_T) + (1 - RP_FILTER_C)*(sensor_data_cache.nunchuck_pitch);
 }
 
-int get_adj_pitch(struct sensor_data *s) {
-	s->filt_pitch_angle = (RP_FILTER_C)*(s->filt_pitch_angle + s->gyroscope.pitch*DELTA_T) + (1 - RP_FILTER_C)*(s->nunchuck_pitch);
-	return s->filt_pitch_angle;
+void update_adj_alt() {
+	sensor_data_cache.filt_altitude = ALT_FILTER_C*(sensor_data_cache.filt_altitude) + (1 - ALT_FILTER_C)*(sensor_data_cache.sonar_distance);
 }
 
-int get_adj_alt(struct sensor_data *s) {
-	s->filt_altitude = ALT_FILTER_C*(s->filt_altitude) + (1 - ALT_FILTER_C)*(s->sonar_distance);
-	return s->filt_altitude;
+void update_adj_yaw() {
+	
 }
 
 // proposed new sensor data struct
