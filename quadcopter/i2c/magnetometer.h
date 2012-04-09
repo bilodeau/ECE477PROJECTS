@@ -67,13 +67,4 @@ void query_magnetometer(){
 	sprintf(temp,"Heading: %d.%d",h,h2);
 	transmit(temp);
 }
-/* see spam.h
-void spam_magnetometer(){
-	get_data_magnetometer();
-        char temp[41];
-	double heading = convert_raw_heading_to_degrees(x,y,z);
-	long h = 100*heading;
-	sprintf(temp,"%c%c%ld",SENSORDATAPACKETCHARACTER,COMPASSHEADING,h);
-	transmit(temp);	
-}*/
 #endif

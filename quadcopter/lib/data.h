@@ -1,5 +1,5 @@
-#ifndef DATASTRUCT
-#define DATASTRUCT 1
+#ifndef DATA_H_
+#define DATA_H_
 
 // leading character for all sensor data packets
 // recall that the GPS module uses $
@@ -70,7 +70,7 @@ int get_adj_alt(struct sensor_data *s) {
 	struct l_data_q gyroscope_temperature; 	// unused
 	struct l_data_q yaw, pitch, roll;	// converted angular positions
 	struct s_data_q barometer_temperature, barometer_pressure, barometer_altitude;	// invalid data
-	struct s_data_q sonar_distance;	// millimeters
+	struct s_data_q sonar_distance;	// in hundredths of feet
 };
 
 

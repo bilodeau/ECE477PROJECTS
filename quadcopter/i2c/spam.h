@@ -30,7 +30,6 @@ void spam_barometer(){
 }
 
 void spam_gyro(){
-	get_data_gyro();
 	spam(GYROSCOPEY,sensor_data_cache.gyroscope_x_rotational_velocity);
 	spam(GYROSCOPEX,sensor_data_cache.gyroscope_y_rotational_velocity);
 	spam(GYROSCOPETEMPERATURE,sensor_data_cache.gyroscope_temperature);

@@ -8,7 +8,6 @@
 #include <stdlib.h>
 #include "baud.h"
 
-
 #define FLASHONSERIAL 0 // flashes the led on PB1 every time serial communication happens
 			// note that the actual flash lines are commented out below
 #define RECEIVEBUFFERSIZE 41

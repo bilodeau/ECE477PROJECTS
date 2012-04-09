@@ -1,22 +1,21 @@
 #ifndef CONTROLLER_H_
 #define CONTROLLER_H_
-#include "pidcontrol.h"
-#include "../lib/data.h"
+#include <avr/io.h>
 #include <stdio.h>
 #include "../lib/AVRserial.h"
-#include <avr/io.h>
+#include "../lib/data.h"
+#include "pidcontrol.h"
+#include "../motors/motors.h"
 
 #define ALT_P_GAIN 1
 #define ALT_I_GAIN 0
 #define ALT_D_GAIN 0
+#define ALT_GAIN_LIMIT 0
 
-#define ROLL_P_GAIN 0
-#define ROLL_I_GAIN 0
-#define ROLL_D_GAIN 0
-
-#define PITCH_P_GAIN 0
-#define PITCH_I_GAIN 0
-#define PITCH_D_GAIN 0
+#define FLIP_P_GAIN 0
+#define FLIP_I_GAIN 0
+#define FLIP_D_GAIN 0
+#define FLIP_GAIN_LIMIT 0
 
 int base_thrust;
 
@@ -72,9 +71,9 @@ void set_altitude(int alt){
 
 void setup_controller(){
 	setup_target_state();
-	set_attrib(&alt_control, ALT_P_GAIN, ALT_I_GAIN, ALT_D_GAIN);
-	set_attrib(&roll_control, ROLL_P_GAIN, ROLL_I_GAIN, ROLL_D_GAIN);
-	set_attrib(&pitch_control, PITCH_P_GAIN, PITCH_I_GAIN, PITCH_D_GAIN);	
+	set_attrib(&alt_control, ALT_P_GAIN, ALT_I_GAIN, ALT_D_GAIN, ALT_GAIN_LIMIT);
+	set_attrib(&roll_control, FLIP_P_GAIN, FLIP_I_GAIN, FLIP_D_GAIN, FLIP_GAIN_LIMIT);
+	set_attrib(&pitch_control, FLIP_P_GAIN, FLIP_I_GAIN, FLIP_D_GAIN, FLIP_GAIN_LIMIT);	
 }
 
 void compute_controller(){
@@ -111,19 +110,12 @@ void compute_controller(){
 	transmit(temp);
 }
 
-char get_north_thrust(){
-	return controller_north_thrust;
+void update_motors()
+	compute_controller();
+	set_motor_power(NORTHMOTOR,controller_north_thrust);
+	set_motor_power(SOUTHMOTOR,controller_south_thrust);
+	set_motor_power(EASTMOTOR,controller_east_thrust);
+	set_motor_power(WESTMOTOR,controller_west_thrust);
 }
-
-char get_south_thrust(){
-	return controller_south_thrust;
-}
-
-char get_east_thrust(){
-	return controller_east_thrust;
-}
-
-char get_west_thrust(){
-	return controller_west_thrust;
 }
 #endif

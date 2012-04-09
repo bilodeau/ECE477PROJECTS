@@ -6,75 +6,36 @@
 
 #define HIRESMODE 0
 
-long gyro_x_rotational_velocity;
-long gyro_y_rotational_velocity;
-int gyroscope_x_bias;
-int gyroscope_y_bias;
+ISR(ADC_vect){
+	unsigned char low = ADCL;
+	unsigned char high = ADCH&3; // mask to get only the low two bits
+	if(ADMUX&1 == 0){
+		sensor_data_cache.gyroscope_x_rotational_velocity = ((high)<<8)&low * (HIRESMODE ? 0.3541:1.611) - gyroscope_x_bias;
+	}else{
+	sensor_data_cache.gyroscope_y_rotational_velocity = ((high)<<8)&low * (HIRESMODE ? 0.3541:1.611) - gyroscope_y_bias;
+	}
+	// now toggle the ADC channel to get the other value
+	ADMUX ^= 1;	
+}
 
-void get_data_gyro(){
-	PRR &= ~(1<<PRADC); // disable power reduction for ADC so that it works
-	
-	ADMUX &= ~1; // make sure bit 0 is clear, so we're using ADC0
-	ADCSRA |= (1<<ADSC);
-	while(ADCSRA & (1<<ADSC));
-	char low = ADCL;
-	char high = ADCH&3; // mask to get only the low two bits
-	
-	gyro_x_rotational_velocity = 0;
-	gyro_x_rotational_velocity |= low;
-	gyro_x_rotational_velocity &= 0xFF;
-	gyro_x_rotational_velocity |= (high<<8);
-	gyro_x_rotational_velocity *= HIRESMODE ? 0.3541:1.611 ;
-	gyro_x_rotational_velocity -= gyroscope_x_bias;
-
-	// now switch to ADC1 to get the y value
-	ADMUX |= 1;	
-	ADCSRA |= (1<<ADSC);
-	while(ADCSRA & (1<<ADSC));
-	low = ADCL;
-	high = ADCH&3; // mask to get only the low two bits
-	
-	gyro_y_rotational_velocity = 0;
-	gyro_y_rotational_velocity |= low;
-	gyro_y_rotational_velocity &= 0xFF;
-	gyro_y_rotational_velocity |= (high<<8);
-	gyro_y_rotational_velocity *= HIRESMODE ? 0.3541:1.611 ;
-	gyro_y_rotational_velocity -= gyroscope_y_bias;
-
-	sensor_data_cache.gyroscope_x_rotational_velocity = gyro_x_rotational_velocity;
-	sensor_data_cache.gyroscope_y_rotational_velocity = gyro_y_rotational_velocity;
+void trigger_gyro_conversion(){
+	ADCSRA |= (1<<ADSC); // start a conversion
 }
 
 void power_on_gyro(){
+	PRR &= ~(1<<PRADC); // disable power reduction for ADC so that it works
 	ADMUX = 0; // setup to use pin ADC0 initially
 	ADMUX &= ~((1<<REFS1)|(1<<REFS0));
-	ADCSRA &= ~(7); // use prescaler 2 (by clearing low 3 bits)
-	ADCSRA |= (1<<ADEN); // enable analog to digital conversion
-	
-	// zero the gyro with correct bias,  gyro should be stationary when power_on is called
-	gyroscope_x_bias = 0;
-	gyroscope_y_bias = 0;
-	get_data_gyro();	
-	gyroscope_x_bias = gyro_x_rotational_velocity;
-	gyroscope_y_bias = gyro_y_rotational_velocity;
+	ADCSRA = (1<<ADEN)|(1<<ADIE); // enable analog to digital conversion, using prescaler 2 (low 3 bits are clear), enable ADC interrupt
+	sei(); // make sure interrupts are enabled globally
+	trigger_gyro_conversion();
 }
 
 void query_gyro(){
-	get_data_gyro();
 	char temp[40];
-	sprintf(temp,"Gyro's X (deg/s): %ld",gyro_x_rotational_velocity);
+	sprintf(temp,"Gyro's X (deg/s): %ld",sensor_data_cache.gyroscope_x_rotational_velocity);
 	transmit(temp);
-	sprintf(temp,"Gyro's Y (deg/s): %ld",gyro_y_rotational_velocity);
+	sprintf(temp,"Gyro's Y (deg/s): %ld",sensor_data_cache.gyroscope_y_rotational_velocity);
 	transmit(temp);
 }
-
-/* see spam.h
-void spam_gyro(){
-	get_gyro_data();
-	char temp[40];
-	sprintf(temp,"%c%c%ld",SENSORDATAPACKETCHARACTER,GYROSCOPEX,gyro_x_rotational_velocity);
-	transmit(temp);
-	sprintf(temp,"%c%c%ld",SENSORDATAPACKETCHARACTER,GYROSCOPEY,gyro_y_rotational_velocity);
-	transmit(temp);
-}*/
 #endif
