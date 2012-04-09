@@ -4,15 +4,18 @@
 #include "../lib/AVRserial.h"
 #include "../lib/delay.h"
 #include "../i2c/spam.h"
+#include "../i2c/poll_devices.h"
 #include "../motors/motors.h"
 
 void forward_command();
 void setup_spam();
 void set_calibs();
-char spam_flag = 0;
-char update_motors_flag = 0;
-char begin = 0;
-char idle = 0;
+char overflow_flag = 0;
+char compare_A_flag = 0;
+char compare_B_flag = 0;
+
+char begin = 0; // begin mode hands off the motors to the PD controllers
+char idle = 0; // idle mode just spins the motors for checking operation and communication
 int main(){
 	setup_serial();
 	setup_spam();
@@ -25,20 +28,34 @@ int main(){
 			forward_command();
                         serial_command_ready = 0;
                 }
-		if (spam_flag){
+		if (overflow_flag){ // 30.5Hz
+			overflow_flag = 0;
+			poll_sonar();
+			update_adj_alt();
 			send_spam();
-			spam_flag = 0;
 		}
-		if (begin){
-			if (update_motors_flag){
+		if (compare_A_flag){ // 61Hz
+			compare_A_flag = 0;
+		//	poll_barometer();
+		}
+		if (compare_B_flag){ // 122Hz
+			compare_B_flag = 0;
+			poll_gyro();
+			poll_nunchuck();
+			poll_angles();
+			poll_gyro();
+			update_adj_rp(); // update the filtered roll and pitch values
+			poll_magnetometer();
+			update_adj_yaw(); // update the filtered yaw value
+			if (begin){
 				update_motors();
-				update_motors_flag = 0;
-			} 
-		}else if(idle){
-			set_motors(10);
-		}else{
-			stop_motors();
-        	}
+				update_motors_flag = 0; 
+			}else if(idle){
+				idle_motors();
+			}else{
+				stop_motors();
+        		}
+		}
 	}   
         return 0;
 }
@@ -51,8 +68,8 @@ void forward_command(){
 		delay(10);
 		power_on_magnetometer();
 		delay(10);
-		hard_barometer_calibration();
-		delay(10);
+		//hard_barometer_calibration();
+		//delay(10);
 		power_on_nunchuck();
 	}else if(!strcmp(receive_buffer,"BEGIN")){
 		begin = 1;
@@ -98,8 +115,6 @@ void set_calibs(){
 		sscanf(receive_buffer+5,"%d",&calib_value);
 		if(receive_buffer[3] == 'P'){
 			set_controller_p(calib_value);
-		}else if(receive_buffer[3] == 'I'){
-			set_controller_i(calib_value);
 		}else if(receive_buffer[3] == 'D'){
 			set_controller_d(calib_value);
 		}	
@@ -107,14 +122,25 @@ void set_calibs(){
 
 // sets up Timer1 for sending data at regular intervals
 void setup_spam(){
-	TCCR1A = 0; // use WGM mode 4, CTC, OCR1A is TOP
-	TCCR1B = 10; // normal port operation, use prescaler 1/8, counts in us
-	OCR1A = 0x7FFF;// TOP value, so overflows every 32.768ms
-	TIMSK1 = 2; // enable overflow interrupt
-	sei();	
+	TCCR1A = 0; // normal port operation, CTC, ICR1 is TOP
+	TCCR1B = (1<<WGM13)|(1<<WGM12)|2; // WGM mode 12, use prescaler 1/8, counts in us
+	ICR1 = 0x7FFF; // TOP value, overflows every 32.768ms, 30.5Hz
+	OCR1A = 0x4000; // interrupt every 16.384ms, 61Hz
+	OCR1B = 0x2000; // interrupt every 8.192ms 122Hz
+	TIMSK1 = (1<<TOIE1)|(1<<OCIE1A)|(1<<OCIE1B); // enable overflow interrupt, and compare match for A and B
+	sei(); // enable global interrupts
+}
+
+ISR(TIMER1_OVF_vect){
+	overflow_flag = 1;
 }
 
 ISR(TIMER1_COMPA_vect){
-	spam_flag = 1;
-	update_motors_flag = 1;
+	compare_A_flag = 1;
+	OCR1A += 0x8000;
+}
+
+ISR(TIMER1_COMPB_vect){
+	compare_B_flag = 1;
+	OCR1B += 0x4000;
 }
