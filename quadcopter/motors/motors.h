@@ -1,6 +1,5 @@
 #ifndef MOTORS_H_
 #define MOTORS_H_
-#include "../control/controller.h"
 
 #define NORTHMOTOR 0
 #define SOUTHMOTOR 1
@@ -15,6 +14,7 @@
 // NORTH is OC0A(PD6), SOUTH is OC0B(PD5)
 // EAST is OC2A(PB3), WEST is OC2B(PD3)
 void set_motor_power(char motor, int power);
+void set_motors(int power);
 
 void stop_motors(){
 	set_motors(MINIMUMSIGNAL);
@@ -28,7 +28,7 @@ void full_power_motors(){
 	set_motors(MAXIMUMSIGNAL);
 }
 
-void set_motors(char power){
+void set_motors(int power){
 	set_motor_power(NORTHMOTOR,power);
 	set_motor_power(SOUTHMOTOR,power);
 	set_motor_power(EASTMOTOR,power);
@@ -64,7 +64,7 @@ void setup_motors(){
 void set_motor_power(char motor, int power){
 	if(power > MAXIMUMSIGNAL){
 		power  = MAXIMUMSIGNAL;
-	}else if(power < MINIMUMSIGNAL)
+	}else if(power < MINIMUMSIGNAL){
 		power = MINIMUMSIGNAL;
 	}
 	switch(motor){

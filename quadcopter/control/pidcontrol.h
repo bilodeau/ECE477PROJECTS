@@ -20,7 +20,7 @@ void set_attrib(struct pid_values *s, int p, int d, int limit) {
 	s->Kp = p;
 	s->Kd = d;
 	s->old_error = 0;
-	gain_limit = limit;
+	s->gain_limit = limit;
 }
 
 int get_gain(struct pid_values *s, int goal, int actual){

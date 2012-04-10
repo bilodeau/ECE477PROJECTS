@@ -40,8 +40,8 @@ void spam_nunchuck(){
 
 void spam_nunchuck_angles(){
 	spam(YAW,sensor_data_cache.yaw);
-	spam(PITCH,sensor_data_cache.pitch);
-	spam(ROLL,sensor_data_cache.roll);
+	spam(PITCH,sensor_data_cache.nunchuck_pitch);
+	spam(ROLL,sensor_data_cache.nunchuck_roll);
 
 }
 

@@ -32,7 +32,7 @@ void query_cntrl_vals() {
 }
 
 void set_controller_p(int i){
-        alt_control.accum_error = 0;
+        alt_control.Kp = i;
 }
 
 void set_controller_d(int i) {
@@ -101,12 +101,11 @@ void compute_controller(){
 	transmit(temp);
 }
 
-void update_motors()
+void update_motors(){
 	compute_controller();
 	set_motor_power(NORTHMOTOR,controller_north_thrust);
 	set_motor_power(SOUTHMOTOR,controller_south_thrust);
 	set_motor_power(EASTMOTOR,controller_east_thrust);
 	set_motor_power(WESTMOTOR,controller_west_thrust);
-}
 }
 #endif

@@ -48,8 +48,8 @@ struct sensor_data{
 struct sensor_data sensor_data_cache;
 
 void update_adj_rp() {
-	sensor_data_cache.filt_roll_angle = RP_FILTER_C*(sensor_data_cache.filt_roll_angle + sensor_data_cache.gyroscope_roll*DELTA_T) + (1 - RP_FILTER_C)*(sensor_data_cache.nunchuck_roll);
-	sensor_data_cache.filt_pitch_angle = RP_FILTER_C*(sensor_data_cache.filt_pitch_angle + sensor_data_cache.gyroscope_pitch*DELTA_T) + (1 - RP_FILTER_C)*(sensor_data_cache.nunchuck_pitch);
+	sensor_data_cache.filt_roll_angle = RP_FILTER_C*(sensor_data_cache.filt_roll_angle + sensor_data_cache.gyroscope_x_rotational_velocity*DELTA_T) + (1 - RP_FILTER_C)*(sensor_data_cache.nunchuck_roll);
+	sensor_data_cache.filt_pitch_angle = RP_FILTER_C*(sensor_data_cache.filt_pitch_angle + sensor_data_cache.gyroscope_y_rotational_velocity*DELTA_T) + (1 - RP_FILTER_C)*(sensor_data_cache.nunchuck_pitch);
 }
 
 void update_adj_alt() {

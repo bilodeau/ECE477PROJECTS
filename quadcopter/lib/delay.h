@@ -10,7 +10,7 @@ volatile char delay_flag = 0;
 void delay(unsigned char millis){
 	TIMSK1 |= (1<<OCIE1B);	
 	delay_flag = 1;
-	OCR1B = (TCNT1 + 1000*millis) % OCR1A;
+	OCR1B = (TCNT1 + 1000*millis) % ICR1;
 	while(delay_flag);
 	TIMSK1 &= ~(1<<OCIE1B);	
 }

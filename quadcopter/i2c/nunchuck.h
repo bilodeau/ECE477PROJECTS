@@ -8,7 +8,7 @@
 #include <math.h>
 
 long nunchuck_x, nunchuck_y, nunchuck_z;
-long yaw,pitch,roll;  // all values in degrees
+long pitch,roll;  // all values in degrees
 int nunchuck_zero_x = 0;//502;
 int nunchuck_zero_y = 0;//509;
 int nunchuck_zero_z = 0;//460;
@@ -24,22 +24,16 @@ void nunchuck_to_degrees(){
 
 	float pitchf = acos(y)/M_PI*180 - 90; // minus 90 to rotate
 	float rollf = -atan2(x,z)/M_PI*180;
-	float yawf = z;//0;
 
 //	char temp[100];
 //	sprintf(temp,"x is now: %d",(int)(pitchf*100));
 //	transmit(temp);
 		
-	// adjust to within the range (-180 , 180]
-	// yaw is [0,360)
-
-	yaw = (long)(yawf);  // multiply by 100 since we're storing them as longs
 	pitch = (long)(pitchf);
 	roll = (long)(rollf);
 	
-	sensor_data_cache.yaw = yaw;
-	sensor_data_cache.pitch = pitch;
-	sensor_data_cache.roll = roll;
+	sensor_data_cache.nunchuck_pitch = pitch;
+	sensor_data_cache.nunchuck_roll = roll;
 }
 
 void zero_nunchuck(){
@@ -130,32 +124,9 @@ void query_nunchuck(){
 	sprintf(temp,"X: %ld Y: %ld Z: %ld",nunchuck_x,nunchuck_y,nunchuck_z);
 	transmit(temp);
 }
-/* see spam.h
-void spam_nunchuck(){
-        get_data_nunchuck();	
-	char temp[41];
-	sprintf(temp,"%c%c%ld",SENSORDATAPACKETCHARACTER,NUNCHUCKX,nunchuck_x);
-	transmit(temp);	
-	sprintf(temp,"%c%c%ld",SENSORDATAPACKETCHARACTER,NUNCHUCKY,nunchuck_y);
-	transmit(temp);	
-	sprintf(temp,"%c%c%ld",SENSORDATAPACKETCHARACTER,NUNCHUCKZ,nunchuck_z);
-	transmit(temp);	
-}*/
 
 void get_nunchuck_angles(){
 	get_data_nunchuck();
 	nunchuck_to_degrees();
 }
-/* see spam.h
-void spam_nunchuck_angles(){
-        get_data_nunchuck();	
-	nunchuck_to_degrees();
-	char temp[41];
-	sprintf(temp,"%c%c%ld",SENSORDATAPACKETCHARACTER,YAW,yaw);
-	transmit(temp);	
-	sprintf(temp,"%c%c%ld",SENSORDATAPACKETCHARACTER,PITCH,pitch);
-	transmit(temp);	
-	sprintf(temp,"%c%c%ld",SENSORDATAPACKETCHARACTER,ROLL,roll);
-	transmit(temp);	
-}*/
 #endif

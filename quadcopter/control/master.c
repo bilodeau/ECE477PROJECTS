@@ -5,6 +5,7 @@
 #include "../lib/delay.h"
 #include "../i2c/spam.h"
 #include "../i2c/poll_devices.h"
+#include "controller.h"
 #include "../motors/motors.h"
 
 void forward_command();
@@ -12,7 +13,6 @@ void setup_spam();
 void set_calibs();
 char overflow_flag = 0;
 char compare_A_flag = 0;
-char compare_B_flag = 0;
 
 char begin = 0; // begin mode hands off the motors to the PD controllers
 char idle = 0; // idle mode just spins the motors for checking operation and communication
@@ -34,12 +34,8 @@ int main(){
 			update_adj_alt();
 			send_spam();
 		}
-		if (compare_A_flag){ // 61Hz
+		if (compare_A_flag){ // 122HZ
 			compare_A_flag = 0;
-		//	poll_barometer();
-		}
-		if (compare_B_flag){ // 122Hz
-			compare_B_flag = 0;
 			poll_gyro();
 			poll_nunchuck();
 			poll_angles();
@@ -49,7 +45,6 @@ int main(){
 			update_adj_yaw(); // update the filtered yaw value
 			if (begin){
 				update_motors();
-				update_motors_flag = 0; 
 			}else if(idle){
 				idle_motors();
 			}else{
@@ -125,8 +120,7 @@ void setup_spam(){
 	TCCR1A = 0; // normal port operation, CTC, ICR1 is TOP
 	TCCR1B = (1<<WGM13)|(1<<WGM12)|2; // WGM mode 12, use prescaler 1/8, counts in us
 	ICR1 = 0x7FFF; // TOP value, overflows every 32.768ms, 30.5Hz
-	OCR1A = 0x4000; // interrupt every 16.384ms, 61Hz
-	OCR1B = 0x2000; // interrupt every 8.192ms 122Hz
+	OCR1A = 0x2000; // interrupt every 8.192ms, 122Hz
 	TIMSK1 = (1<<TOIE1)|(1<<OCIE1A)|(1<<OCIE1B); // enable overflow interrupt, and compare match for A and B
 	sei(); // enable global interrupts
 }
@@ -137,10 +131,5 @@ ISR(TIMER1_OVF_vect){
 
 ISR(TIMER1_COMPA_vect){
 	compare_A_flag = 1;
-	OCR1A += 0x8000;
-}
-
-ISR(TIMER1_COMPB_vect){
-	compare_B_flag = 1;
-	OCR1B += 0x4000;
+	OCR1A += 0x2000;
 }
