@@ -3,9 +3,9 @@
 #include <avr/io.h>
 #include <stdio.h>
 #include <string.h>
-#include "i2c.h"
-#include "../lib/data.h"
 #include <math.h>
+#include "../../i2c/i2c.h"
+#include "../data.h"
 
 long nunchuck_x, nunchuck_y, nunchuck_z;
 long pitch,roll;  // all values in degrees

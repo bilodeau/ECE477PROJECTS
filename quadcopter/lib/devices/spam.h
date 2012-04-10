@@ -1,7 +1,7 @@
 #ifndef SPAM_H_
 #define SPAM_H_
 #include <string.h>
-#include "../lib/data.h"
+#include "../data.h"
 #include "magnetometer.h"
 #include "barometer.h"
 #include "gyro.h"

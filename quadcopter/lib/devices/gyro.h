@@ -2,7 +2,7 @@
 #define GYRO_H_
 
 #include <avr/io.h>
-#include "../lib/data.h"
+#include "../data.h"
 
 #define HIRESMODE 0
 #define GYROXBIAS 0

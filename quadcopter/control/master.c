@@ -3,8 +3,8 @@
 #include <string.h>
 #include "../lib/AVRserial.h"
 #include "../lib/delay.h"
-#include "../i2c/spam.h"
-#include "../i2c/poll_devices.h"
+#include "../lib/devices/spam.h"
+#include "../lib/devices/poll_devices.h"
 #include "controller.h"
 #include "../motors/motors.h"
 

@@ -5,8 +5,8 @@
 #include <math.h>
 #include <string.h>
 #include <stdio.h>
-#include "i2c.h"
-#include "../lib/delay.h"
+#include "../../i2c/i2c.h"
+#include "../delay.h"
 
 short ac1, ac2, ac3, b1, b2, mb, mc, md; // the 11 calibration values
 unsigned short ac4,ac5,ac6;

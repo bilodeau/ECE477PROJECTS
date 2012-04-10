@@ -1,7 +1,7 @@
 #include <avr/io.h>
 #include <stdio.h>
 #include "i2c_slave.h"
-#include "sonar_slave.h"
+#include "../lib/devices/sonar_slave.h"
 
 void process_command_received();
 void load_sonar_packet();

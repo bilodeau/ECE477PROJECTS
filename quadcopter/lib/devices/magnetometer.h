@@ -4,9 +4,9 @@
 #include <avr/io.h>
 #include <stdio.h>
 #include <string.h>
-#include "i2c.h"
 #include <math.h>
-#include "../lib/data.h"
+#include "../../i2c/i2c.h"
+#include "../data.h"
 
 void get_magnetometer_status(){
         char buffer = 0x09;
@@ -28,6 +28,23 @@ void power_on_magnetometer(){
         init[1] = 0x00;
         process_i2c_bus_write(0x3C,init,2);
         send_stop_condition();
+}
+
+// doesn't account for magnetic declination
+// returns a compass heading in the range 0 to 360 degrees
+float compensate_for_tilt(int x, int y, int z, float pitch, float roll){
+	// convert pitch and roll to radians
+	pitch *= M_PI/180.;
+	roll *= M_PI/180.;
+
+	float xh = x * cos(roll) + y * sin(pitch) * sin(roll) + z * cos(pitch) * sin(roll);
+	float yh = y * cos(pitch) - z * sin(pitch);
+	float heading = atan2(-yh,xh);
+	if (heading < 0)
+		heading += 2 * M_PI;
+	if (heading > 2* M_PI)
+		heading -= 2 * M_PI;	
+	return heading*180./M_PI;
 }
 
 double convert_raw_heading_to_degrees(int x, int y, int z){
@@ -55,7 +72,8 @@ void get_data_magnetometer(){
         int z = (buffer[2]<<8)|buffer[3];
         int y = (buffer[4]<<8)|buffer[5];
 	
-	double heading = convert_raw_heading_to_degrees(x,y,z);
+//	double heading = convert_raw_heading_to_degrees(x,y,z);
+	float heading = compensate_for_tilt(x,y,z,sensor_data_cache.filt_pitch_angle,sensor_data_cache.filt_roll_angle);
 	sensor_data_cache.compass_heading = (long)(100*heading);
 }
         
