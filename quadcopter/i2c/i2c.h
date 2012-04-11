@@ -100,7 +100,7 @@ void process_i2c_bus_read(char read_address,char* buffer, char numbytes){
 	// check TWI status register
 	if ((TWSR & 0xF8) != MR_SLA_ACK){
 		char temp[21];
-		sprintf(temp,"read address send failed");
+		sprintf(temp,"read address send failed:%ud",(unsigned int)read_address);
 		transmit(temp);
 	}
 	char i;

@@ -3,7 +3,7 @@
 #include <string.h>
 #include "../data.h"
 #include "magnetometer.h"
-#include "barometer.h"
+//#include "barometer.h"
 #include "gyro.h"
 #include "nunchuck.h"
 
@@ -17,14 +17,17 @@ void spam_magnetometer(){
 }
 
 void spam_sonar(){
-	spam(SONARDISTANCE,sensor_data_cache.sonar_distance);
+/*	char temp[40];
+	sprintf(temp,"alt: %ld",sensor_data_cache.filt_altitude);
+	transmit(temp);*/
+	spam(SONARDISTANCE,sensor_data_cache.filt_altitude);
 }
-
+/*
 void spam_barometer(){
 	spam(BAROMETERTEMPERATURE,sensor_data_cache.barometer_temperature);
 	spam(BAROMETERPRESSURE,sensor_data_cache.barometer_pressure);
 	spam(BAROMETERALTITUDE,sensor_data_cache.barometer_altitude);
-}
+}*/
 
 void spam_gyro(){
 	spam(GYROSCOPEY,sensor_data_cache.gyroscope_x_rotational_velocity);

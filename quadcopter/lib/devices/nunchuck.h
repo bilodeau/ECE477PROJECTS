@@ -7,39 +7,38 @@
 #include "../../i2c/i2c.h"
 #include "../data.h"
 
+#define NUNCHUCKZEROX 512
+#define NUNCHUCKZEROY 495
+#define NUNCHUCKZEROZ 521
+
 long nunchuck_x, nunchuck_y, nunchuck_z;
-long pitch,roll;  // all values in degrees
-int nunchuck_zero_x = 496;
-int nunchuck_zero_y = 448;
-int nunchuck_zero_z = 492;
 
 // converts the current component values to yaw pitch and roll values
-void nunchuck_to_degrees(){
-	float inverse_length = 1./sqrtf(nunchuck_x*nunchuck_x + nunchuck_y*nunchuck_y + nunchuck_z*nunchuck_z); // compute the normalization factor
+void get_nunchuck_angles(){
+	int nx = nunchuck_x - NUNCHUCKZEROX;
+	int ny = nunchuck_y - NUNCHUCKZEROX;
+//	int nz = nunchuck_z - NUNCHUCKZEROX;
+
+//	float inverse_length = 1;
+//	float inverse_length = 1./sqrtf(nunchuck_x*nunchuck_x + nunchuck_y*nunchuck_y + nunchuck_z*nunchuck_z); // compute the normalization factor
 
 	// normalize all of the components (so that the vector is normalized)	
-	float x = nunchuck_x * inverse_length;
-	float y = nunchuck_y * inverse_length;
-	float z = nunchuck_z * inverse_length;
+//	float x = nunchuck_x * inverse_length;
+//	float y = nunchuck_y * inverse_length;
+//	float z = nunchuck_z * inverse_length;
 
-	float pitchf = acos(y)/M_PI*180 - 90; // minus 90 to rotate
-	float rollf = -atan2(x,z)/M_PI*180;
+	long pitchf = ny / M_PI * 180;
+	long rollf = nx / M_PI * 180;
+	
+//	float pitchf = acos(y)/M_PI*180 - 90; // minus 90 to rotate
+//	float rollf = -atan2(x,z)/M_PI*180;
 
 //	char temp[100];
 //	sprintf(temp,"x is now: %d",(int)(pitchf*100));
 //	transmit(temp);
 		
-	pitch = (long)(pitchf);
-	roll = (long)(rollf);
-	
-	sensor_data_cache.nunchuck_pitch = pitch;
-	sensor_data_cache.nunchuck_roll = roll;
-}
-
-void zero_nunchuck(){
-	nunchuck_zero_x = nunchuck_x;
-	nunchuck_zero_y = nunchuck_y;
-//	nunchuck_zero_z = nunchuck_z;
+	sensor_data_cache.nunchuck_pitch = (long)pitchf;
+	sensor_data_cache.nunchuck_roll = (long)rollf;
 }
 
 void power_on_nunchuck(){
@@ -91,8 +90,6 @@ void get_data_nunchuck(){
         process_i2c_bus_read(0xA5,buffer,6); 
 	send_stop_condition();
 	
-	decode_nunchuck_data();
-	
 	nunchuck_x = (buffer[2]);
 	nunchuck_x <<= 2;
 	nunchuck_x |= ((buffer[5]>>2)&(3));
@@ -108,10 +105,9 @@ void get_data_nunchuck(){
 	nunchuck_z |= ((buffer[5]>>6)&(3));
 	nunchuck_z &= 0x3FF;
 	
-	nunchuck_x -= nunchuck_zero_x;
-	nunchuck_y -= nunchuck_zero_y;
-	nunchuck_z -= nunchuck_zero_z;
 	send_zero_nunchuck();
+	
+	decode_nunchuck_data();
 
 	sensor_data_cache.nunchuck_x_value = nunchuck_x;
 	sensor_data_cache.nunchuck_y_value = nunchuck_y;
@@ -123,9 +119,5 @@ void query_nunchuck(){
 	char temp[41];
 	sprintf(temp,"X: %ld Y: %ld Z: %ld",nunchuck_x,nunchuck_y,nunchuck_z);
 	transmit(temp);
-}
-
-void get_nunchuck_angles(){
-	nunchuck_to_degrees();
 }
 #endif

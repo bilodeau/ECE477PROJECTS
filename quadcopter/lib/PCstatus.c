@@ -115,7 +115,7 @@ void save_sensor_data_packet(char code){
 			sensor_data_cache.compass_heading = value;
 			break;
 		case SONARDISTANCE:	
-			sensor_data_cache.sonar_distance = value;
+			sensor_data_cache.filt_altitude = value;
 			break;
 		case BAROMETERTEMPERATURE:
 			sensor_data_cache.barometer_temperature = value;

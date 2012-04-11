@@ -38,16 +38,14 @@ void forward_command(){
                power_on_magnetometer();
         }else if(!strcmp(receive_buffer,"MS")){
                 get_magnetometer_status();
-        }else if(!strcmp(receive_buffer,"BC")){
+/*        }else if(!strcmp(receive_buffer,"BC")){
 	       	hard_barometer_calibration();
 	}else if(!strcmp(receive_buffer,"BT")){
 		query_barometer_true();
-	}else if(!strcmp(receive_buffer,"NP")){
+*/	}else if(!strcmp(receive_buffer,"NP")){
 		power_on_nunchuck();
 	}else if(!strcmp(receive_buffer,"ND")){
 		query_nunchuck();
-	}else if(!strcmp(receive_buffer,"NZ")){
-		zero_nunchuck();
 	}else if(!strcmp(receive_buffer,"FETCH")){
 		query_cntrl_vals();
 	}else if(!strncmp(receive_buffer,"SET",3)){

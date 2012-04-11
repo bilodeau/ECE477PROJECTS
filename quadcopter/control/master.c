@@ -13,6 +13,7 @@
 void setup_spam();
 char TOP_flag = 0;
 char compare_A_flag = 0;
+char spam_flag = 0;
 
 // mode variables declared in UI.h
 //char begin = 0; // begin mode hands off the motors to the PD controllers
@@ -34,16 +35,26 @@ int main(){
 			TOP_flag = 0;
 			poll_sonar();
 			update_adj_alt();
-			send_spam();
+			if(!spam_flag){
+				send_spam();
+			}
+			spam_flag++;
+			if (spam_flag > 5)
+				spam_flag = 0;
 			update_takeoff();
 		}
 		if (compare_A_flag){ // 122HZ
 			compare_A_flag = 0;
+//			transmit("polling gyro...");
 			poll_gyro();
+//			transmit("polling nunchuck...");
 			poll_nunchuck();
+//			transmit("polling angles...");
 			poll_angles();
+//			transmit("polling gyro...");
 			poll_gyro();
-//			update_adj_rp(); // update the filtered roll and pitch values
+			update_adj_rp(); // update the filtered roll and pitch values
+//			transmit("polling magnetometer...");
 			poll_magnetometer();
 			update_adj_yaw(); // update the filtered yaw value
 			if (begin){

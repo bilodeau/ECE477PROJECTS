@@ -30,11 +30,11 @@ volatile char serial_command_ready = 0;
 
 void transmit(char* str){
 	if(strlen(str) > RECEIVEBUFFERSIZE){
-		sprintf(transmit_buffer+ transmit_buffer_empty_row_index*TRANSMITQUEUESIZE,"Command Longer Than Transmit Buffer.");
+		sprintf(transmit_buffer+ transmit_buffer_empty_row_index*(RECEIVEBUFFERSIZE+3),"longer than line");
 	}else{
-		sprintf(transmit_buffer+transmit_buffer_empty_row_index*TRANSMITQUEUESIZE,str);
+		sprintf(transmit_buffer+transmit_buffer_empty_row_index*(RECEIVEBUFFERSIZE+3),str);
 	}
-	strcat(transmit_buffer+transmit_buffer_empty_row_index*TRANSMITQUEUESIZE,"\r\n");
+	strcat(transmit_buffer+transmit_buffer_empty_row_index*(RECEIVEBUFFERSIZE+3),"\r\n");
 	UCSR0B |= (1<<UDRIE0); // make sure the interrupt is enabled
 	transmit_buffer_empty_row_index++;
 	if(transmit_buffer_empty_row_index >= TRANSMITQUEUESIZE)
@@ -48,13 +48,13 @@ void clear_transmit_buffer(int row_index){
 }
 
 ISR(USART_UDRE_vect){
-	char byte = transmit_buffer[transmit_buffer_current_row_index*TRANSMITQUEUESIZE+transmit_buffer_index];
+	char byte = transmit_buffer[transmit_buffer_current_row_index*(RECEIVEBUFFERSIZE+3)+transmit_buffer_index];
 	if(byte != '\0'){
 		UDR0 = byte;
 		transmit_buffer_index++;
-		if(transmit_buffer_index>=strlen(transmit_buffer+transmit_buffer_current_row_index*TRANSMITQUEUESIZE)){
+		if(transmit_buffer_index>=strlen(transmit_buffer+transmit_buffer_current_row_index*(RECEIVEBUFFERSIZE+3))){
 			transmit_buffer_index = 0;
-			transmit_buffer[transmit_buffer_current_row_index*TRANSMITQUEUESIZE] = '\0';
+			transmit_buffer[transmit_buffer_current_row_index*RECEIVEBUFFERSIZE+3] = '\0';
 			transmit_buffer_current_row_index++;
 			if(transmit_buffer_current_row_index >= TRANSMITQUEUESIZE)
 				transmit_buffer_current_row_index = 0;
