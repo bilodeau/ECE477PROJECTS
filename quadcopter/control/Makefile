@@ -7,7 +7,7 @@ TEST=test
 SLAVE=../i2c/slave
 ADFLAGS=-p atmega328p -c avrispmkII -P usb
 
-.PHONY: fuses prog erase monitor status slave test
+.PHONY: fuses prog erase monitor status slave test osccal
 
 
 prog : $(TARGET).hex
@@ -40,3 +40,6 @@ slave: $(SLAVE).hex
 
 test: $(TEST).hex
 	avrdude $(ADFLAGS) -V -U flash:w:$(TEST).hex:i
+
+osccal:
+	avrdude $(ADFLAGS) -V -U calibration:r:"calib.hex":r

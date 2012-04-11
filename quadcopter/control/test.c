@@ -1,5 +1,4 @@
 #include "../lib/AVRserial.h"
-#include "../i2c/spam.h"
 
 int main(){
 setup_serial();

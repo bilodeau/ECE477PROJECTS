@@ -148,10 +148,10 @@ void save_sensor_data_packet(char code){
 			sensor_data_cache.yaw = value;
 			break;
 		case PITCH:
-			sensor_data_cache.pitch = value;
+			sensor_data_cache.filt_pitch_angle = value;
 			break;
 		case ROLL:
-			sensor_data_cache.roll = value;
+			sensor_data_cache.filt_roll_angle = value;
 			break;
 		default:
 			sprintf(serial_command_buffer,"Bad Sensor Data Packet.");
@@ -201,6 +201,7 @@ void setup_serial_port(char* serial_port_name){
 	attribs.c_cflag &= ~CSIZE;
 	attribs.c_cflag |= CS8;
 	attribs.c_cflag |= CLOCAL|CREAD;
+	attribs.c_cflag |= CSTOPB;
 	attribs.c_iflag |= IGNPAR;
 	attribs.c_oflag |= 0;
 	attribs.c_lflag &= ~ICANON;

@@ -11,7 +11,7 @@
 #include "UI.h"
 
 void setup_spam();
-char overflow_flag = 0;
+char TOP_flag = 0;
 char compare_A_flag = 0;
 
 // mode variables declared in UI.h
@@ -30,8 +30,8 @@ int main(){
 			forward_command();
                         serial_command_ready = 0;
                 }
-		if (overflow_flag){ // 30.5Hz
-			overflow_flag = 0;
+		if (TOP_flag){ // 30.5Hz
+			TOP_flag = 0;
 			poll_sonar();
 			update_adj_alt();
 			send_spam();
@@ -43,16 +43,16 @@ int main(){
 			poll_nunchuck();
 			poll_angles();
 			poll_gyro();
-			update_adj_rp(); // update the filtered roll and pitch values
+//			update_adj_rp(); // update the filtered roll and pitch values
 			poll_magnetometer();
 			update_adj_yaw(); // update the filtered yaw value
 			if (begin){
 				update_motors();
 			}else if(idle){
-				stop_takeoff();
+				setup_takeoff();
 				idle_motors();
 			}else{
-				stop_takeoff();
+				setup_takeoff();
 				stop_motors();
         		}
 		}
@@ -64,17 +64,19 @@ int main(){
 void setup_spam(){
 	TCCR1A = 0; // normal port operation, CTC, ICR1 is TOP
 	TCCR1B = (1<<WGM13)|(1<<WGM12)|2; // WGM mode 12, use prescaler 1/8, counts in us
-	ICR1 = 0x7FFF; // TOP value, overflows every 32.768ms, 30.5Hz
+	ICR1 = 0x7FFF; // TOP value, clears every 32.768ms, 30.5Hz
 	OCR1A = 0x2000; // interrupt every 8.192ms, 122Hz
-	TIMSK1 = (1<<TOIE1)|(1<<OCIE1A)|(1<<OCIE1B); // enable overflow interrupt, and compare match for A and B
+	TIMSK1 = (1<<ICIE1)|(1<<OCIE1A); // enable TOP interrupt, and compare match for A
 	sei(); // enable global interrupts
 }
 
-ISR(TIMER1_OVF_vect){
-	overflow_flag = 1;
+ISR(TIMER1_CAPT_vect){
+	TOP_flag = 1;
 }
 
 ISR(TIMER1_COMPA_vect){
 	compare_A_flag = 1;
 	OCR1A += 0x2000;
+	if(OCR1A > ICR1)
+		OCR1A -= ICR1;
 }

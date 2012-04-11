@@ -5,16 +5,16 @@
 #include "../data.h"
 
 #define HIRESMODE 0
-#define GYROXBIAS 0
-#define GYROYBIAS 0
+#define GYROYBIAS 462
+#define GYROXBIAS 689
 
 ISR(ADC_vect){
 	unsigned char low = ADCL;
 	unsigned char high = ADCH&3; // mask to get only the low two bits
 	if((ADMUX&1) == 0){
-		sensor_data_cache.gyroscope_x_rotational_velocity = (((high)<<8)&low) * (HIRESMODE ? 0.3541:1.611) - GYROXBIAS;
+		sensor_data_cache.gyroscope_x_rotational_velocity = (((high)<<8)|low) * (HIRESMODE ? 0.3541:1.611) - GYROXBIAS;
 	}else{
-	sensor_data_cache.gyroscope_y_rotational_velocity = (((high)<<8)&low) * (HIRESMODE ? 0.3541:1.611) - GYROYBIAS;
+	sensor_data_cache.gyroscope_y_rotational_velocity = (((high)<<8)|low) * (HIRESMODE ? 0.3541:1.611) - GYROYBIAS;
 	}
 	// now toggle the ADC channel to get the other value
 	ADMUX ^= 1;	

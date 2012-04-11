@@ -26,7 +26,7 @@ void refresh_display(){
 	move(2,40);
 	printw("                                        ");
 	move(2,40);
-	printw("Sonar Distance (feet): %ld.%ld",sensor_data_cache.sonar_distance/100,sensor_data_cache.sonar_distance%100);
+	printw("Sonar Distance (feet): %ld.%ld",sensor_data_cache.filt_altitude/100,sensor_data_cache.filt_altitude%100);
 	
 	move(3,0);
 	printw("                                        ");
@@ -61,12 +61,12 @@ void refresh_display(){
 	move(8,0);
 	printw("                                        ");
 	move(8,0);
-	printw("Gyroscope X (deg/sec): %ld",sensor_data_cache.gyroscope_x_rotational_velocity);
+	printw("Gyroscope Roll (deg/sec): %ld",sensor_data_cache.gyroscope_x_rotational_velocity);
 	
 	move(8,40);
 	printw("                                        ");
 	move(8,40);
-	printw("Gyroscope Y (deg/sec): %ld",sensor_data_cache.gyroscope_y_rotational_velocity);
+	printw("Gyroscope Pitch (deg/sec): %ld",sensor_data_cache.gyroscope_y_rotational_velocity);
 
 
 	move(9,0);
@@ -77,12 +77,12 @@ void refresh_display(){
 	move(10,0);
 	printw("                                        ");
 	move(10,0);
-	printw("Pitch (deg): %ld",sensor_data_cache.pitch);
+	printw("Pitch (deg): %ld",sensor_data_cache.filt_pitch_angle);
 	
 	move(11,0);
 	printw("                                        ");
 	move(11,0);
-	printw("Roll  (deg): %ld",sensor_data_cache.roll);
+	printw("Roll  (deg): %ld",sensor_data_cache.filt_roll_angle);
 	
 	move(20,0);
 	printw("Type 'q' to quit.");
