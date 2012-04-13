@@ -102,15 +102,21 @@ void process_i2c_bus_read(char read_address,char* buffer, char numbytes){
 		if ((TWSR & 0xF8) == 0x38) {
 			char temp[21];
 			sprintf(temp,"arb lost in sla+r or NACK bit:%ud",(unsigned int)read_address);
-			transmit(temp);	
+			transmit(temp);
+			send_stop_condition();
+			return;
 		} else if ((TWSR & 0xF8) == 0x48) {
 			char temp[21];
 			sprintf(temp,"sla+r sent. NACK received:%ud",(unsigned int)read_address);
 			transmit(temp);
+			send_stop_condition();
+			return;
 		} else {
 			char temp[21];
 			sprintf(temp,"other error during sla+r:%ud",(unsigned int)read_address);
-			transmit(temp);	
+			transmit(temp);
+			send_stop_condition();
+			return;
 		}
 	}
 	char i;
