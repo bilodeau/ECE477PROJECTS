@@ -73,7 +73,8 @@ void get_data_magnetometer(){
         int y = (buffer[4]<<8)|buffer[5];
 	
 //	double heading = convert_raw_heading_to_degrees(x,y,z);
-	float heading = compensate_for_tilt(x,y,z,sensor_data_cache.filt_pitch_angle,sensor_data_cache.filt_roll_angle);
+	//float heading = compensate_for_tilt(x,y,z,sensor_data_cache.filt_pitch_angle,sensor_data_cache.filt_roll_angle);
+	float heading = compensate_for_tilt(x,y,z,0,0);
 	sensor_data_cache.compass_heading = (long)(100*heading);
 }
         

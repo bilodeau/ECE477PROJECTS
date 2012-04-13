@@ -32,6 +32,8 @@ void forward_command(){
 		idle = 0;
 	}else if(!strcmp(receive_buffer,"IDLE")){
 		idle = 1;
+	}else if(!strcmp(receive_buffer,"TAKEOFF")){
+		begin_takeoff();
 	}else if(!strcmp(receive_buffer,"GP")){
 		power_on_gyro();
         }else if (!strcmp(receive_buffer,"MP")){
@@ -53,7 +55,7 @@ void forward_command(){
 	}else if(!strncmp(receive_buffer,"HOVER ",6)){
 		int alt;
 		sscanf(receive_buffer+6,"%d",&alt);
-		if ((alt >= 0)&&(alt <= 400))
+		if ((alt >= 0)&&(alt <= 1000))
 			set_altitude(alt);
 	}else if(!strncmp(receive_buffer,"POWER ",6)){
 		int power;

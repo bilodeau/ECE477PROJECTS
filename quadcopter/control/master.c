@@ -37,9 +37,10 @@ int main(){
 			update_adj_alt();
 			if(!spam_flag){
 				send_spam();
+				spam_gain();
 			}
 			spam_flag++;
-			if (spam_flag > 5)
+			if (spam_flag > 3)
 				spam_flag = 0;
 			update_takeoff();
 		}

@@ -6,7 +6,7 @@
 
 #define HIRESMODE 0
 #define GYROYBIAS 462
-#define GYROXBIAS 689
+#define GYROXBIAS 682
 
 ISR(ADC_vect){
 	unsigned char low = ADCL;
