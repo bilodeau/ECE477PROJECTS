@@ -32,8 +32,15 @@ void forward_command(){
 		idle = 0;
 	}else if(!strcmp(receive_buffer,"IDLE")){
 		idle = 1;
+	}else if(!strcmp(receive_buffer,"LAND")){
+		begin_landing();
 	}else if(!strcmp(receive_buffer,"TAKEOFF")){
 		begin_takeoff();
+	}else if(!strncmp(receive_buffer,"TT ",3)){
+		int thrust;
+		sscanf(receive_buffer+3,"%d",&thrust);
+		if ((thrust >= 10)&&(thrust <= 150))
+			takeoff_thrust = thrust;
 	}else if(!strcmp(receive_buffer,"GP")){
 		power_on_gyro();
         }else if (!strcmp(receive_buffer,"MP")){

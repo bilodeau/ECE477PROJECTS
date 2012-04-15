@@ -43,9 +43,15 @@ void spam_nunchuck(){
 
 void spam_nunchuck_angles(){
 	spam(YAW,sensor_data_cache.yaw);
-	spam(PITCH,sensor_data_cache.nunchuck_pitch);
-	spam(ROLL,sensor_data_cache.nunchuck_roll);
+	spam(PITCH,sensor_data_cache.filt_pitch_angle);
+	spam(ROLL,sensor_data_cache.filt_roll_angle);
 
+}
+
+void spam_gain(){
+	spam(ALTGAIN,sensor_data_cache.alt_gain);
+	spam(ROLLGAIN,sensor_data_cache.roll_gain);
+	spam(PITCHGAIN,sensor_data_cache.pitch_gain);
 }
 
 void send_spam(){
@@ -55,5 +61,6 @@ void send_spam(){
 	spam_gyro();
 	spam_nunchuck();
 	spam_nunchuck_angles();
+	spam_gain();
 }
 #endif

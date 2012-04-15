@@ -73,16 +73,31 @@ void refresh_display(){
 	printw("                                        ");
 	move(9,0);
 	printw("Yaw   (deg): %ld",sensor_data_cache.yaw);
+
+	move(9,40);
+	printw("                                        ");
+	move(9,40);
+	printw("Alt Gain: %d", sensor_data_cache.alt_gain);
 	
 	move(10,0);
 	printw("                                        ");
 	move(10,0);
 	printw("Pitch (deg): %ld",sensor_data_cache.filt_pitch_angle);
 	
+	move(10,40);
+	printw("                                        ");
+	move(10,40);
+	printw("Pitch Gain: %d", sensor_data_cache.pitch_gain);
+	
 	move(11,0);
 	printw("                                        ");
 	move(11,0);
 	printw("Roll  (deg): %ld",sensor_data_cache.filt_roll_angle);
+	
+	move(11,40);
+	printw("                                        ");
+	move(11,40);
+	printw("Roll Gain: %d", sensor_data_cache.roll_gain);
 	
 	move(20,0);
 	printw("Type 'q' to quit.");

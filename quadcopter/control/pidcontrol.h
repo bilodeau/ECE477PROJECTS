@@ -42,8 +42,9 @@ int get_gain(struct pid_values *s, int goal, int actual){
 		}
 	}
 /*	char temp[100];
-	sprintf(temp,"limit: %d newgain: %d oldgain: %d",s->gain_limit,gain,oldgain);
-	transmit(temp);*/
+	sprintf(temp,"deriv: %d",derivative);
+	transmit(temp);
+*/
 	return gain;
 }
 #endif

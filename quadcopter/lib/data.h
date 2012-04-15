@@ -20,10 +20,13 @@
 #define YAW 12
 #define PITCH 13
 #define ROLL 14
+#define ALTGAIN 15
+#define ROLLGAIN 16
+#define PITCHGAIN 17
 
-#define RP_FILTER_C 0.75
+#define RP_FILTER_C 0.75 / 1000
 #define DELTA_T 8.192	// in ms
-#define ALT_FILTER_C 0.75
+#define ALT_FILTER_C 0.75 / 1000
 
 struct sensor_data{
 	long compass_heading; // degrees * 100
@@ -43,6 +46,9 @@ struct sensor_data{
 	long filt_roll_angle;
 	long filt_pitch_angle;
 	long filt_altitude;
+	int alt_gain;
+	int roll_gain;
+	int pitch_gain;
 };
 
 struct sensor_data sensor_data_cache;

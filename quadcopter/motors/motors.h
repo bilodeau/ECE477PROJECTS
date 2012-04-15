@@ -75,6 +75,8 @@ void set_motor_power(char motor, int power){
 			OCR0B = power;
 			break;
 		case EASTMOTOR:
+			if (power > 82)
+				power -= 3;
 			OCR2A = power;
 			break;
 		case WESTMOTOR:

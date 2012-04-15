@@ -7,17 +7,15 @@
 #include "pidcontrol.h"
 #include "../motors/motors.h"
 
-#define ALT_P_GAIN 0//10
+#define ALT_P_GAIN 10
 #define ALT_D_GAIN 0
-#define ALT_GAIN_LIMIT 5
+#define ALT_GAIN_LIMIT 10
 
-#define FLIP_P_GAIN 1
-#define FLIP_D_GAIN 0
-#define FLIP_GAIN_LIMIT 10
+#define FLIP_P_GAIN 200
+#define FLIP_D_GAIN 1500
+#define FLIP_GAIN_LIMIT 30
 
 int base_thrust;
-
-int alt_gain,roll_gain,pitch_gain;
 
 long controller_north_thrust;
 long controller_south_thrust;
@@ -34,7 +32,7 @@ void query_cntrl_vals() {
 }
 
 void set_controller_p(int i){
-        roll_control.Kp = i;
+        alt_control.Kp = i;
 }
 
 void set_controller_d(int i) {
@@ -70,14 +68,14 @@ void setup_controller(){
 }
 
 void compute_controller(){
-	alt_gain = get_gain(&alt_control, target_state.altitude, sensor_data_cache.filt_altitude);
-	roll_gain = get_gain(&roll_control, target_state.roll, sensor_data_cache.filt_roll_angle);
-	pitch_gain = get_gain(&pitch_control, target_state.pitch, sensor_data_cache.filt_pitch_angle);
+	sensor_data_cache.alt_gain = get_gain(&alt_control, target_state.altitude, sensor_data_cache.filt_altitude);
+	sensor_data_cache.roll_gain = get_gain(&roll_control, target_state.roll, sensor_data_cache.filt_roll_angle);
+	sensor_data_cache.pitch_gain = get_gain(&pitch_control, target_state.pitch, sensor_data_cache.filt_pitch_angle);
 
-	controller_north_thrust = base_thrust + alt_gain + pitch_gain; 
-	controller_south_thrust = base_thrust + alt_gain - pitch_gain;
-	controller_east_thrust = base_thrust + alt_gain + roll_gain;
-	controller_west_thrust = base_thrust + alt_gain - roll_gain;
+	controller_north_thrust = base_thrust + sensor_data_cache.alt_gain + sensor_data_cache.pitch_gain; 
+	controller_south_thrust = base_thrust + sensor_data_cache.alt_gain - sensor_data_cache.pitch_gain;
+	controller_east_thrust = base_thrust + sensor_data_cache.alt_gain + sensor_data_cache.roll_gain;
+	controller_west_thrust = base_thrust + sensor_data_cache.alt_gain - sensor_data_cache.roll_gain;
 	if (controller_north_thrust > MAXIMUMSIGNAL) {
 		controller_north_thrust = MAXIMUMSIGNAL;
 	} else if (controller_north_thrust < IDLESIGNAL) {
@@ -98,17 +96,6 @@ void compute_controller(){
 	} else if (controller_west_thrust < IDLESIGNAL) {
 		controller_west_thrust = IDLESIGNAL;
 	}
-
-	// for testing roll only
-	
-	controller_south_thrust = MINIMUMSIGNAL;
-	controller_north_thrust = MINIMUMSIGNAL;
-}
-
-void spam_gain(){
-	char temp[100];
-	sprintf(temp,"gain: %d",roll_gain);
-	transmit(temp);
 }
 
 void update_motors(){

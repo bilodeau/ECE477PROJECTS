@@ -153,6 +153,15 @@ void save_sensor_data_packet(char code){
 		case ROLL:
 			sensor_data_cache.filt_roll_angle = value;
 			break;
+		case ALTGAIN:
+			sensor_data_cache.alt_gain = value;
+			break;
+		case ROLLGAIN:
+			sensor_data_cache.roll_gain = value;
+			break;
+		case PITCHGAIN:
+			sensor_data_cache.pitch_gain = value;
+			break;
 		default:
 			sprintf(serial_command_buffer,"Bad Sensor Data Packet.");
 	}
