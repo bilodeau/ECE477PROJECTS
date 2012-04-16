@@ -24,9 +24,9 @@
 #define ROLLGAIN 16
 #define PITCHGAIN 17
 
-#define RP_FILTER_C 0.75 / 1000
-#define DELTA_T 8.192	// in ms
-#define ALT_FILTER_C 0.75 / 1000
+#define RP_FILTER_C 0.75
+#define DELTA_T 8.192/1000	// in ms
+#define ALT_FILTER_C 0.75
 
 struct sensor_data{
 	long compass_heading; // degrees * 100

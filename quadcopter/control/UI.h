@@ -7,11 +7,19 @@ char idle = 0; // idle mode just spins the motors at minimum speed for checking 
 void set_calibs(){
 		int calib_value = 0;
 		sscanf(receive_buffer+5,"%d",&calib_value);
-		if(receive_buffer[3] == 'P'){
-			set_controller_p(calib_value);
-		}else if(receive_buffer[3] == 'D'){
-			set_controller_d(calib_value);
-		}	
+		if(receive_buffer[3] == 'A'){
+			if(receive_buffer[4] == 'P'){
+				set_alt_controller_p(calib_value);
+			}else if(receive_buffer[4] == 'D'){
+				set_alt_controller_d(calib_value);
+			}	
+		}else if(receive_buffer[3] == 'F'){
+			if(receive_buffer[4] == 'P'){
+				set_flip_controller_p(calib_value);
+			}else if(receive_buffer[4] == 'D'){
+				set_flip_controller_d(calib_value);
+			}	
+		}
 }
 
 void forward_command(){
@@ -64,10 +72,17 @@ void forward_command(){
 		sscanf(receive_buffer+6,"%d",&alt);
 		if ((alt >= 0)&&(alt <= 1000))
 			set_altitude(alt);
-	}else if(!strncmp(receive_buffer,"POWER ",6)){
-		int power;
-		sscanf(receive_buffer+6,"%d",&power);
-		set_base_thrust(power);
+	}else if(!strncmp(receive_buffer,"OFFSET",6)){
+		int offset;
+		sscanf(receive_buffer+8,"%d",&offset);
+		if(receive_buffer[6] == 'R'){
+			roll_offset = offset;
+		}else if(receive_buffer[6] == 'P'){
+			pitch_offset = offset;
+		}
+		char temp[40];
+		sprintf(temp,"r: %d  p: %d",roll_offset,pitch_offset);
+		transmit(temp);
 	}
 }
 #endif

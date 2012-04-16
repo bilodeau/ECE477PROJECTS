@@ -7,12 +7,12 @@
 #include "pidcontrol.h"
 #include "../motors/motors.h"
 
-#define ALT_P_GAIN 10
+#define ALT_P_GAIN 0//10
 #define ALT_D_GAIN 0
-#define ALT_GAIN_LIMIT 10
+#define ALT_GAIN_LIMIT 20
 
-#define FLIP_P_GAIN 200
-#define FLIP_D_GAIN 1500
+#define FLIP_P_GAIN 125
+#define FLIP_D_GAIN 200
 #define FLIP_GAIN_LIMIT 30
 
 int base_thrust;
@@ -27,16 +27,28 @@ struct goal_attrib target_state;
 
 void query_cntrl_vals() {
         char temp[60];
-	sprintf(temp, "Kp: %d, Kd: %d",alt_control.Kp, alt_control.Kd);
+	sprintf(temp, "alt Kp: %d, Kd: %d",alt_control.Kp, alt_control.Kd);
+	transmit(temp);
+	sprintf(temp, "flip Kp: %d, Kd: %d",roll_control.Kp, roll_control.Kd);
 	transmit(temp);
 }
 
-void set_controller_p(int i){
+void set_alt_controller_p(int i){
         alt_control.Kp = i;
 }
 
-void set_controller_d(int i) {
+void set_alt_controller_d(int i) {
         alt_control.Kd = i;
+
+}
+void set_flip_controller_p(int i){
+        roll_control.Kp = i;
+        pitch_control.Kp = i;
+}
+
+void set_flip_controller_d(int i) {
+        pitch_control.Kd = i;
+        roll_control.Kd = i;
 }
 
 void setup_target_state(){

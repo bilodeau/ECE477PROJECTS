@@ -33,30 +33,25 @@ int main(){
                 }
 		if (TOP_flag){ // 30.5Hz
 			TOP_flag = 0;
-			poll_sonar();
+//			poll_sonar();
 			update_adj_alt();
 			if(!spam_flag){
 				send_spam();
 			}
 			spam_flag++;
-			if (spam_flag > 3)
+			if (spam_flag > 6)
 				spam_flag = 0;
 			update_takeoff_and_landing();
 		}
 		if (compare_A_flag){ // 122HZ
 			compare_A_flag = 0;
-//			transmit("polling gyro...");
 			poll_gyro();
-//			transmit("polling nunchuck...");
-			poll_nunchuck();
-//			transmit("polling angles...");
-			poll_angles();
-//			transmit("polling gyro...");
-			poll_gyro();
-			update_adj_rp(); // update the filtered roll and pitch values
-//			transmit("polling magnetometer...");
 			poll_magnetometer();
 			update_adj_yaw(); // update the filtered yaw value
+			poll_nunchuck();
+			poll_angles();
+			poll_gyro();
+			update_adj_rp(); // update the filtered roll and pitch values
 			if (begin){
 				update_motors();
 			}else if(idle){

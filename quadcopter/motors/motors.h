@@ -16,6 +16,9 @@
 void set_motor_power(char motor, int power);
 void set_motors(int power);
 
+
+int roll_offset = -1;
+int pitch_offset = 2;
 void stop_motors(){
 	set_motors(MINIMUMSIGNAL);
 }
@@ -69,17 +72,23 @@ void set_motor_power(char motor, int power){
 	}
 	switch(motor){
 		case NORTHMOTOR:
+			if (power > 10 + MINIMUMSIGNAL)
+				power += pitch_offset;
 			OCR0A = power;
 			break;
 		case SOUTHMOTOR:
+			if (power > 10 + MINIMUMSIGNAL)
+				power -= pitch_offset;
 			OCR0B = power;
 			break;
 		case EASTMOTOR:
-			if (power > 82)
-				power -= 3;
+			if (power > 10 + MINIMUMSIGNAL)
+				power += roll_offset;
 			OCR2A = power;
 			break;
 		case WESTMOTOR:
+			if (power > 10 + MINIMUMSIGNAL)
+				power -= roll_offset;
 			OCR2B = power;
 			break;
 	}

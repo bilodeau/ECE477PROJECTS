@@ -27,7 +27,7 @@ clean :
 fuses:
 	avrdude $(ADFLAGS) -U lfuse:w:0xe2:m
 	avrdude $(ADFLAGS) -U hfuse:w:0xd9:m
-	avrdude $(ADFLAGS) -U efuse:w:0xfd:m
+	avrdude $(ADFLAGS) -U efuse:w:0xff:m
 
 monitor:
 	gcc ../lib/PCmonitor.c -o monitor -lncurses
