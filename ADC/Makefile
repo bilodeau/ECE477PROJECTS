@@ -5,7 +5,7 @@ OBJ2HEX=avr-objcopy
 TARGET=AVRadc
 ADFLAGS=-p m8 -c avrispmkII -P usb
 
-.PHONY: fuses prog erase pc
+.PHONY: fuses prog erase pc plot
 
 
 prog : $(TARGET).hex $(TARGET).eeprom
@@ -31,4 +31,9 @@ fuses:
 	avrdude $(ADFLAGS) -U hfuse:w:0xd9:m
 
 pc:
-	gcc PClogger.c -o pc -lncurses
+	gcc PClogger.c -o pc
+
+plot:
+	gcc makeplot.c -o makeplot
+	./makeplot
+	open temp_log.png

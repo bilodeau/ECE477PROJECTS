@@ -1,6 +1,7 @@
 #include <avr/io.h>
 #include <avr/interrupt.h>
 #include "AVRserial.h"
+#include "fan.h"
 
 #define INTERRUPTCOUNTERLIMIT 128  // counts up to this limit every second
 
@@ -10,14 +11,17 @@ void do_adc_and_transmit();
 
 char timer_flag = 0;
 int interrupt_counter = 0;
+int last_temp_reading;
 
 int main(){
 	setup_timer();
 	setup_serial();
 	setup_adc();
+	setup_fan();
 	for(;;){
 		if (timer_flag){
 			do_adc_and_transmit();
+			update_fan(last_temp_reading);
 			timer_flag = 0;
 		}
 	}
@@ -56,10 +60,10 @@ void do_adc_and_transmit(){
 	while(!(ADCSRA & ADIF));
 	unsigned char low = ADCL;
 	unsigned char high = ADCH&3;
-	int temp = (high<<8)|(low);
+	last_temp_reading = (high<<8)|(low);
 
 	// send the value out over serial
 	char buf[40];
-	sprintf(buf,"%d,",temp);
+	sprintf(buf,"%d,",last_temp_reading);
 	transmit(buf);
 }
