@@ -2,6 +2,7 @@
 #define FAN_H_
 
 // sets up PWM motor control on TIMER2
+// uses OC2 (PB3/MOSI)
 void setup_fan(){
 	// fast pwm mode and 1/256 prescaler for 31,250Hz, clear output on compare match
 	TCCR2 = (1<<COM21)|(0<<COM20)|(1<<WGM20)|(1<<WGM21)|6; 
