@@ -33,7 +33,7 @@ int main(){
                 }
 		if (TOP_flag){ // 30.5Hz
 			TOP_flag = 0;
-//			poll_sonar();
+			poll_sonar();
 			update_adj_alt();
 			if(!spam_flag){
 				send_spam();

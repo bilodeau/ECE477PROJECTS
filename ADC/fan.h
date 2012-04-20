@@ -7,6 +7,7 @@ void setup_fan(){
 	// fast pwm mode and 1/256 prescaler for 31,250Hz, clear output on compare match
 	TCCR2 = (1<<COM21)|(0<<COM20)|(1<<WGM20)|(1<<WGM21)|6; 
 	OCR2 = 0;
+	PORTB |= (1<<3); // enable output on PB3
 }
 
 // adjusts the fan speed based on the current temperature

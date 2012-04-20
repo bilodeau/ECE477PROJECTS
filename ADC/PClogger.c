@@ -35,7 +35,7 @@ int main(int argc, char *argv[]){
 	
 	// setup the log file
 	logfile = open("temp_log",O_WRONLY|O_APPEND|O_CREAT,0666);// the 0666 is an octal number which sets up proper permissions so we can actually open the log file after
-
+	write(serialport,"\r\n",2); // send a 'wake up' to the avr
 	clear_serial_command_buffer();
 	while(1){
 		read_from_serial_port();
@@ -62,6 +62,7 @@ void read_from_serial_port(){
 		if ((serial_command_index>2)&&((serial_command_buffer[serial_command_index-1]=='\n')&&(serial_command_buffer[serial_command_index-2]=='\r'))){
 			serial_command_buffer[serial_command_index-2] = '\0'; // strip of CR NL
 			write(logfile,serial_command_buffer,strlen(serial_command_buffer));
+			PRINTDEBUG&&printf("logging temperature now..\n");
 			clear_serial_command_buffer();
 		}else if (serial_command_index >= COMMANDBUFFERSIZE-1){
 			// command was too long to throw it out

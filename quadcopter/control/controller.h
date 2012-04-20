@@ -108,6 +108,10 @@ void compute_controller(){
 	} else if (controller_west_thrust < IDLESIGNAL) {
 		controller_west_thrust = IDLESIGNAL;
 	}
+
+	// turn off north and south rotors for testing roll
+	controller_north_thrust = MINIMUMSIGNAL;
+	controller_south_thrust = MINIMUMSIGNAL;
 }
 
 void update_motors(){

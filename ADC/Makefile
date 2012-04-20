@@ -3,9 +3,10 @@ CFLAGS=-g -Os -Wall -mcall-prologues -mmcu=atmega8 -Wno-char-subscripts
 OBJ2HEX=avr-objcopy
 #UISP=/usr/local/bin/uisp
 TARGET=AVRadc
+TEST=test
 ADFLAGS=-p m8 -c avrispmkII -P usb
 
-.PHONY: fuses prog erase pc plot
+.PHONY: fuses prog erase pc plot test
 
 
 prog : $(TARGET).hex $(TARGET).eeprom
@@ -22,7 +23,7 @@ prog : $(TARGET).hex $(TARGET).eeprom
 	$(OBJ2HEX) -j .eeprop -O ihex $< $@
 
 erase :
-	 avrdude $(ADFLAGS) -E noreset -e
+	 avrdude $(ADFLAGS) -e
 clean :
 	rm -f *.hex *.obj *.o *.eeprom
 
@@ -30,6 +31,9 @@ fuses:
 	avrdude $(ADFLAGS) -U lfuse:w:0xE4:m #http://www.engbedded.com/cgi-bin/fc.cgi 
 	avrdude $(ADFLAGS) -U hfuse:w:0xd9:m
 
+test: $(TEST).hex $(TEST).eeprom
+	avrdude $(ADFLAGS) -V -U flash:w:$(TEST).hex:i
+	
 pc:
 	gcc PClogger.c -o pc
 

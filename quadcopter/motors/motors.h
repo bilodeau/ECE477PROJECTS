@@ -17,8 +17,8 @@ void set_motor_power(char motor, int power);
 void set_motors(int power);
 
 
-int roll_offset = -1;
-int pitch_offset = 2;
+int roll_offset = 0;
+int pitch_offset = 0;
 void stop_motors(){
 	set_motors(MINIMUMSIGNAL);
 }
