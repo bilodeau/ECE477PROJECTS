@@ -14,9 +14,9 @@ volatile int interrupt_counter = 0;
 
 volatile int reading_index = 0;
 volatile int readings[16];
-volatile int running_sum;
+volatile int running_sum = 0;
 
-long last_temp_reading;
+long temp;
 
 int main(){
 	setup_serial();
@@ -26,10 +26,11 @@ int main(){
 	DDRB |= 2;
 	for(;;){
 		if (timer_flag){
-			transmit_temp();
-			update_fan(running_sum>>4);
+			transmit_temp(); // send the averaged temperature out to the PC
+			// the 'temp' variable is set in transmit_temp()
+			update_fan(temp); // change the fan speed based on the current (averaged) temperature reading
 			timer_flag = 0;
-			PORTB ^= 2;
+			PORTB ^= 2; // toggle an LED so that we can tell the AVR is doing temperature readings
 		}
 	}
 	return 0;
@@ -47,8 +48,8 @@ void setup_timer(){
 ISR(TIMER1_COMPA_vect){
 	interrupt_counter++;
 	if (interrupt_counter >= INTERRUPTCOUNTERLIMIT){
-		timer_flag = 1;
-		interrupt_counter -= INTERRUPTCOUNTERLIMIT;
+		timer_flag = 1; // sets this flag once a second
+		interrupt_counter = 0;
 	}
 }
 
@@ -56,11 +57,11 @@ ISR(ADC_vect){
 	running_sum -= readings[reading_index]; // subtract the oldest reading
 	unsigned char low = ADCL;
 	unsigned char high = ADCH&3;
-	readings[reading_index] = (high<<8)|(low);
-	running_sum += readings[reading_index];
+	readings[reading_index] = (high<<8)|(low); // unpack the latest reading
+	running_sum += readings[reading_index]; // add this reading to sum
 
-	reading_index++;
-	if (reading_index >= 16)
+	reading_index++;  // increment the index so we know where to store the next reading
+	if (reading_index >= 16) // wrap around so we maintain only 16 values
 		reading_index = 0;
 }
 
@@ -77,8 +78,8 @@ void setup_adc(){
 // send the value out over serial, formatted for CSV
 void transmit_temp(){
 	int reading = (running_sum>>4); // get the average reading
-	long temp = (reading/1024.*2.56-.5)*10000.; // convert to celsius
+	temp = (reading/1024.*2.56-.5)*10000.; // convert to celsius
 	char buf[40];
 	sprintf(buf,"%ld,",temp); 
-	transmit(buf);
+	transmit(buf); // send the CSV out to the PC over serial
 }
