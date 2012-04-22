@@ -7,10 +7,15 @@
 
 void setup_timer();
 void setup_adc();
-void do_adc_and_transmit();
+void transmit_temp();
 
 volatile char timer_flag = 0;
 volatile int interrupt_counter = 0;
+
+volatile int reading_index = 0;
+volatile int readings[16];
+volatile int running_sum;
+
 long last_temp_reading;
 
 int main(){
@@ -21,8 +26,8 @@ int main(){
 	DDRB |= 2;
 	for(;;){
 		if (timer_flag){
-			do_adc_and_transmit();
-			update_fan(last_temp_reading);
+			transmit_temp();
+			update_fan(running_sum>>4);
 			timer_flag = 0;
 			PORTB ^= 2;
 		}
@@ -47,36 +52,33 @@ ISR(TIMER1_COMPA_vect){
 	}
 }
 
+ISR(ADC_vect){
+	running_sum -= readings[reading_index]; // subtract the oldest reading
+	unsigned char low = ADCL;
+	unsigned char high = ADCH&3;
+	readings[reading_index] = (high<<8)|(low);
+	running_sum += readings[reading_index];
+
+	reading_index++;
+	if (reading_index >= 16)
+		reading_index = 0;
+}
+
 void setup_adc(){
 	// use internal 2.56V reference
 	// measure from ADC channel zero (pin 23 / PC0)
 	ADMUX = (1<<REFS1)|(1<<REFS0);
 	
-	// enable ADC, set ADC prescalar to
-	ADCSRA = (1<<ADEN)|(0<<ADPS2)|(0<<ADPS1)|(0<<ADPS0);
+	// enable ADC, use free running mode, set ADC prescalar to 1/64
+	// enable conversion complete interrupt
+	ADCSRA = (1<<ADEN)|(1<<ADFR)|(1<<ADPS2)|(1<<ADPS1)|(0<<ADPS0)|(1<<ADIE)|(1<<ADSC);
 }
-
-void do_adc_and_transmit(){
-
-	int i;
-	long sum = 0;
-	for (i = 0; i <16; i++){
-		// start a conversion
-		ADCSRA |= (1<<ADSC);
 	
-		// wait for the conversion to complete
-	//	while(!(ADCSRA & ADIF));
-		unsigned char low = ADCL;
-		unsigned char high = ADCH&3;
-		last_temp_reading = (high<<8)|(low);
-	
-		// adjust the reading to be in degrees C
-		last_temp_reading = (last_temp_reading/1024.0 * 2.56 - .5) * 10000;
-			sum += last_temp_reading;
-	}
-	sum >>= 4;
-	// send the value out over serial
+// send the value out over serial, formatted for CSV
+void transmit_temp(){
+	int reading = (running_sum>>4); // get the average reading
+	long temp = (reading/1024.*2.56-.5)*10000.; // convert to celsius
 	char buf[40];
-	sprintf(buf,"%ld,",sum);
+	sprintf(buf,"%ld,",temp); 
 	transmit(buf);
 }
