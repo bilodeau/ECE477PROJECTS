@@ -14,12 +14,12 @@ void setup_fan(){
 // the target temp is 20 deg C -> 0% power to fan
 // 40 deg C -> 100% power to fan
 void update_fan(int temp){
-	if(temp <= 200){
+	if(temp <= 2000){
 		OCR2 = 0;
-	}else if(temp >=400){
+	}else if(temp >= 4000){
 		OCR2 = 255;
 	}else{
-		OCR2 = (temp - 200.)/200.*255;
+		OCR2 = (temp - 2000.)/2000.*255;
 	}
 }
 
