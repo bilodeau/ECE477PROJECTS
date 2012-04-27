@@ -1,0 +1,20 @@
+This document is intended to list the sections of the document which remain to be completed.
+
+File that need completion:
+FinalReport
+introduction
+flightdynamics
+motorcontrol
+systemarchitecture
+power
+communication
+sensors
+filtering
+pidcontrollers
+mastercontrol
+schematics
+code
+discussion
+conclusion
+
+Files completed:
