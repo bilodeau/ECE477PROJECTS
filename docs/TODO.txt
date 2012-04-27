@@ -1,5 +1,7 @@
 This document is intended to list the sections of the document which remain to be completed.
 
+Breanna / Cody, I wasn't sure if you wanted your email addresses added to the cover page.  You can add them to FinalReport.tex if you want.
+
 File that need completion:
 FinalReport
 introduction
