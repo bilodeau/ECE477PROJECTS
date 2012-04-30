@@ -1,0 +1,41 @@
+\section{PC side}
+The PC side setup which we use to communicate with the quadrotor consists of two parts. First we have a Sheaf-Monk utility board connected to an XBee wireless modules.  This lets us open a serial port to send and receive data wirelessly.  Secondly, we have a PC console application which displays the realtime sensor data readings and saves serial communication messages to a log file.  The console application also allows the user to type in and send ASCII based commands to the quadrotor.  Typical usage would be something like:\\
+\newline
+\begin{lstlisting}[frame=single]
+BOOT
+IDLE // checks motor operations and communications
+STOP
+BEGIN // enable balancing and altitude controllers
+TAKEOFF // enable takeoff controller
+LAND
+STOP 
+\end{lstlisting}
+
+\clearpage
+The PC side application is run from the commandline and typically appears as illustrated below:\\
+\begin{lstlisting}[frame=single]
+Last Command Received:                  Hex:
+
+Compass Heading (degrees): 0.0          Sonar Distance (feet): 0.0
+Barometer Temperature: 0.0              Barometer Pressure: 0.0
+Barometer Altitude: 0.0
+Nunchuck X: 0
+Nunchuck Y: 0
+Nunchuck Z: 0
+Gyroscope Roll (deg/sec): 0             Gyroscope Pitch (deg/sec): 0
+Yaw   (deg): 0                          Alt Gain: 0
+Pitch (deg): 0                          Pitch Gain: 0
+Roll  (deg): 0                          Roll Gain: 0
+
+
+
+
+
+
+
+
+Type 'q' to quit.
+:
+Number of bytes sent:  0
+Last Command Sent:                      Hex:
+\end{lstlisting}

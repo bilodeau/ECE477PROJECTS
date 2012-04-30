@@ -1,2 +1,14 @@
 \section{Code}
-
+\paragraph{}
+We wrote around 8,000 lines of code for this project, so we have not printed the source code.  All of the source code can, however, be found in the repository at the following address:\\\\
+\url{https://github.com/bilodeau/ECE477PROJECTS/tree/master/quadcopter}\\
+\paragraph{}
+The file directory structure is as follows:\\\\
+\begin{tabular}{l p{6in}}
+control/ &: contains master control code, controllers, and Makefile.  UI.h has the big if block that handles user commands.\\
+gps/ &: empty (not implemented)\\
+i2c/ &: contains headers which implement i2c communication for both the master and slave chips.  also contains the main() loop for the slave chip (in slave.c)\\
+motors/ &: contains motor control header file, a motors test routine (motors.c, with Makefile)\\
+lib/ &: contains PC side code (PCstatus.c, display.h), serial communications code (AVRserial.h, baud.h), delay helper function (delay.h), and sensor data cache and filtering structures (data.h).\\
+lib/devices/ &: contains interfacing code for each sensor device used, poll\_devices.h and spam.h are used to abstract away the specifics of each device and send data back to the PC, respectively.  Note that there are two versions of sonar sensor code, sonar.h is designed to run on a master chip, sonar\_slave.h is designed to run on the slave chip.\\
+\end{tabular}

@@ -25,7 +25,9 @@
 \usepackage[left=0.5in,top=1.5in,right=0.5in,bottom=1.5in]{geometry}
 \usepackage{graphicx}
 \usepackage{amsmath}
-
+\usepackage{listings}
+	\lstset{language = C}
+\usepackage{url}
 % all figures are stored in the subdir "figs"
 \graphicspath{{./figs/}}
 
@@ -94,6 +96,9 @@ This report discusses the design of a quadrocoptor.
 
 \clearpage
 \input{mastercontrol}
+
+\clearpage
+\input{pcside}
 
 \clearpage
 \input{partslist}

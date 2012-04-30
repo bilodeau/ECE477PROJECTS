@@ -5,7 +5,6 @@ Breanna / Cody, I wasn't sure if you wanted your email addresses added to the co
 File that need completion:
 FinalReport
 introduction
-flightdynamics
 motorcontrol
 systemarchitecture
 power
@@ -20,3 +19,4 @@ discussion
 conclusion
 
 Files completed:
+flightdynamics
