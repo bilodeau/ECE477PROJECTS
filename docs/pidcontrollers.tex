@@ -1,33 +1,52 @@
+\section{PID Control} %%PETER!!!!! run the script twice for the references to work!%%
+This section discusses the PID stability control used in this project. 
+Subsection \ref{PID_basics} explains the PID theory used in this project
+Subsection \ref{PID_used} discusses how the quadrotorcopter utilizes PID controllers to stabilize the copter during flight.  Subsection \ref{PID_Tune} discusses the tuning method used for the controllers.
 
-%Section Discusses Control
-\section{PID Controllers}
 
+\subsection{\label{PID_basics}}
 
-The quadrotor uses different PID controllers to control flight. PID controllers were selected for easy tuning and effective control. 
-
-\subsection{PID Theory}
-Equation \ref{PIDgen} gives the generic equation for any PID controller. 
+In a PID controller P denotes proportional, D derivative, and I integral. The proportional control moves the response of the plant (the copter), in the right direction. Proportional control alone will seldom result in the desired output so the derivative and integral terms are added. A PD controller improves the transient response of the system, or the oscillatory response.  PI controllers improve the system steady state error.  A PID controller improves both the steady state error and transient response simultaneously. Equation \ref{PID_eqn} gives the generic equation for a PID controller. 
 
 \begin{equation}
-D(s) = K_p+\frac{K_i}{s}+K_ds
-\label{PIDgen}
+K_p+K_ds + K_i\frac{1}{s}
+\label{PID_eqn}
 \end{equation}
 
-K$_p$, K$_i$, and K$_d$ are the proportional, integral, and derivative constants.  Each term manipulates the error from the desired output and applies a new input signal to the quadrotor. 
+\subsection{PD Controller with I Cheat\label{PID_used}}
 
-\subsubsection{Proportional}
-The proportional constant takes the error from the plant and inputs a new value proportional to the error. A PID controller is not implementable without a proportional constant.  This term guides the controller to the proper final value. 
+Ideally a PID controller would have resulted in the most stable flight.  For simplicity purposes, this project implements a PD controller with an I cheat.  Equation \ref{PD_controller} shows how to model a PD controller.
 
-\subsubsection{Derivative}
-The derivative constant dampens the error to avoid oscillation. 
+\begin{equation}
+K_P+K_Ds
+\label{PD_controller}
+\end{equation}
 
-\subsubsection{Integral}
-The integral part of the PID controller reduces the effect of outside forces on the quadrotor.  So if the quadrotor nears gusty air, theoretically this term would help compensate for the interference. 
+Equation \ref{derivative} shows how to calculate the derivative term of the controller. 
+\begin{equation}
+derivative = E-E’, where E’ is the previous error and E is the current error
+\label{derivative}
+\end{equation}
 
-\subsection{Controllers, Testing and Tuning}
 
-The flight  PID control tunning applied the Ziegler-Nichols method as no knowledge of how to model the plant existed.
-\subsubsection{Altitude Control}
-\subsubsection{Yaw Control}
-\subsubsection{Pitch Control}
-\subsubsection{Roll Control}
+
+
+
+
+\subsection{Ziegler-Nichols Tuning Method\label{PID_Tune}}
+
+The given plant was quickly deemed impossible to model.  Ziegler-Nichols tuning method was selected to tune the individual controllers. The individual controllers yaw, pitch, roll, and thrust were tuned independently. To tune a single controller all other controllers were turned off and those aspects of flight secured by string. So to tune the roll controller the y component and z component were held constant by tying the north/south axis to chairs.  
+
+Using the Ziegler-Nichols method the proportional constant was increased until a steady oscillation was found. This value was set to the ultimate gain constant K$_u$.  At the ultimate gain the period of oscillation was found. Equations \ref{KC} and \ref{Td} show how to use the ultimate gain constant and ultimate period to make the P and D terms of the controller. 
+
+\begin{equation}
+K_P = \frac{K_u}{1.7}
+\label{KC}
+\end{equation}
+
+\begin{equation}
+K_D = \frac{P_u}{8}
+\label{Td}
+\end{equation}
+
+
