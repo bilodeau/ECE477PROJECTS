@@ -2,21 +2,23 @@ This document is intended to list the sections of the document which remain to b
 
 Breanna / Cody, I wasn't sure if you wanted your email addresses added to the cover page.  You can add them to FinalReport.tex if you want.
 
-File that need completion:
+File that need writing:
 FinalReport
 introduction
 systemarchitecture
-power
 communication
 sensors
 filtering
-pidcontrollers
 mastercontrol
+partslist
 code
 discussion
 conclusion
 
-Files "completed":
+Files completed up to proofreading or minor edits:
 flightdynamics
 motorcontrol
+power
+pidcontrollers
+pcside
 schematics
