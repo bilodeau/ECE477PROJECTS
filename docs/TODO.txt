@@ -4,21 +4,21 @@ Breanna / Cody, I wasn't sure if you wanted your email addresses added to the co
 
 File that need writing:
 FinalReport
-introduction
-systemarchitecture
-communication
 sensors
 filtering
 mastercontrol
-partslist
-code
 discussion
 conclusion
 
 Files completed up to proofreading or minor edits:
 flightdynamics
+systemarchitecture
 motorcontrol
 power
+communication
+I2C Bus
 pidcontrollers
 pcside
 schematics
+code
+partslist

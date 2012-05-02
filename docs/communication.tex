@@ -1,2 +1,11 @@
 \section{Communication}
-
+\paragraph{}
+The serial communication setup for this project was based the setup used in previous ECE477 labs. However, changes needed to be made in order to compensate for the large amount of data that the AVR  needs to send at a relatively low baud rate.  The main differences lie in the addition of wireless hardware and the handling of data transmission on the AVR.
+\paragraph{}
+When communicating with a quadcopter, it is desirable to communicate wirelessly. XBee wireless modules were used to accomplish this.  An XBee module was connected to the Sheaff-Monk AVR board via the TX and RX lines to provide wireless capability to the PC. A second XBee module, tuned to the same frequency, was connected to the TX and RX lines of the master ATmega328P on the quadcopter.  This wireless configuration behaved the similarly to the wired connection between the PC and AVR in lab 5.  
+\paragraph{}
+One change to the wireless modules that was needed was to change the bandwidth of the on-board bandpass filter.  This reduced the interference seen and allowed the PC and quadcopter to communicate when in range of other XBee wireless devices. 
+\paragraph{}
+The biggest change made to the serial communication was in the handling of data transmission on the AVR side.  The first change was the creation of a queue of data to be sent.  The next change was setting up an interrupt to be called when a transmission was completed.  The interrupt allowed the AVR to check the contents of the transmission queue in an interrupt subroutine and begin sending the next piece of data.
+\paragraph{}
+The interrupt and queue were set up in \textit{AVRserial.h}.  The interrupt used was the Usart Data Register Empty (UDRE) interrupt, which is enabled using bit 5 of the USART Status and Control Register B (UCSRB).  The transmission queue was set up as a column array of bytes to be sent.  To ensure that no data was skipped, the a pointer was used to cycle through all the items in the array until the array was empty.

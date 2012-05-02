@@ -1,3 +1,5 @@
 \section{System Architecture}
-
-The quadrotor control board integrates several distinct systems.  
+\paragraph{}
+The quadrotor control board integrates several distinct systems. For example, we have the motor control system.  Each of the four motors requires a PWM control signal.  On the ATmega328p, we use Timer0 and Timer2 each with two compare values to generate these signals.  Since we also need Timer1 to controlsensor polling frequencies, there are no other timers available if we use a single chip.  One of the sensors (the sonar) requires input capture and timing capability, so we added a second AVR to the control board.  The two AVR communicate via $I^2C$ with one chip in master mode, and the sonar chip in slave mode.
+\paragraph{}
+This setup is particularly convenient for future expansion because we are free to add additional AVRs in slave mode, if necessary.  Also, the USART pins on the slave chip are no longer needed for XBee wireless communication, which lets us use serial sensor devices if desired.  For example, some GPS modules communicate via USART.

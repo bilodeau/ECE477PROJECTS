@@ -49,9 +49,8 @@
 
 % abstract
 \begin{abstract}
-
-This report discusses the design of a quadrocoptor. 
-
+For this project, we designed and built an autonomous flying quadrotor.  Our design anticipates automatic stability control and navigation. This project lays the foundation for integrated sensor and motor control systems.
+We built a custom aluminum frame and a custom electronic main board, and use stock hobby motors, propellers and lithium-polymer battery.
 \end{abstract}
 \clearpage
 
@@ -68,12 +67,8 @@ This report discusses the design of a quadrocoptor.
 %--------------------------------------------------------------------------
 % The Actual Paper
 
-\input{introduction}
-
-\clearpage
 \input{flightdynamics}
 
-\clearpage
 \input{systemarchitecture}
 
 \clearpage
@@ -82,26 +77,24 @@ This report discusses the design of a quadrocoptor.
 \clearpage
 \input{power}
 
-\clearpage
 \input{communication}
 
-\clearpage
 \input{sensors}
 
-\clearpage
 \input{filtering}
 
-\clearpage
 \input{i2c}
 
-\clearpage
 \input{pidcontrollers}
 
-\clearpage
 \input{mastercontrol}
 
-\clearpage
 \input{pcside}
+
+\clearpage
+\input{discussion}
+
+\input{conclusion}
 
 \clearpage
 \input{partslist}
@@ -111,18 +104,6 @@ This report discusses the design of a quadrocoptor.
 
 \clearpage
 \input{code}
-
-\clearpage
-\input{discussion}
-
-\clearpage
-\input{conclusion}
-
-% Appendix
-
-\clearpage
-\appendix
-\input{appendix}
 
 % The End
 \end{document}

@@ -1,43 +1,37 @@
 \section{PID Control} %%PETER!!!!! run the script twice for the references to work!%%
-This section discusses the PID stability control used in this project. 
-Subsection \ref{PID_basics} explains the PID theory used in this project
-Subsection \ref{PID_used} discusses how the quadrotorcopter utilizes PID controllers to stabilize the copter during flight.  Subsection \ref{PID_Tune} discusses the tuning method used for the controllers.
-
+\paragraph{}
+This section discusses the PID stability control used in this project.  Subsection \ref{PID_basics} explains the PID theory used in this project, and subsection \ref{PID_used} discusses how the quadrotorcopter utilizes PID controllers to stabilize the copter during flight.  Subsection \ref{PID_Tune} discusses the tuning method used for the controllers.
 
 \subsection{\label{PID_basics}}
-
-In a PID controller P denotes proportional, D derivative, and I integral. The proportional control moves the response of the plant (the copter), in the right direction. Proportional control alone will seldom result in the desired output so the derivative and integral terms are added. A PD controller improves the transient response of the system, or the oscillatory response.  PI controllers improve the system steady state error.  A PID controller improves both the steady state error and transient response simultaneously. Equation \ref{PID_eqn} gives the generic equation for a PID controller. 
+\paragraph{}
+In a PID controller P denotes proportional, D derivative, and I integral. The proportional control moves the response of the plant (the copter), in the correct direction. Proportional control alone will seldom result in the desired output so the derivative and integral terms are added. A PD controller improves the transient response of the system, or the oscillatory response.  PI controllers improve the system steady state error.  A PID controller improves both the steady state error and transient response simultaneously. Equation \ref{PID_eqn} gives the generic equation for a PID controller. 
 
 \begin{equation}
 K_p+K_ds + K_i\frac{1}{s}
 \label{PID_eqn}
 \end{equation}
 
-\subsection{PD Controller with I Cheat\label{PID_used}}
+\subsection{PD Controller with bias\label{PID_used}}
 
-Ideally a PID controller would have resulted in the most stable flight.  For simplicity purposes, this project implements a PD controller with an I cheat.  Equation \ref{PD_controller} shows how to model a PD controller.
+Ideally a PID controller would have resulted in the most stable flight.  For simplicity purposes, this project implements a PD controller with a constant bias term instead of an integral term.  Equation \ref{PD_controller} shows how we model a PD controller.
 
 \begin{equation}
-K_P+K_Ds
+K_P+K_Ds+Bias
 \label{PD_controller}
 \end{equation}
 
 Equation \ref{derivative} shows how to calculate the derivative term of the controller. 
 \begin{equation}
-derivative = E-E’, where E’ is the previous error and E is the current error
+derivative = E-E'
 \label{derivative}
 \end{equation}
-
-
-
-
-
+where E’ is the previous error and E is the current error.
 
 \subsection{Ziegler-Nichols Tuning Method\label{PID_Tune}}
-
-The given plant was quickly deemed impossible to model.  Ziegler-Nichols tuning method was selected to tune the individual controllers. The individual controllers yaw, pitch, roll, and thrust were tuned independently. To tune a single controller all other controllers were turned off and those aspects of flight secured by string. So to tune the roll controller the y component and z component were held constant by tying the north/south axis to chairs.  
-
-Using the Ziegler-Nichols method the proportional constant was increased until a steady oscillation was found. This value was set to the ultimate gain constant K$_u$.  At the ultimate gain the period of oscillation was found. Equations \ref{KC} and \ref{Td} show how to use the ultimate gain constant and ultimate period to make the P and D terms of the controller. 
+\paragraph{}
+Given the complexity of quadrotor dynamics, we quickly deemed the plant impossible to model.  Ziegler-Nichols tuning method was selected to tune the individual controllers. The individual controllers yaw, pitch, roll, and thrust were tuned independently. To tune a single controller all other controllers were turned off and we fixed the quadrotor so that it could only move with the one given degree of freedom.  For example, to tune the roll controller the pitch component and altitude component were held constant by tying the north/south axis down, leaving the quadrotor free to roll. 
+\paragraph{}
+Using the Ziegler-Nichols method the proportional constant was increased until a steady oscillation was found. This value gave the ultimate gain constant K$_u$.  At the ultimate gain the period of oscillation was found. Equations \ref{KC} and \ref{Td} show how to use the ultimate gain constant and ultimate period to make the P and D terms of the controller. 
 
 \begin{equation}
 K_P = \frac{K_u}{1.7}
@@ -48,5 +42,3 @@ K_P = \frac{K_u}{1.7}
 K_D = \frac{P_u}{8}
 \label{Td}
 \end{equation}
-
-

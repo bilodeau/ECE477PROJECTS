@@ -1,27 +1,27 @@
 \section{$I^{2}C$ Bus}
-$I^{2}C$ is a two wire serial communication protocol.  The $I^{2}C$ bus consists of a data line (SDA) and a clock line (SCL).  On the bus it is possible to have multiple master and slave devices that are able to read and write from each other.  
-	Communication is initiated with a start bit followed by an address packet consisting of the device address, and a read(1) or write(0) bit.  If the the slave exists, it sends an acknowledge bit (ACK) and begins transmitting or receiving data packets.  Data is sent one byte at a time until all the desired bytes have been read, with the receiving device sending an ACK after every byte until the last byte where a stop bit is sent.
-
+\paragraph{}
+$I^{2}C$ is a two wire serial communication protocol.  The $I^{2}C$ bus consists of a data line (SDA) and a clock line (SCL).  On the bus it is possible to have multiple master and slave devices that are able to read and write from each other.
+\paragraph{}
+Communication is initiated with a start bit followed by an address packet consisting of the device address, and a read (1) or write (0) bit.  If the the slave exists, it sends an acknowledge bit (ACK) and begins transmitting or receiving data packets.  Data is sent one byte at a time until all the desired bytes have been read, with the receiving device sending an ACK after every byte until the last byte when a stop condition is sent.\\
 	\textbf{Address packets}: 9 bits; 7 address bits, one read/write, one acknowledge bit
 	\textbf{Data packet}: 9 bits; 8 data bits (one byte), one acknowledge bit
-
-Address and data bits are sent MSB first and the acknowledge bit is represented by a low bit on SDA.  The start bit is represented by a high to low transition of the SDA while SCL is high.  The stop bit is represented by a low to high transition of the SDA with the SCL high.  Sampling of the SDA occurs when the SCL is high.  
+\paragraph{}
+Address and data packets are sent MSB first and the acknowledge bit is represented by a low bit on SDA.  The start bit is represented by a high to low transition on the SDA while SCL is high.  The stop bit is represented by a low to high transition on the SDA with the SCL high.  Note that sampling of the SDA occurs when the SCL is high.\\
 
 \textbf{Drawbacks of $I^{2}C$:}
 \begin{itemize}
-\item Limited number of device addresses (seven bit addresses with usually only a couple pins to configure address)
-\item Limited ranges of speeds (standard mode 100kbit/s, most other modes not commonly supported)
-\item Because it is a shared bus, if one device faults, it interrupts communication for all devices.
+\item Limited number of device addresses (seven bit addresses means only 128 devices are available)
+\item Limited range of speeds (standard frequency is 100kbit/s, higher frequency modes are not commonly supported by most devices)
+\item Shared bus, if one device faults, it interrupts communication for all other devices
 \end{itemize}
 
-For AVRs $I^{2}C$ is referred to as the two wire serial interface (TWI) on the data sheet. The Atmega328p supports up to 400kHz bus speeds. Referring to the ATmega328p datasheet it is found that the TWI uses six registers on the microcontroller: TWBR, TWCR, TWSR, TWDR, TWAR, TWAMR.
-
-The SCL frequency is controlled by the Two Wire Bit Rate Register (TWBR) and the prescaler bits (bits 1 and 0) in the Two Wire Status Register (TWSR).
+On the AVR $I^{2}C$ communication uses the two-wire serial interface (TWI). The Atmega328p supports up to 400kHz bus speeds. Referring to the ATmega328p datasheet it is found that the TWI uses six registers on the microcontroller: TWBR, TWCR, TWSR, TWDR, TWAR, TWAMR.
+\paragraph{}
+The SCL frequency is controlled by the Two-Wire Bit Rate Register (TWBR) and the prescaler bits (bits 1 and 0) in the Two-Wire Status Register (TWSR).The prescaler is determined by using the following formula:
 
 \begin{equation} 
 SCL frequency = \frac{CPU Clock frequency}{(16 + 2(TWBR)(Prescaler Value))}
 \label{clkfreq}
 \end{equation}
-
-The Two Wire Control Register (TWCR) contains the bits used to enable the TWI and its various features.  As well as the prescaler value, the TWSR contains five bits to denote the status of the TWI and one reserved bit which will always be read as zero.  The Two Wire Data Register (TWDR) will either contain the last byte received, or the next byte to be transmitted depending upon the mode that the microcontroller is in (receive or transmit respectfully).  The last to registers the Two Wire Address Register (TWAR) and the Two Wire Address Mask Register (TWAMR) are used to assign a seven bit slave address to a microcontroller and a mask to allow the slave to respond to multiple addresses.  
-
+\paragraph{}
+The Two-Wire Control Register (TWCR) contains the bits used to enable the TWI and its various features.  As well as the prescaler code, the TWSR contains five bits which denote the status of the TWI and one reserved bit which will always be read as zero.  The Two-Wire Data Register (TWDR) will either contain the last byte received or the next byte to be transmitted depending upon the mode that the microcontroller is in (receive or transmit respectfully).  The last two registers are the Two-Wire Address Register (TWAR) and the Two-Wire Address Mask Register (TWAMR) are used to assign a seven bit slave address to a microcontroller in slave mode and a mask to allow the slave to respond to multiple addresses.  
