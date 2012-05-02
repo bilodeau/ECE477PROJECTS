@@ -71,3 +71,11 @@ A sonar reading is triggered on the slave AVR every time the Timer 1 COMPA inter
 distance = \frac{\Delta time \times 1130 ft/s / 2}{1000000}
 \end{equation}
 Notice that we divide the speed of sound by 2 since sound must travel out and back, which is twice the distance we want to measure, and we divide by one million since $\Delta time$ is in microseconds.
+
+\subsection{Device Polling}
+
+\paragraph{}
+While the accelerometer, gyroscope, and magnetometer can be polled at a frequency approaching {\it 200 Hz}, the sonar device can only be polled at a maximum of about {\it 50 Hz}.  Therefore it was imperative to come up with a polling scheme.  This was accomplished by using Timer 1 on the master AVR in CTC mode with ICR1 as the top value and the COMPA interrupt.  We used a prescalar of 8 so that the {\it 8 MHz} clock would count in $1 \mu s$ increments.  The top value of the clock, ICR1, was set to 0x7FFF so that the clock would overflow every $32.77 \mu s$, or {\it 30.5 Hz}.  The OCR1A value was then initially set to 0x2000 so that it would trigger $8.19 \mu s$ after the clock begins.  Every time the COMPA interrupt is called, it increments the OCR1A value by 0x2000 so that the interrupt is called again $8.19 \mu s$.  
+
+\paragraph{}
+This setup yields two interrupts firing at different frequencies.  The first interrupt, Timer 1 Capture, is triggered at a frequency of {\it 30.5 Hz}.  The second interrupt, Timer 1 COMPA, is triggered at a frequency of about {\it 122 Hz}.  In order to use these interrupts for device polling, we set the {\bf TOP\_flag} and {\bf compare\_A\_flag} flags in these two interrupts, respectively.  The first flag indicates that the sonar device should be polled while the second flag indicates that the accelerometer, gyroscope, and magnetometer should be polled.  The main control loop of the code simply checks if the flag is set, and then polls the proper devices.
