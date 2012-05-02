@@ -4,12 +4,12 @@ Breanna / Cody, I wasn't sure if you wanted your email addresses added to the co
 
 File that need writing:
 FinalReport
-filtering
 mastercontrol
 discussion
 conclusion
 
 Files completed up to proofreading or minor edits:
+filtering
 sensors
 flightdynamics
 systemarchitecture
