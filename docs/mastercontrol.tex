@@ -1,2 +1,39 @@
 \section{Master Control}
 
+\paragraph{}
+The main code for the quadrotor can be found in the {\it master.c} file.  The program first sets up serial communication and the various devices to be used by the AVR ($I^2C$, ADC, and motors) in addition to the takeoff controller.  It then enters into the main control loop where it continuously polls three different flags.  
+
+\paragraph{}
+The first flag, {\bf serial_command_ready}, indicates that a serial command has been received and thus should be handled.  In this case, {\bf forward_command()} is called which processes takes any action necessary to fulfill the command.
+
+\paragraph{}
+The second flag, {\bf TOP\_flag}, causes the AVR to poll the sonar device attached to the slave AVR chip and send flight data back to the PC via the {\bf send_spam()} function.  If the quadrotor is currently in takeoff or landing mode, this interrupt is also where the base thrust of the motors is changed accordingly.
+
+\paragraph{}
+The final flag, {\bf compare\_A\_flag}, prompts the AVR to poll the gyroscope, magnetometer, accelerometer, and gyroscope in that order.  The gyroscope is polled twice to get data for both the x and y rotational axes.  When this is done, the roll and pitch are filtered as previously described and the motor values are updated via the {\bf update\_motors()} function call.
+
+\paragraph{}
+A pseudocode representation of the main code follows:
+
+{\bf
+\tab begin:
+\tab \tab setup serial
+\tab \tab setup devices
+\tab \tab loop forever:
+\tab \tab \tab if serial command is ready:
+\tab \tab \tab \tab handle command
+\tab \tab \tab if 30 Hz flag is set:
+\tab \tab \tab \tab poll sonar
+\tab \tab \tab \tab filter and update altitude
+\tab \tab \tab \tab send flight info to PC
+\tab \tab \tab if 122 Hz flag is set:
+\tab \tab \tab \tab poll gyroscope
+\tab \tab \tab \tab poll magnetometer
+\tab \tab \tab \tab poll accelerometer
+\tab \tab \tab \tab poll gyroscope
+\tab \tab \tab \tab filter and update roll and pitch
+\tab \tab \tab \tab if quadrotor is flying:
+\tab \tab \tab \tab \tab update motors
+\tab \tab end loop
+\tab end
+
