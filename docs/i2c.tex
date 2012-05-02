@@ -2,7 +2,7 @@
 \paragraph{}
 $I^{2}C$ is a two wire serial communication protocol.  The $I^{2}C$ bus consists of a data line (SDA) and a clock line (SCL).  On the bus it is possible to have multiple master and slave devices that are able to read and write from each other.
 \paragraph{}
-Communication is initiated with a start bit followed by an address packet consisting of the device address, and a read (1) or write (0) bit.  If the the slave exists, it sends an acknowledge bit (ACK) and begins transmitting or receiving data packets.  Data is sent one byte at a time until all the desired bytes have been read, with the receiving device sending an ACK after every byte until the last byte when a stop condition is sent.\\
+Communication is initiated with a start bit followed by an address packet consisting of the device address, and a read (1) or write (0) bit.  If the the slave exists, it sends an acknowledge bit (ACK) and begins transmitting or receiving data packets.  Data is sent one byte at a time until all the desired bytes have been read, with the receiving device sending an ACK after every byte until the last byte when a stop condition is sent.\\\\
 	\textbf{Address packets}: 9 bits; 7 address bits, one read/write, one acknowledge bit
 	\textbf{Data packet}: 9 bits; 8 data bits (one byte), one acknowledge bit
 \paragraph{}

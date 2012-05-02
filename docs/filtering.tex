@@ -1,20 +1,20 @@
 \section{Data Filtering}
 
-/paragraph{}
+\paragraph{}
 The data coming in from our sensory devices was capable of getting quite noisy.  Considering that the quadrotor is always moving and shaking when in flight, it was necessary to smooth out the data using a filtering scheme.  The altitude and attitude calculations were smoothed out using two separate methods.  Data filtering is handled through functions located in the {\it data.h} header file.
 
 \subsection{Altitude}
 
 \paragraph{}
-Every time an altitude reading is obtained by querying the slave AVR, the master AVR calls {\bf update_adj_alt()}.  This function takes a weighted average of the old altitude reading and the new altitude reading before assigning this value as the new altitude.  The weighted average is expressed below:
+Every time an altitude reading is obtained by querying the slave AVR, the master AVR calls {\bf update\_adj\_alt()}.  This function takes a weighted average of the old altitude reading and the new altitude reading before assigning this value as the new altitude.  The weighted average is expressed below:
 \begin{equation}
-new_altitude = 0.75 \times old_altitude + 0.25 \times new_altitude_reading
+new\_altitude = 0.75 \times old\_altitude + 0.25 \times new\_altitude\_reading
 \end{equation}
 
-\subsection{Attitude}
+\subsection{Attitude \label{attitude}}
 
 \paragraph{}
-The attitude calculations (i.e. roll and pitch) are smoothed out using a method called a Complimentary Filter contained within the {\bf update_adj_rp()} function.  This function is called every time a new roll and pitch have been calculated following polling of the accelerometer and gyroscope.  The filter takes a weighted average of the new roll/pitch value and the old roll/pitch value plus an integration of the rotational velocity.  This helps to smooth out situations where the quadrotor has acquired lateral drift and the accelerometer reads an x or y acceleration not due to gravity.  Since the gyroscope will read a rotational velocity close to zero, the majority term will be the old roll/pitch.  An example calculation follows:
+The attitude calculations (i.e. roll and pitch) are smoothed out using a method called a Complementary Filter contained within the {\bf update\_adj\_rp()} function.  This function is called every time a new roll and pitch have been calculated following polling of the accelerometer and gyroscope.  The filter takes a weighted average of the new roll/pitch value and the old roll/pitch value plus an integration of the rotational velocity.  This helps to smooth out situations where the quadrotor has acquired lateral drift and the accelerometer reads an x or y acceleration not due to gravity.  Since the gyroscope will read a rotational velocity close to zero, the majority term will be the old roll/pitch.  An example calculation follows:
 \begin{equation}
-new_roll = 0.75 \times (old_roll + \delta \cdot gyro_roll) + 0.25 \times new_roll_reading
+new\_roll = 0.75 \times (old\_roll + \delta \cdot gyro\_roll) + 0.25 \times new\_roll\_reading
 \end{equation}

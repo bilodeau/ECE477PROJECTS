@@ -31,14 +31,11 @@ where E’ is the previous error and E is the current error.
 \paragraph{}
 Given the complexity of quadrotor dynamics, we quickly deemed the plant impossible to model.  Ziegler-Nichols tuning method was selected to tune the individual controllers. The individual controllers yaw, pitch, roll, and thrust were tuned independently. To tune a single controller all other controllers were turned off and we fixed the quadrotor so that it could only move with the one given degree of freedom.  For example, to tune the roll controller the pitch component and altitude component were held constant by tying the north/south axis down, leaving the quadrotor free to roll. 
 \paragraph{}
-Using the Ziegler-Nichols method the proportional constant was increased until a steady oscillation was found. This value gave the ultimate gain constant K$_u$.  At the ultimate gain the period of oscillation was found. Equations \ref{KC} and \ref{Td} show how to use the ultimate gain constant and ultimate period to make the P and D terms of the controller. 
+Using the Ziegler-Nichols method the proportional constant was increased until a steady oscillation was found. This value gave the ultimate gain constant K$_u$.  At the ultimate gain the period of oscillation was found. Equation \ref{K} shows how to use the ultimate gain constant and ultimate period to make the P and D terms of the controller. 
 
 \begin{equation}
 K_P = \frac{K_u}{1.7}
-\label{KC}
-\end{equation}
-
-\begin{equation}
+\quad \quad \quad
 K_D = \frac{P_u}{8}
-\label{Td}
+\label{K}
 \end{equation}
