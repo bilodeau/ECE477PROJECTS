@@ -2,6 +2,77 @@
 \section{Sensors}
 To create a stable system different aspects of the flight were monitored using sensors. Section \ref{Together} discusses the integration of all sensors to create an attitude. Section \ref{Nun} discusses the Nunchuck. Section \ref{Sonar} discusses the sonar. 
 
+\section{Sensors}
+
+\subsection{Wii Nunchuck 3-Axis Accelerometer}
+
+\paragraph{}
+The Wii Nunchuck accelerometer is an I^{2}C device that provides 10 bits of data representing the magnitude of acceleration in each of the x, y, and z axes.  The data obtained from the accelerometer form the foundation of the roll and pitch estimations for the quadrotor.  The I^{2}C write address of the accelerometer is 0xA4 while the read address is 0xA5.  All code related to the accelerometer can be found in the {\it nunchuck.h} header file.
+
+\paragraph{Initialization}
+Before it can be used, the device must first be initialized in one of two different ways.  The first method involves simply writing the value 0x00 to address 0xA4 of the accelerometer.  This will cause the device to send back encrypted data that must be decrypted before it can be used.  Since we sought to poll the sensory devices, calculate the new motor values, and then update the quadrotor as fast as possible, we chose to forgo the encryption route.
+
+\paragraph{}
+The second initialization is accomplished by writing the value 0x55 to device address 0xF0 and then writing the value 0x00 to address 0xFB.  This will put the device in unencrypted mode and allow all data to be immediately useable as it comes back from the accelerometer.  We initialize our quadrotor this way using the {\bf power_on_nunchuck()} function.
+
+\paragraph{Reading the Data}
+Once a read is initiated, data comes back from the accelerometer in six byte chunks.  The first two bytes pertain to the position of the previously attached joystick and are ignored for the purposes of this project.  The next three bytes that come from the device are the x, y, and z axis 8 MSB, respectively.  The final byte contains the 2 LSB for each axis as well as button press data for the two buttons that were previously attached as part of the Wii nunchuck.  For each axis, to reconstitute the data, we left shift the 8 MSB two places and then OR that result with the 2 LSB to yields the full 10 bit resolution.  The accelerometer data read and reconstitution is accomplished via the {\bf get_data_nunchuck()} function..  It is important to note that within this function, {\bf send_zero_nunchuck()} is called, which simply sends the value 0x00 to the device.  This must be done after each data read or the accelerometer will stop responding to read requests.
+
+\paragraph{Interpreting the Data}
+The 10 bit value of each axis retrieved from the accelerometer is an unsigned integer representing the magnitude of that distinct axis.  Since the 10 bit value is unsigned with a range between 0 and 1023, each axis has a characteristic offset so that the zero value falls close to the middle of the range.  These values were determined for the x and y axes by reading the raw values from the accelerometer while the device was flat and stationary (thus experiencing zero x and y acceleration).  Once acquired, we hardcoded these values using defines in the header file.  The z axis was not calibrated since it was not needed for attitude calculation, as will be explained in the subsequent paragraph.
+
+\paragraph{}
+Calculating the attitude of the quadrotor using the accelerometer presented a challenge because it involved a significant amount of trig operations, which are expensive in general; especially on the AVR.  Therefore we decided to use the small angle approximation which gives a value within 5% of the actual angle up to 30$^\circ$.  To do this, we measured the maximum value given by the accelerometer for the x and y axes (i.e. when acceleration for each axis was at a maximum) and then used the following equation to obtain the quadrotor's roll and pitch, respectively.
+\begin{equation}
+\theta = \frac{axis_value}{axis_max}\times\frac{180}{\pi}
+\end{equation}
+This method was sufficient to accurately predict the roll and pitch of the quadrotor for angles up to 35$^\circ$.
+ 
+\subsection{2-axis Gyroscope}
+
+\paragraph{}
+The 2-axis gyroscope requires Analog-to-Digital Conversion (ADC) and gives a rotational velocity in degrees per second about the x and y axes.  This data was used to help smooth out the roll and pitch measurements derived from the data given by the 3-axis accelerometer.  All code related to the gyroscope can be found in the {\it gyro.h} header file.
+
+\paragraph{Setting up the ADC}
+A previous lab addressed the specifics of performing ADC on the AVR.  The ADC used for the quadrotor is not significantly different.  Since the 2-axis gyro has two different analog outputs, the  x and y outputs are connected to ADC Channels 0 and 1 on the AVR, respectively.  The only major difference between the use of ADC in that lab and the use of ADC for the quadrotor is that we chose to use the AREF pin to provide a reference voltage of 3.3V.  We only learned of the danger in using this method after our quadrotor was already built, otherwise we would have used the AV_{CC} as a reference voltage.  AREF mode is set by clearing the REFS1:0 bits of the ADMUX register.
+
+\paragraph{Triggering and Reading the Conversion}
+ An ADC is triggered by writing a 1 to the ADSC bit of the ADCSRA register.  We handle the reading of the data through the {\it ADC_vect} interrupt.  When the interrupt is triggered, we read the 8 LSB from the ADCL register followed by the 2 MSB from the ADCH register.  Just like the accelerometer, the gyroscope also has a bias that must be taken into account.  We measured the bias of each axis when the gyroscope was at rest and then hardcoded the values in using defines.  When we do calculations, the bias is subtracted to give the true rotational velocity.
+
+\paragraph{}
+One other important thing to note is that gyroscope actually has four different outputs.  It has the standard x and y axis (roll and pitch, respectively), but it also has two other channels for High Resolution Mode.  These high resolution outputs are 4.5 times more sensitive to change than the standard outputs.  We do not use these outputs from the gyroscope, but our code is capable of handling them through the use of a ternary operation in the interrupt vector where the gyroscope value is multiplied by a scaling factor to give degrees per second.  Once the value is converted to this form, we check which channel was being used, x or y axis, and then put the data into the proper sensor data cache variable.  Finally, we switch the ADC channel to the other axis by toggling the LSB of the ADMUX register so that we alternate between reading the x and y axis rotational velocity from the gyroscope.
+
+\subsection{3-axis Magnetometer}
+
+\paragraph{}
+The magnetometer is an I^{2}C device that provides three 16 bit values representing the magnitude of the magnetic field along the x, y and z axes.  This information is used to measure the heading of the quadrotor.  In future iterations, this heading data will be used to correct for yaw.  The I^{2}C write address of the magnetometer is 0x3C while the read address is 0x3C.  All code related to the magnetometer can be found in the {\it magnetometer.h} header file.
+
+\paragraph{Initialization}
+Before the magnetometer can be used, it must be initialized by writing three bytes to the device.  First, the value 0x70 must be written to device address 0x00.  Then the value 0x01 must written to device address 0xA0.  Finally, the value 0x02 must be written to device address 0x00.  Once this is done, the magnetometer is ready to be used.  This process is handled on the quadrotor by the {/bf power_on_magnetometer()} function.
+
+\paragraph{Reading and Interpreting the Data}
+Data is read from the magnetometer by writing the address 0x03 to the device, and then performing a 6 byte read.  The bytes that come back are the 8 MSB, followed by the 8 LSB of the x, y, and z axes, respectively.  This data does not have any offset that needs to be taken into account.  Instead, the three values are the x, y, and z components of a vector pointing towards Magnetic North.  The {\bf compensate_for_tilt()} function uses these three raw vector values, as well as the current roll and pitch values, to give the heading of the  quadrotor in degrees.  The {\bf get_data_magnetometer()} function performs the 6 byte read, calls the conversion function, and then puts the heading value into the {\bf compass_heading} component of the {\bf sensor_data_cache}.
+
+\subsection{Barometer}
+
+\paragraph{}
+We had originally planned on using a barometer for altitude readings.  But the device arrived with calibration values that were outside of the acceptable range as set by the manufacturer, thus indicating a defective item.  We wrote all of the code before actually checking the EEPROM burned calibration values, so there is a {\it barometer.h} header file that contains all of the code to use this device despite the fact that our quadrotor does not incorporate any of it.  The barometer is a standard I^{2}C device with a few peculiarities.  The device must have a control byte written to it to start a pressure or temperature reading, and then it requires 4.5 {\it ms} before the value can actually be read.  That is a very long time to wait in term of updating the motor values, so maybe is was best that this device was broken.
+
+\subsection{Sonar}
+
+\paragraph{}
+To handle the altitude reading of our quadrotor we used a sonar device.  The sonar device is not, like most of our devices, I^{2}C.  Instead, it gives a rising edge on its output pin when it sends out a sound wave, and then gives a falling edge on its output pin when the wave returns.  Thus in order for the sonar device to be used, we needed two compare values and an input capture interrupt on a single clock.  Since the clocks on our AVR were already being used for other things, we decided to put the sonar device on another AVR and then use that AVR as an I^{2}C slave.  All code related to the sonar can be found in the {\it sonar_slave.h} header file.
+
+\paragraph{Initialization}
+The sonar device, itself, does not need any initialization.  Instead, the AVR slave must be setup with the proper clock prescalar and interrupt mask to use input capture with the sonar device.  This is done within the {\bf setup_sonar()} function.  A prescalar of 8 is used with the 8 {\it MHz} to give a clock that counts in 1 $\mus$ increments.  The OCR1A value is set to 60000 so that the Timer 1 COMPA interrupt is called every 60 $\mus$.  The Timer mode is also set so that the clock resets when it hits the OCR1A value.  The OCR1B value is set to 5 so that the Timer 1 COMPB interrupt is called 5 $\mus$ after the COMPA interrupt.
+
+\paragraph{Starting a Reading}
+A sonar reading is triggered on the slave AVR every time the Timer 1 COMPA interrupt vector is called.  In this interrupt, PORTB is set to output mode and then Pin 0 is set high.  5 $\mus$ later the Timer 1 COMPB interrupt vector is called which sets Pin 0 low and changed PORTB to input mode.  This interrupt also sets the {\bf WAITINGFORECHO} flag which indicates that a sonar reading is in progress.  The 5 $\mus$ long pulse triggers the sonar device to send out a sound wave and thus Pin 0 needs to start listening for a rising edge from the sonar device.  The input capture interrupt catches the rising edge of the sonar device, notes the time, and then starts listening for a falling edge.  When the falling edge is captured, the $\Delta time$ is calculated and then the sonar distance in feet is calculated via the formula:
+\begin{equation}
+distance = frac{\Delta time \times 1130}{1000000}
+\end{equation}
+
+
 
 \subsection{Attitude \label{Together}}
 \subsection{Nunchuck\label{Nun}}
